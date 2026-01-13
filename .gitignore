@@ -1,0 +1,26 @@
+# Virtual environment
+.venv/
+
+# Python caches
+__pycache__/
+*.py[cod]
+
+# Editor files
+.vscode/
+.idea/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Local env file
+.env
+# dotenv local override
+.env.local
+# keep sanity: ignore .env.*, but allow .env.example
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
