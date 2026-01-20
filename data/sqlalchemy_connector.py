@@ -8,6 +8,7 @@ from .abstract_connector import DBConnector
 from logs.logger import get_logger
 from data.models import Base
 
+
 class SQLAlchemyConnector(DBConnector):
     """
     Concrete connector using SQLAlchemy.
