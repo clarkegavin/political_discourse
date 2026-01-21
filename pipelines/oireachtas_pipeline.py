@@ -62,32 +62,6 @@ class OireachtasDataPipeline:
             self.logger.error(e)
         self.question_extractor.save_data(questions)
 
-        # # 2️ Debates (per day)
-        # self.logger.info("Fetching debates")
-        # current = pd.to_datetime(self.date_start)
-        # end = pd.to_datetime(self.date_end)
-        #
-        # while current <= end:
-        #     date_str = current.strftime("%Y-%m-%d")
-        #
-        #     debates = self.debate_fetcher.fetch(date=date_str)
-        #     if debates:
-        #         #debugging - remove this section later
-        #         sample = debates[:5]
-        #         self.logger.info(
-        #             "Sample debate identifiers: "
-        #             + ", ".join(
-        #                 str(d.get("debate", {}).get("uri")) for d in sample
-        #             )
-        #         )
-        #         # end debugging
-        #         self.debate_extractor.save_data(debates)
-        #         self.logger.info(f"Persisted {len(debates)} debates for {date_str}")
-        #     else:
-        #         self.logger.info(f"No debates found for {date_str}")
-        #
-        #     current += pd.Timedelta(days=1)
-
         self.logger.info("Oireachtas pipeline completed")
 
         return questions

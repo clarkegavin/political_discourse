@@ -14,7 +14,7 @@ class OireachtasAnswerXMLParser:
         self.logger = get_logger(self.__class__.__name__)
 
     def fetch_xml(self, uri: str) -> Optional[str]:
-        self.logger.info(f"Fetching XML from {uri}")
+        #self.logger.info(f"Fetching XML from {uri}")
 
         resp = requests.get(
             uri,
@@ -28,7 +28,7 @@ class OireachtasAnswerXMLParser:
         return resp.text
 
     def parse(self, xml_text: str) -> Dict:
-        self.logger.info("Parsing answer XML")
+        #self.logger.info("Parsing answer XML")
         root = etree.fromstring(xml_text.encode("utf-8"))
 
         speech = root.find(".//akn:speech", namespaces=AKN_NS)
@@ -51,7 +51,7 @@ class OireachtasAnswerXMLParser:
         paragraphs = speech.findall(".//akn:p", namespaces=AKN_NS)
         text = "\n".join("".join(p.itertext()).strip() for p in paragraphs)
 
-        self.logger.info(f"Extracted speech by {speaker_name} at {recorded_time}")
+        #self.logger.info(f"Extracted speech by {speaker_name} at {recorded_time}")
         return {
             "speaker": speaker_name,
             "recorded_time": recorded_time,
