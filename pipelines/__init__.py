@@ -11,7 +11,7 @@ from .preprocessing_pipeline import PreprocessingPipeline
 from .data_cleanup_pipeline import DataCleanupPipeline
 from .feature_scaler_pipeline import FeatureScalerPipeline
 from .oireachtas_pipeline import OireachtasDataPipeline
-
+from .boards_pipeline import BoardsDataPipeline
 
 
 __all__ = [
@@ -27,4 +27,5 @@ __all__ = [
     "DataCleanupPipeline",
     "FeatureScalerPipeline",
     "OireachtasDataPipeline",
+    "BoardsDataPipeline",
 ]
