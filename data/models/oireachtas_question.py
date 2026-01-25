@@ -31,21 +31,21 @@ class OireachtasQuestion(Base):
     # AnswerDate = Column(SQLDate, nullable=True)
 
     # Optional: extra metadata from API
-    House = Column(UnicodeText, nullable=True)
+    House = Column(String(50), nullable=True)
     ChamberType = Column(String(50), nullable=True)
     CommitteeCode = Column(String(50), nullable=True)
 
     DebateSectionURI = Column(String(500), nullable=True)
-    DebateSectionShowAs = Column(UnicodeText, nullable=True)
+    DebateSectionShowAs = Column(String(250), nullable=True)
 
     AnswerXMLURI = Column(String(500), nullable=True)
-    AnswerXML = Column(UnicodeText, nullable=True)
+    #AnswerXML = Column(UnicodeText, nullable=True)
     AnswerText = Column(UnicodeText, nullable=True)
     AnswerSpeaker = Column(String(255), nullable=True)
     AnswerRecordedTime = Column(DateTime, nullable=True)
 
 
-    RawJSON = Column(JSON, nullable=False)
+    #RawJSON = Column(JSON, nullable=False)
 
     DebateSections = relationship(
         "OireachtasDebateSection",

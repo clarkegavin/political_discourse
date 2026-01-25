@@ -1,17 +1,19 @@
 #data/extractors/oireachtas_question_extractor.py
+import threading
+
 from data.abstract_connector import DBConnector
 from sqlalchemy.orm import Session
 from logs.logger import get_logger
 from ..models import OireachtasQuestion
 from ..parsers.oireachtas_answer_xml_parser import OireachtasAnswerXMLParser
 from typing import List, Dict, Any
-
+import datetime
 
 class OireachtasQuestionExtractor:
     def __init__(self, connector: DBConnector, chunk_size: int = 50):
         self._connector = connector
         self._chunk_size = chunk_size
-        self.answer_parser = OireachtasAnswerXMLParser()
+
         self.logger = get_logger(self.__class__.__name__)
 
     def save_chunk(self, session: Session, records: List[Dict[str, Any]]):
@@ -40,21 +42,36 @@ class OireachtasQuestionExtractor:
 
             house = q.get("house", {})
             debate = q.get("debateSection", {})
+
             xml_uri = debate.get("formats", {}).get("xml", {}).get("uri")
 
-            answer_xml = None
-            answer_text = None
-            speaker = None
-            recorded_time = None
+            answer_xml = r.get("_answer_xml")
+            answer_text = r.get("_answer_text")
+            speaker = r.get("_answer_speaker")
+            recorded_time = r.get("_answer_recorded_time") #datetime for sql
 
-            if xml_uri:
-                xml = self.answer_parser.fetch_xml(xml_uri)
-                if xml:
-                    parsed = self.answer_parser.parse(xml)
-                    answer_xml = xml
-                    answer_text = parsed.get("text")
-                    speaker = parsed.get("speaker")
-                    recorded_time = parsed.get("recorded_time")
+            if xml_uri and "_answer_xml" not in r:
+                self.logger.warning(
+                    f"Missing enrichment for question {q.get('uri')}"
+                )
+
+            # xml_uri = debate.get("formats", {}).get("xml", {}).get("uri")
+
+            # answer_xml = None
+            # answer_text = None
+            # speaker = None
+            # recorded_time = None
+            #
+            # if xml_uri:
+            #     xml = self.answer_parser.fetch_xml(xml_uri)
+            #     if xml:
+            #         parsed = self.answer_parser.parse(xml)
+            #         answer_xml = xml
+            #         answer_text = parsed.get("text")
+            #         speaker = parsed.get("speaker")
+            #         recorded_time = parsed.get("recorded_time")
+
+            #raw_json_safe = self.make_json_safe(r)
 
             obj = OireachtasQuestion(
                 QuestionURI=q.get("uri"),
@@ -77,12 +94,14 @@ class OireachtasQuestionExtractor:
                 DebateSectionURI=debate.get("uri"),
                 DebateSectionShowAs=debate.get("showAs"),
                 AnswerXMLURI=xml_uri,
-                AnswerXML=answer_xml,
+                #AnswerXML=answer_xml,
                 AnswerText=answer_text,
                 AnswerSpeaker=speaker,
                 AnswerRecordedTime=recorded_time,
 
-                RawJSON=r,
+                #RawJSON=r,
+                #RawJSON={**r, "_answer_recorded_time": r.get("_answer_recorded_time_json")},
+                #RawJSON=raw_json_safe,
             )
             objs.append(obj)
 
@@ -95,7 +114,7 @@ class OireachtasQuestionExtractor:
 
     def save_data(self, rows: list[dict]):
         """Save API-fetched data in chunks.  Checks for existing QuestionURI to avoid duplicates."""
-
+        self.logger.info(f"Saving total {len(rows)} records in chunks of {self._chunk_size}")
         with self._connector.get_session() as session:
             for i in range(0, len(rows), self._chunk_size):
                 chunk = rows[i:i + self._chunk_size]
@@ -117,3 +136,14 @@ class OireachtasQuestionExtractor:
         #
         #         # Step 3: save the filtered chunk
         #         self.save_chunk(session, chunk_to_insert)
+
+    def make_json_safe(self, obj):
+        """Recursively convert datetime/date objects to ISO strings."""
+        if isinstance(obj, (datetime.datetime, datetime.date)):
+            return obj.isoformat()
+        elif isinstance(obj, dict):
+            return {k: self.make_json_safe(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self.make_json_safe(v) for v in obj]
+        else:
+            return obj

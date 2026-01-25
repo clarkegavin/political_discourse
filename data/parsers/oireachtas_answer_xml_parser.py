@@ -3,7 +3,9 @@ from datetime import datetime
 from typing import Optional, Dict
 from lxml import etree
 from logs.logger import get_logger
-
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 AKN_NS = {"akn": "http://docs.oasis-open.org/legaldocml/ns/akn/3.0/CSD13"}
 
@@ -12,15 +14,42 @@ class OireachtasAnswerXMLParser:
 
     def __init__(self):
         self.logger = get_logger(self.__class__.__name__)
+        self.session = requests.Session()
+        self.session.headers.update({
+            "User-Agent": "Mozilla/5.0",
+            "Connection": "close",  # important for this API
+        })
+        retries = Retry(
+            total=3,
+            backoff_factor=1.5,
+            status_forcelist=[500, 502, 503, 504],
+            allowed_methods=["GET"],
+        )
+
+        adapter = HTTPAdapter(
+            max_retries=retries,
+            pool_connections=5,
+            pool_maxsize=5,
+        )
+
+        self.session.mount("https://", adapter)
+        self.session.mount("http://", adapter)
+
 
     def fetch_xml(self, uri: str) -> Optional[str]:
         #self.logger.info(f"Fetching XML from {uri}")
 
-        resp = requests.get(
-            uri,
-            headers={"User-Agent": "Mozilla/5.0"},
-            timeout=30,
-        )
+        # resp = requests.get(
+        #     uri,
+        #     headers={"User-Agent": "Mozilla/5.0"},
+        #     timeout=30,
+        # )
+
+        try:
+            resp = self.session.get(uri, timeout=(5, 60))
+        except requests.exceptions.RequestException as e:
+            self.logger.warning(f"XML fetch failed for {uri}: {e}")
+            return None
 
         if resp.status_code != 200:
             self.logger.warning(f"Failed to fetch XML from {uri}, status code: {resp.status_code}")
