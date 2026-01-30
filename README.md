@@ -1,2 +1,3 @@
-# roblox_text_analysis
-Text classification and clustering of roblox game data
+# political discourse
+Analysis of Irish political discourse using NLP techniques against a dataset of Dáil parliamentary questions and social media/forums
+
