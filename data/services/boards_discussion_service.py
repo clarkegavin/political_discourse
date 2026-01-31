@@ -34,32 +34,6 @@ class BoardsDiscussionIngestionService:
             self.extractor.save_data(batch)
             self.logger.info(f"Saved batch of {len(batch)} discussions")
 
-    #
-    # def ingest(
-    #     self,
-    #     category_id: int,
-    #     limit: int = 50,
-    #     date_start: Optional[str] = None,
-    #     date_end: Optional[str] = None,
-    # ):
-    #     self.logger.info(
-    #         f"Ingesting Boards discussions: "
-    #         f"category={category_id}, {date_start} → {date_end}"
-    #     )
-    #
-    #     records = self.fetcher.fetch(
-    #         category_id=category_id,
-    #         limit=limit,
-    #         start_date=date_start,
-    #         end_date=date_end,
-    #     )
-    #
-    #     if not records:
-    #         self.logger.info("No discussions fetched")
-    #         return
-    #
-    #     self._save_in_chunks(records)
-
     def _save_in_chunks(self, records: List[dict]):
         self.logger.info(
             f"Saving {len(records)} discussions "

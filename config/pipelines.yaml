@@ -8,21 +8,46 @@ pipelines:
 #      date_end: "2024-12-31"
 #      chunk_size: 1000
 
-  - name: boards_politics
-    type: pipelines.boards_pipeline.BoardsDataPipeline
-    params:
-      category_id: 1728 #politics-politics forum
-      limit: 100
-      date_start: "2025-01-01" #LastCommentDate
-      date_end: "2026-01-30"
-      chunk_size: 500
+#  - name: boards_politics
+#    type: pipelines.boards_pipeline.BoardsDataPipeline
+#    params:
+#      category_id: 1728 #politics-politics forum
+#      limit: 100
+#      date_start: "2025-01-01" #LastCommentDate
+#      date_end: "2026-01-30"
+#      chunk_size: 500
+#
+#  - name: boards_politics
+#    type: pipelines.boards_pipeline.BoardsDataPipeline
+#    params:
+#      category_id: 1846 #current affairs imho forum
+#      limit: 100
+#      date_start: "2025-01-01" #LastCommentDate
+#      date_end: "2026-01-30"
+#      chunk_size: 500
 
-  - name: boards_politics
-    type: pipelines.boards_pipeline.BoardsDataPipeline
-    params:
-      category_id: 1846 #current affairs imho forum
-      limit: 100
-      date_start: "2025-01-01" #LastCommentDate
-      date_end: "2026-01-30"
-      chunk_size: 500
+#  - name: boards_comments_example
+#    type: pipelines.boards_comments_pipeline.BoardsCommentsPipeline
+#    params:
+#      discussion_source_cfg:
+#        type: api
+#        category_id: 1728
+#      limit: 500
+#      date_start: "2025-01-01"
+#      date_end: "2025-12-31"
+#      chunk_size: 500
 
+  - name: boards_comments_db_example
+    type: pipelines.boards_comments_pipeline.BoardsCommentsPipeline
+    params:
+      # Use the DB as the discussion source. The 'where' value is raw SQL applied to the table.
+      discussion_source_cfg:
+        type: db
+        table: dbo.boards_discussions
+        #where: "CategoryId = 1728 AND DateLastComment BETWEEN '2025-01-01' AND '2025-12-31'"
+      # limit controls the per-request page size when fetching comments from the API
+      limit: 500
+      # date_start/date_end will be passed to the comments API as the dateInserted range
+      date_start: "2025-01-01"
+      date_end: "2025-12-31"
+      chunk_size: 500
