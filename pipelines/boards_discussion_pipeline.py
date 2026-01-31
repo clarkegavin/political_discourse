@@ -1,4 +1,4 @@
-# pipelines/boards_pipeline.py
+# pipelines/boards_discussion_pipeline.py
 from fetchers.factory import FetcherFactory
 from fetchers.context import FetcherContext
 from data.sqlalchemy_connector import SQLAlchemyConnector

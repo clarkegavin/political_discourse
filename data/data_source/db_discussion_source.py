@@ -19,9 +19,13 @@ class DBDiscussionSource(DiscussionSource):
     def get_discussions(self) -> pd.DataFrame:
         self.logger.info(f"Fetching discussions from DB table {self.table}")
         query = f"SELECT DiscussionId FROM {self.table}"
-
         if self.where:
             query += f" WHERE {self.where}"
 
-        return self.connector.read_dataframe(query)
+        session = self.connector.get_session()
+        try:
+            df = pd.read_sql(query, session.bind)
+            return df
+        finally:
+            session.close()
 
