@@ -20,47 +20,7 @@ class OireachtasQuestionIngestionService:
         self._answer_cache = {}  # cache for fetched answer XMLs
         self._cache_lock = threading.Lock()  # ensures only one thread writes to cache at a time
 
-    # def ingest(self, start: date, end: date):
-    #     all_results = []
-    #
-    #     for month_start, month_end in self._month_ranges(start, end):
-    #         self.logger.info(
-    #             f"Checking volume for {month_start} → {month_end}"
-    #         )
-    #
-    #         # lightweight probe
-    #         self.fetcher.fetch(
-    #             date_start=month_start.isoformat(),
-    #             date_end=month_end.isoformat(),
-    #             limit=1,
-    #         )
-    #
-    #         expected = self.fetcher.last_expected_count or 0
-    #         self.logger.info(f"Expected records: {expected}")
-    #
-    #         if expected < SAFE_THRESHOLD:
-    #             self.logger.info(f"Fetching month {month_start} → {month_end}")
-    #             all_results.extend(
-    #                 self.fetcher.fetch(
-    #                     date_start=month_start.isoformat(),
-    #                     date_end=month_end.isoformat(),
-    #                 )
-    #             )
-    #         else:
-    #             self.logger.warning(
-    #                 f"High volume ({expected}); falling back to daily fetch"
-    #             )
-    #             for day in self._day_ranges(month_start, month_end):
-    #                 self.logger.info(f"Fetching day {day}")
-    #                 all_results.extend(
-    #                     self.fetcher.fetch(
-    #                         date_start=day.isoformat(),
-    #                         date_end=day.isoformat(),
-    #                     )
-    #                 )
-    #
-    #     self.logger.info(f"Fetched total {len(all_results)} records")
-    #     return all_results
+
 
     def ingest(self, start: date, end: date):
         for month_start, month_end in self._month_ranges(start, end):

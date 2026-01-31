@@ -7,6 +7,7 @@ from .steam_review_fetcher import SteamReviewFetcher
 from .steam_current_user_fetcher import SteamCurrentUserFetcher
 from .oireachtas_question_fetcher import OireachtasQuestionFetcher
 from .oireachtas_debate_fetcher import OireachtasDebateFetcher
+from .boards_fetcher import BoardsFetcher
 
 
 # Register the SteamAppListFetcher with the factory
@@ -21,6 +22,8 @@ FetcherFactory.register("steam_current_user", SteamCurrentUserFetcher)
 FetcherFactory.register("oireachtas_questions", OireachtasQuestionFetcher)
 # Register the OireachtasDebateFetcher with the factory
 FetcherFactory.register("oireachtas_debates", OireachtasDebateFetcher)
+# Register the Boards fetcher
+FetcherFactory.register("boards", BoardsFetcher)
 
 
 __all__ = [
@@ -31,4 +34,5 @@ __all__ = [
     "SteamReviewFetcher",
     "SteamCurrentUserFetcher",
     "OireachtasQuestionFetcher",
+    "BoardsFetcher",
 ]

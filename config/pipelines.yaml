@@ -1,9 +1,28 @@
 #config/pipelines.yaml
 
 pipelines:
-  - name: oireachtas_questions
-    type: pipelines.oireachtas_pipeline.OireachtasDataPipeline
+#  - name: oireachtas_questions
+#    type: pipelines.oireachtas_pipeline.OireachtasDataPipeline
+#    params:
+#      date_start: "2023-01-01"
+#      date_end: "2024-12-31"
+#      chunk_size: 1000
+
+  - name: boards_politics
+    type: pipelines.boards_pipeline.BoardsDataPipeline
     params:
-      date_start: "2022-01-01"
-      date_end: "2022-12-31"
-      chunk_size: 1000
+      category_id: 1728 #politics-politics forum
+      limit: 100
+      date_start: "2025-01-01" #LastCommentDate
+      date_end: "2026-01-30"
+      chunk_size: 500
+
+  - name: boards_politics
+    type: pipelines.boards_pipeline.BoardsDataPipeline
+    params:
+      category_id: 1846 #current affairs imho forum
+      limit: 100
+      date_start: "2025-01-01" #LastCommentDate
+      date_end: "2026-01-30"
+      chunk_size: 500
+
