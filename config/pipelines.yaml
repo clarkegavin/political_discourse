@@ -91,18 +91,54 @@ pipelines:
 #          direction: desc
 
 
-  - name: oireachtas_questions_extract
-    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
-    extractor_type: table
+
+#-------------------------------------------------------------------
+# Extracts oireachtas parties via API
+#-------------------------------------------------------------------
+  - name: oireachtas_parties
+    type: pipelines.oireachtas_parties_pipeline.OireachtasPartiesPipeline
     params:
-      #output_csv: data/boards_comments.csv
-      extractor_params:
-        model: OireachtasQuestion
-        filters:
-          #discussionID: 2058391856
-          QuestionDate:
-            from: "2025-01-01"
-            to: "2025-12-31"
-        order_by:
-          column: QuestionDate
-          direction: desc
+      chamber: "dail"           # default chamber
+      house_no: 34               # default house number
+      limit: 50                  # per-request limit (configurable, default 50)
+      request_delay: 1.0         # seconds to wait between API calls
+      chunk_size: 500            # DB insert chunk size
+
+#-------------------------------------------------------------------
+# Extracts oireachtas parties from the DB table dbo.oireachtas_parties
+#-------------------------------------------------------------------
+#  - name: oireachtas_parties_extract
+#    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+#    extractor_type: table
+#    params:
+#      extractor_params:
+#        model: OireachtasParty
+#        filters:
+#          # Example: limit to house_no 34 and parties observed in 2025
+#          HouseNo:
+#            from: 34
+#            to: 34
+#        order_by:
+#          column: PartyShowAs
+#          direction: asc
+
+#-------------------------------------------------------------------
+# Extracts oireachtas questions and answers directly from the
+# DB table dbo.boards_comments
+#-------------------------------------------------------------------
+#
+#  - name: oireachtas_questions_extract
+#    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+#    extractor_type: table
+#    params:
+#      #output_csv: data/boards_comments.csv
+#      extractor_params:
+#        model: OireachtasQuestion
+#        filters:
+#          #discussionID: 2058391856
+#          QuestionDate:
+#            from: "2025-01-01"
+#            to: "2025-12-31"
+#        order_by:
+#          column: QuestionDate
+#          direction: desc
