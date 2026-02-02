@@ -33,12 +33,15 @@ class DataExtractorPipeline(Pipeline):
               sample_size: 100
         """
 
-        params = cfg.get("params", {})
-        extractor_type = cfg.get("extractor_type", "roblox")
+        params = cfg.get("params", {}).copy()
+        extractor_type = cfg.get("extractor_type")
         extractor_params = params.pop("extractor_params", {})
 
         # Create the extractor via factory
-        if extractor_type == "roblox":
+        if extractor_type == "table":
+            model = extractor_params.pop("model")
+            extractor = ExtractorFactory.create_table_extractor(model=model, **extractor_params)
+        elif extractor_type == "roblox":
             extractor = ExtractorFactory.create_roblox_extractor(**extractor_params)
         elif extractor_type == "steam":
             extractor = ExtractorFactory.create_steam_table_extractor(**extractor_params)

@@ -14,18 +14,33 @@ class TableDataExtractor(DataExtractor):
     Supports full dataset or a sample (limit).
     """
 
-    def __init__(self, connector: DBConnector, model: Type[DeclarativeMeta], sample_size: Optional[int] = None):
+    def __init__(self, connector: DBConnector, model: Type[DeclarativeMeta], sample_size: Optional[int] = None, order_by = None, filters: Optional[Dict[str, Any]] = None):
         self._connector = connector
         self._model = model
         self._sample_size = sample_size
+        self._order_by = order_by
+        self._filters = filters or []
         self.logger = get_logger(self.__class__.__name__)
 
     def fetch_all(self) -> List[Dict[str, Any]]:
         self.logger.info(f"Fetching all rows from {self._model.__tablename__}")
         with self._connector.get_session() as session:
             stmt = select(self._model)
-            # SQL Server random ordering
-            stmt = stmt.order_by(func.newid())
+
+            for f in self._filters:
+                if isinstance(f, str):
+                    stmt = stmt.filter(getattr(self._model, f))
+                else:
+                    stmt = stmt.filter(f)  # already a SQLAlchemy expression
+
+            if self._order_by is not None:
+                if isinstance(self._order_by, str):
+                    stmt = stmt.order_by(getattr(self._model, self._order_by))
+                else:
+                    stmt = stmt.order_by(self._order_by)  # already an expression
+            else:
+                stmt = stmt.order_by(func.newid())
+
 
             if self._sample_size:
                 stmt = stmt.limit(self._sample_size)
