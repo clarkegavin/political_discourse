@@ -9,5 +9,7 @@ extractor = ExtractorFactory.create_roblox_extractor()
 
 from .factory import ExtractorFactory
 
+# register exports
+
 __all__ = ["ExtractorFactory"]
 

@@ -1,6 +1,10 @@
 #config/pipelines.yaml
 
 pipelines:
+#-------------------------------------------------------------------
+# Extracts oireachtas questions via API
+#-------------------------------------------------------------------
+
 #  - name: oireachtas_questions
 #    type: pipelines.oireachtas_pipeline.OireachtasDataPipeline
 #    params:
@@ -8,6 +12,9 @@ pipelines:
 #      date_end: "2024-12-31"
 #      chunk_size: 1000
 
+#-------------------------------------------------------------------
+# Extracts boards.ie discussions via API - for politics forum
+#-------------------------------------------------------------------
 #  - name: boards_politics
 #    type: pipelines.boards_pipeline.BoardsDataPipeline
 #    params:
@@ -16,7 +23,10 @@ pipelines:
 #      date_start: "2025-01-01" #LastCommentDate
 #      date_end: "2026-01-30"
 #      chunk_size: 500
-#
+
+#-------------------------------------------------------------------
+# Extracts boards.ie discussions via API - for current affairs forum
+#-------------------------------------------------------------------
 #  - name: boards_politics
 #    type: pipelines.boards_pipeline.BoardsDataPipeline
 #    params:
@@ -26,7 +36,12 @@ pipelines:
 #      date_end: "2026-01-30"
 #      chunk_size: 500
 
-#  - name: boards_comments_example
+#-------------------------------------------------------------------
+# Extracts boards.ie comments via API - using the discussions
+# API - note this is untested as yet
+#-------------------------------------------------------------------
+
+#  - name: boards_comments
 #    type: pipelines.boards_comments_pipeline.BoardsCommentsPipeline
 #    params:
 #      discussion_source_cfg:
@@ -37,17 +52,57 @@ pipelines:
 #      date_end: "2025-12-31"
 #      chunk_size: 500
 
-  - name: boards_comments_db_example
-    type: pipelines.boards_comments_pipeline.BoardsCommentsPipeline
+#-------------------------------------------------------------------
+# Extracts boards.ie comments via API - for previously stored
+# discussions (dbo.boards_discussions)
+#-------------------------------------------------------------------
+
+#  - name: boards_comments_db
+#    type: pipelines.boards_comments_pipeline.BoardsCommentsPipeline
+#    params:
+#      # Use the DB as the discussion source. The 'where' value is raw SQL applied to the table.
+#      discussion_source_cfg:
+#        type: db
+#        table: dbo.boards_discussions
+#        #where: "CategoryId = 1728 AND DateLastComment BETWEEN '2025-01-01' AND '2025-12-31'"
+#      limit: 500 # limit controls the per-request page size when fetching comments from the API
+#      # date_start/date_end will be passed to the comments API as the dateInserted range
+#      date_start: "2025-01-01"
+#      date_end: "2025-12-31"
+#      chunk_size: 500 # chunk_size controls how many comments are saved to the DB at once
+
+#-------------------------------------------------------------------
+# Extracts boards.ie comments directly from the DB table dbo.boards_comments
+#-------------------------------------------------------------------
+#  - name: boards_comments_extract
+#    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+#    extractor_type: table
+#    params:
+#      output_csv: data/boards_comments.csv
+#      extractor_params:
+#        model: BoardsComment
+#        filters:
+#          #discussionID: 2058391856
+#          dateInserted:
+#            from: "2025-01-01"
+#            to: "2025-12-31"
+#        order_by:
+#          column: dateInserted
+#          direction: desc
+
+
+  - name: oireachtas_questions_extract
+    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+    extractor_type: table
     params:
-      # Use the DB as the discussion source. The 'where' value is raw SQL applied to the table.
-      discussion_source_cfg:
-        type: db
-        table: dbo.boards_discussions
-        #where: "CategoryId = 1728 AND DateLastComment BETWEEN '2025-01-01' AND '2025-12-31'"
-      # limit controls the per-request page size when fetching comments from the API
-      limit: 500
-      # date_start/date_end will be passed to the comments API as the dateInserted range
-      date_start: "2025-01-01"
-      date_end: "2025-12-31"
-      chunk_size: 500
+      #output_csv: data/boards_comments.csv
+      extractor_params:
+        model: OireachtasQuestion
+        filters:
+          #discussionID: 2058391856
+          QuestionDate:
+            from: "2025-01-01"
+            to: "2025-12-31"
+        order_by:
+          column: QuestionDate
+          direction: desc
