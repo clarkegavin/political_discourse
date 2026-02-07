@@ -1,0 +1,55 @@
+@startuml
+hide circle
+skinparam classAttributeIconSize 0
+
+
+' =========================
+' BOARDS.IE DOMAIN
+' =========================
+
+class BoardsDiscussion {
+  +Id : BigInteger <<PK>>
+  DiscussionId : BigInteger <<UK>>
+  Type: String
+  Title : String
+  Body : Text
+  CategoryId : Integer
+  DateInserted : DateTime
+  DateUpdated : DateTime
+  DateLastComment : DateTime
+  insertUserId : BigInteger
+  UpdateUserId : BigInteger
+  LastUserId : BigInteger
+  Closed : String
+  countComments : BigInteger
+  CanonicalURL : String
+}
+
+class BoardsComment {
+  +Id : BigInteger <<PK>>
+  commentID : BigInteger <<UK>>
+  discussionID : BigInteger <<FK>>
+  parentRecordType : String
+  parentRecordID : BigInteger
+  name : String
+  categoryID : Integer
+  body : Text
+  dateInserted : DateTime
+  dateUpdated : DateTime
+  updateUserID : BigInteger
+  score : Integer
+  depth : Integer
+  scoreChildComments : Integer
+  countChildComments : Integer
+  url : String
+  type: String
+  format: String
+  attributes: Json
+}
+
+' =========================
+' RELATIONSHIPS
+' =========================
+BoardsDiscussion "1" --> "0..*" BoardsComment : contains
+
+@enduml
