@@ -34,9 +34,13 @@ class DescribeInfoEDA(EDAComponent):
         if save_path is None:
             raise ValueError("save_path must be provided to write EDA outputs")
 
+        filename_prefix = kwargs.get("filename_prefix", "")
+        prefix = f"{filename_prefix}_" if filename_prefix else ""
+        self.logger.debug(f"Using filename prefix: '{prefix}'")
+
         os.makedirs(save_path, exist_ok=True)
-        describe_path = os.path.join(save_path, "describe.csv")
-        info_path = os.path.join(save_path, "info.csv")
+        describe_path = os.path.join(save_path, f"{prefix}describe.csv")
+        info_path = os.path.join(save_path, f"{prefix}info.csv")
 
         # write describe (include='all' to get non-numeric too)
         try:

@@ -1,0 +1,87 @@
+@startuml
+hide circle
+skinparam classAttributeIconSize 0
+
+' =========================
+' OIREACHTAS DOMAIN
+' =========================
+
+class OireachtasQuestion {
+  +Id : BigInteger <<PK>>
+  QuestionURI : String <<UK>>
+  QuestionNumber : BigInteger
+  QuestionType : String
+  QuestionDate : Date
+  QuestionText : Text
+  AskedBy : String
+  AskedByURI: String
+  AskedByMemberCode : String
+  ToMinister : String
+  House : String
+  ChamberType : String
+  CommitteeCode : String
+  DebateSectionURI : String
+  DebateSectionShowAs : String
+  AnswerXMLURI : String
+  AnswerText : Text
+  AnswerSpeaker : String
+  AnswerRecordedTime : DateTime
+}
+
+class OireachtasMember {
+  +pId : String <<PK>>
+  memberCode : String
+  firstName : String
+  fullName : String
+  showAs : String
+  gender : String
+  dateOfDeath : Date
+}
+
+class OireachtasMemberMembership {
+  +membership_id : BigInteger <<PK>>
+  pId : String <<FK>>
+  houseCode : String
+  houseNo : Integer
+  membership_start_date : Date
+  membership_end_date : Date
+  membership_uri : String <<UK>>
+}
+
+class OireachtasMemberPartyMembership {
+  +id : BigInteger <<PK>>
+  membership_id : BigInteger <<FK>>
+  partyCode : String <<FK>>
+  party_showAs : String
+  party_start_date : Date
+  party_end_date : Date
+}
+
+class OireachtasMemberRepresentation {
+  +id : BigInteger <<PK>>
+  membership_id : BigInteger <<FK>>
+  representCode : String
+  representShowAs : String
+  representType : String
+}
+
+class OireachtasParty {
+  +Id : BigInteger <<PK>>
+  PartyCode : String
+  PartyShowAs : String
+  HouseCode : String
+  HouseNo : Integer
+}
+
+
+' =========================
+' RELATIONSHIPS
+' =========================
+
+OireachtasMember "1" --> "0..*" OireachtasMemberMembership : has
+OireachtasMemberMembership "1" --> "0..*" OireachtasMemberPartyMembership : party history
+OireachtasMemberMembership "1" --> "0..*" OireachtasMemberRepresentation : represents
+OireachtasMemberPartyMembership "0..*" --> "1" OireachtasParty : party
+
+
+@enduml

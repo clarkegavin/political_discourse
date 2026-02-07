@@ -123,27 +123,6 @@ pipelines:
 #          direction: asc
 
 #-------------------------------------------------------------------
-# Extracts oireachtas questions and answers directly from the
-# DB table dbo.boards_comments
-#-------------------------------------------------------------------
-#
-#  - name: oireachtas_questions_extract
-#    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
-#    extractor_type: table
-#    params:
-#      #output_csv: data/boards_comments.csv
-#      extractor_params:
-#        model: OireachtasQuestion
-#        filters:
-#          #discussionID: 2058391856
-#          QuestionDate:
-#            from: "2025-01-01"
-#            to: "2025-12-31"
-#        order_by:
-#          column: QuestionDate
-#          direction: desc
-
-#-------------------------------------------------------------------
 # Extracts oireachtas members via API (normalized into relational tables)
 # Extracted for two recent Dail houses (33 and 34)
 #-------------------------------------------------------------------
@@ -169,17 +148,173 @@ pipelines:
 #      request_delay: 1.0
 #      chunk_size: 200
 
+
 #-------------------------------------------------------------------
-# Extracts oireachtas members from DB tables (example extractor)
+# Extracts oireachtas questions and answers from DB tables
 #-------------------------------------------------------------------
+
+#  - name: oireachtas_questions_extract
+#    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+#    extractor_type: table
+#    params:
+#      extractor_params:
+#        model: OireachtasQuestion
+#        filters:
+#          #discussionID: 2058391856
+#          QuestionDate:
+#            from: "2025-01-01"
+#            to: "2025-12-31"
+#        order_by:
+#          column: QuestionDate
+#          direction: desc
+#
+#  - name: eda
+#    type: pipelines.eda_pipeline.EDAPipeline
+#    params:
+#      save_path: "output/eda"
+#      steps:
+#        - name: describe_info
+#          params:
+#            filename_prefix: "oireachtas_questions"
+#
+##-------------------------------------------------------------------
+## Extracts oireachtas members from DB tables
+##-------------------------------------------------------------------
+#
 #  - name: oireachtas_members_extract
 #    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
 #    extractor_type: table
 #    params:
 #      extractor_params:
 #        model: OireachtasMember
-#        filters:
-#          # e.g. restrict by house or date range via joined membership table in SQL
-#        order_by:
-#          column: fullName
-#          direction: asc
+#
+#  - name: eda
+#    type: pipelines.eda_pipeline.EDAPipeline
+#    params:
+#      save_path: "output/eda"
+#      steps:
+#        - name: describe_info
+#          params:
+#            filename_prefix: "oireachtas_members"
+#
+##-------------------------------------------------------------------
+## Extracts oireachtas members membership from DB tables
+##-------------------------------------------------------------------
+#
+#  - name: oireachtas_member_membership_extract
+#    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+#    extractor_type: table
+#    params:
+#      extractor_params:
+#        model: OireachtasMemberMembership
+#
+#  - name: eda
+#    type: pipelines.eda_pipeline.EDAPipeline
+#    params:
+#      save_path: "output/eda"
+#      steps:
+#        - name: describe_info
+#          params:
+#            filename_prefix: "oireachtas_member_membership"
+#
+##-------------------------------------------------------------------
+## Extracts oireachtas party  membership from DB tables
+##-------------------------------------------------------------------
+#
+#  - name: oireachtas_member_party_extract
+#    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+#    extractor_type: table
+#    params:
+#      extractor_params:
+#        model: OireachtasMemberPartyMembership
+#
+#  - name: eda
+#    type: pipelines.eda_pipeline.EDAPipeline
+#    params:
+#      save_path: "output/eda"
+#      steps:
+#        - name: describe_info
+#          params:
+#            filename_prefix: "oireachtas_member_party_membership"
+#
+##-------------------------------------------------------------------
+## Extracts oireachtas  membership representation  (constituency)
+## from DB tables
+##-------------------------------------------------------------------
+#
+#  - name: oireachtas_membership_representation_extract
+#    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+#    extractor_type: table
+#    params:
+#      extractor_params:
+#        model: OireachtasMemberRepresentation
+#
+#  - name: eda
+#    type: pipelines.eda_pipeline.EDAPipeline
+#    params:
+#      save_path: "output/eda"
+#      steps:
+#        - name: describe_info
+#          params:
+#            filename_prefix: "oireachtas_member_representation"
+#
+##-------------------------------------------------------------------
+## Extracts oireachtas  party  from DB tables
+##-------------------------------------------------------------------
+#
+#  - name: oireachtas_party_extract
+#    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+#    extractor_type: table
+#    params:
+#      extractor_params:
+#        model: OireachtasParty
+#
+#  - name: eda
+#    type: pipelines.eda_pipeline.EDAPipeline
+#    params:
+#      save_path: "output/eda"
+#      steps:
+#        - name: describe_info
+#          params:
+#            filename_prefix: "oireachtas_party"
+
+#-------------------------------------------------------------------
+# Extracts boards discussions  from DB tables
+#-------------------------------------------------------------------
+
+  - name: boards_discussions_extract
+    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+    extractor_type: table
+    params:
+      extractor_params:
+        model: BoardsDiscussion
+
+  - name: eda
+    type: pipelines.eda_pipeline.EDAPipeline
+    params:
+      save_path: "output/eda"
+      steps:
+        - name: describe_info
+          params:
+            filename_prefix: "boards_discussions"
+
+
+#-------------------------------------------------------------------
+# Extracts boards comments  from DB tables
+#-------------------------------------------------------------------
+
+  - name: boards_discussions_extract
+    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+    extractor_type: table
+    params:
+      extractor_params:
+        model: BoardsComment
+
+  - name: eda
+    type: pipelines.eda_pipeline.EDAPipeline
+    params:
+      save_path: "output/eda"
+      steps:
+        - name: describe_info
+          params:
+            filename_prefix: "boards_comments"
