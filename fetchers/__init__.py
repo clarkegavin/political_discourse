@@ -8,6 +8,7 @@ from .steam_current_user_fetcher import SteamCurrentUserFetcher
 from .oireachtas_question_fetcher import OireachtasQuestionFetcher
 from .oireachtas_debate_fetcher import OireachtasDebateFetcher
 from .oireachtas_party_fetcher import OireachtasPartyFetcher
+from .oireachtas_members_fetcher import OireachtasMembersFetcher
 from .boards_fetcher import BoardsFetcher
 from .boards_comments_fetcher import BoardsCommentsFetcher
 
@@ -26,6 +27,8 @@ FetcherFactory.register("oireachtas_questions", OireachtasQuestionFetcher)
 FetcherFactory.register("oireachtas_debates", OireachtasDebateFetcher)
 # Register the OireachtasPartyFetcher with the factory
 FetcherFactory.register("oireachtas_parties", OireachtasPartyFetcher)
+# Register the Oireachtas Members fetcher
+FetcherFactory.register("oireachtas_members", OireachtasMembersFetcher)
 # Register the Boards fetcher
 FetcherFactory.register("boards", BoardsFetcher)
 # Register the Boards comments fetcher
@@ -41,6 +44,7 @@ __all__ = [
     "SteamCurrentUserFetcher",
     "OireachtasQuestionFetcher",
     "OireachtasPartyFetcher",
+    "OireachtasMembersFetcher",
     "BoardsFetcher",
     "BoardsCommentsFetcher",
 ]
