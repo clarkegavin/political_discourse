@@ -145,28 +145,29 @@ pipelines:
 
 #-------------------------------------------------------------------
 # Extracts oireachtas members via API (normalized into relational tables)
+# Extracted for two recent Dail houses (33 and 34)
 #-------------------------------------------------------------------
-  - name: oireachtas_members
-    type: pipelines.oireachtas_members_pipeline.OireachtasMembersPipeline
-    params:
-      date_start: "2020-01-01"
-      date_end: "2025-12-31"
-      chamber: "dail"
-      house_no: 33
-      limit: 50
-      request_delay: 1.0
-      chunk_size: 200
-
-  - name: oireachtas_members
-    type: pipelines.oireachtas_members_pipeline.OireachtasMembersPipeline
-    params:
-      date_start: "2020-01-01"
-      date_end: "2025-12-31"
-      chamber: "dail"
-      house_no: 34
-      limit: 50
-      request_delay: 1.0
-      chunk_size: 200
+#  - name: oireachtas_members
+#    type: pipelines.oireachtas_members_pipeline.OireachtasMembersPipeline
+#    params:
+#      date_start: "2020-01-01"
+#      date_end: "2025-12-31"
+#      chamber: "dail"
+#      house_no: 33
+#      limit: 50
+#      request_delay: 1.0
+#      chunk_size: 200
+#
+#  - name: oireachtas_members
+#    type: pipelines.oireachtas_members_pipeline.OireachtasMembersPipeline
+#    params:
+#      date_start: "2020-01-01"
+#      date_end: "2025-12-31"
+#      chamber: "dail"
+#      house_no: 34
+#      limit: 50
+#      request_delay: 1.0
+#      chunk_size: 200
 
 #-------------------------------------------------------------------
 # Extracts oireachtas members from DB tables (example extractor)
