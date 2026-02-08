@@ -279,28 +279,81 @@ pipelines:
 #            filename_prefix: "oireachtas_party"
 
 #-------------------------------------------------------------------
-# Extracts boards discussions  from DB tables
+# Visualisation of document length for oireachtas questions and answers
 #-------------------------------------------------------------------
 
-  - name: boards_discussions_extract
+  - name: oireachtas_question_document_eda
     type: pipelines.data_extractor_pipeline.DataExtractorPipeline
     extractor_type: table
     params:
       extractor_params:
-        model: BoardsDiscussion
+        model: OireachtasQuestion
 
   - name: eda
     type: pipelines.eda_pipeline.EDAPipeline
     params:
       save_path: "output/eda"
       steps:
-        - name: describe_info
+        - name: document_length
           params:
-            filename_prefix: "boards_discussions"
+            columns: ["QuestionText", "AnswerText"]
+            unit: "characters"
+            output_column: "character_length"
+            viz_params:
+              - name: histogram
+                bins: 30
+                filename: "oireachtas_character_length_histogram.png"
+              - name: boxplot
+                filename: "oireachtas_character_length_boxplot.png"
+        - name: document_length
+          params:
+            columns: ["QuestionText", "AnswerText"]
+            unit: "words"
+            output_column: "word_length"
+            viz_params:
+              - name: histogram
+                bins: 30
+                filename: "oireachtas_words_length_histogram.png"
+              - name: boxplot
+                filename: "oireachtas_words_length_boxplot.png"
+        - name: document_length
+          params:
+            columns: ["QuestionText", "AnswerText"]
+            unit: "sentences"
+            output_column: "sentence_length"
+            viz_params:
+              - name: histogram
+                bins: 30
+                filename: "oireachtas_sentence_length_histogram.png"
+              - name: boxplot
+                filename: "oireachtas_sentence_length_boxplot.png"
+
+
+#-------------------------------------------------------------------
+# Extracts boards discussions  from DB tables
+#-------------------------------------------------------------------
+#
+#  - name: boards_discussions_extract
+#    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+#    extractor_type: table
+#    params:
+#      extractor_params:
+#        model: BoardsDiscussion
+#
+#  - name: eda
+#    type: pipelines.eda_pipeline.EDAPipeline
+#    params:
+#      save_path: "output/eda"
+#      steps:
+#        - name: describe_info
+#          params:
+#            filename_prefix: "boards_discussions"
+
 
 
 #-------------------------------------------------------------------
 # Extracts boards comments  from DB tables
+# Visualises document length in characters, words, sentences for the 'name' and 'body' fields
 #-------------------------------------------------------------------
 
   - name: boards_discussions_extract
@@ -310,11 +363,44 @@ pipelines:
       extractor_params:
         model: BoardsComment
 
-  - name: eda
+  - name: boards_comments_eda
     type: pipelines.eda_pipeline.EDAPipeline
     params:
       save_path: "output/eda"
       steps:
-        - name: describe_info
+#        - name: describe_info
+#          params:
+#            filename_prefix: "boards_comments"
+        - name: document_length
           params:
-            filename_prefix: "boards_comments"
+            columns: ["name", "body"]
+            unit: "characters"
+            output_column: "character_length"
+            viz_params:
+              - name: histogram
+                bins: 30
+                filename: "boards_comments_character_length_histogram.png"
+              - name: boxplot
+                filename: "boards_comments_character_length_boxplot.png"
+        - name: document_length
+          params:
+            columns: ["name", "body"]
+            unit: "words"
+            output_column: "word_length"
+            viz_params:
+              - name: histogram
+                bins: 30
+                filename: "boards_comments_words_length_histogram.png"
+              - name: boxplot
+                filename: "boards_comments_words_length_boxplot.png"
+        - name: document_length
+          params:
+            columns: ["name", "body"]
+            unit: "sentences"
+            output_column: "sentence_length"
+            viz_params:
+              - name: histogram
+                bins: 30
+                filename: "boards_comments_sentence_length_histogram.png"
+              - name: boxplot
+                filename: "boards_comments_sentence_length_boxplot.png"
