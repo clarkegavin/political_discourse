@@ -288,6 +288,10 @@ pipelines:
     params:
       extractor_params:
         model: OireachtasQuestion
+        filters:
+          QuestionDate:
+            from: "2025-01-01"
+            to: "2025-12-31"
 
   - name: eda
     type: pipelines.eda_pipeline.EDAPipeline
@@ -302,6 +306,10 @@ pipelines:
             viz_params:
               - name: histogram
                 bins: 30
+                xlabel: "Character length"
+                ylabel: "Number of documents"
+                xscale: "log"
+                density: true
                 filename: "oireachtas_character_length_histogram.png"
               - name: boxplot
                 filename: "oireachtas_character_length_boxplot.png"
@@ -313,6 +321,10 @@ pipelines:
             viz_params:
               - name: histogram
                 bins: 30
+                xlabel: "Character length"
+                ylabel: "Number of documents"
+                xscale: "log"
+                density: true
                 filename: "oireachtas_words_length_histogram.png"
               - name: boxplot
                 filename: "oireachtas_words_length_boxplot.png"
@@ -324,6 +336,10 @@ pipelines:
             viz_params:
               - name: histogram
                 bins: 30
+                xlabel: "Character length"
+                ylabel: "Number of documents"
+                xscale: "log"
+                density: true
                 filename: "oireachtas_sentence_length_histogram.png"
               - name: boxplot
                 filename: "oireachtas_sentence_length_boxplot.png"
@@ -379,6 +395,10 @@ pipelines:
             viz_params:
               - name: histogram
                 bins: 30
+                xlabel: "Character length"
+                ylabel: "Number of documents"
+                xscale: "log"
+                density: true
                 filename: "boards_comments_character_length_histogram.png"
               - name: boxplot
                 filename: "boards_comments_character_length_boxplot.png"
@@ -390,6 +410,10 @@ pipelines:
             viz_params:
               - name: histogram
                 bins: 30
+                xlabel: "Character length"
+                ylabel: "Number of documents"
+                xscale: "log"
+                density: true
                 filename: "boards_comments_words_length_histogram.png"
               - name: boxplot
                 filename: "boards_comments_words_length_boxplot.png"
@@ -401,6 +425,10 @@ pipelines:
             viz_params:
               - name: histogram
                 bins: 30
+                xlabel: "Character length"
+                ylabel: "Number of documents"
+                xscale: "log"
+                density: true
                 filename: "boards_comments_sentence_length_histogram.png"
               - name: boxplot
                 filename: "boards_comments_sentence_length_boxplot.png"

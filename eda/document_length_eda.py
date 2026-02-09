@@ -155,10 +155,17 @@ class DocumentLengthEDA(EDAComponent):
                 vis_name = vc.get('name') or vc.get('type') or 'histogram'
                 # make a shallow copy of params and remove name
                 vis_params = dict(vc)
-                vis_params.pop('name', None)
-                vis_params.pop('type', None)
+
+                # Remove keys that are not valid for the plot method
+                for k in ['name', 'type', 'filename', 'output_dir']:
+                    vis_params.pop(k, None)
+
+                # vis_params.pop('name', None)
+                # vis_params.pop('type', None)
+                # vis_params.pop('filename', None)
+                # vis_params.pop('output_dir', None)
                 # ensure output_dir so certain visualisers can save interactives
-                vis_params.setdefault('output_dir', save_path)
+                #vis_params.setdefault('output_dir', save_path)
 
                 viz = VisualisationFactory.get_visualisation(vis_name, **vis_params)
                 if viz is None:
@@ -174,7 +181,14 @@ class DocumentLengthEDA(EDAComponent):
 
                 try:
                     # call plot and save using visualiser
-                    fig_ax = viz.plot(data=df[output_column], title=vc.get('title') or output_column)
+                    #fig_ax = viz.plot(data=df[output_column], title=vc.get('title') or output_column)
+                    # call plot
+                    fig_ax = viz.plot(
+                        data=df[output_column],
+                        title=vc.get('title') or output_column,
+                        **vis_params
+                    )
+
                     # viz.plot may return (fig, ax) or other tuple-like; pick first element as fig when possible
                     if isinstance(fig_ax, tuple) and len(fig_ax) >= 1:
                         fig = fig_ax[0]

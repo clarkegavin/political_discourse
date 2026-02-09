@@ -1,6 +1,8 @@
 # visualisations/histogram.py
 from .base import Visualisation
 from logs.logger import get_logger
+import matplotlib.pyplot as plt
+import numpy as np
 
 class Histogram(Visualisation):
     """
@@ -8,19 +10,23 @@ class Histogram(Visualisation):
     Accepts either a pandas Series/array-like or raw numeric list.
     If provided an Axes `ax`, the plot will be drawn there; otherwise a new figure is created.
     """
-    def __init__(self, title: str=None, bins: int=10, xlabel=None, ylabel=None, figsize=(8, 4), **params):
+    def __init__(self, title: str=None, bins: int=10, xlabel=None, ylabel=None, figsize=(8, 4), **kwargs):
         super().__init__(title=title or "Histogram", figsize=figsize)
         self.logger = get_logger(self.__class__.__name__)
         self.bins = bins
         self.xlabel = xlabel
         self.ylabel = ylabel
-        self.params = params
+        self.kwargs = kwargs
         self.figsize = figsize
         self.logger.info(f"Initialized Histogram visualisation with title: {title}, bins: {bins}, figsize: {figsize}")
+        self.xscale = kwargs.get("xscale")
+        self.yscale = kwargs.get("yscale")
+
 
     def plot(self, data, ax=None, title=None, **kwargs):
-        import matplotlib.pyplot as plt
-        import numpy as np
+
+        # Merge init-time kwargs with plot-time kwargs
+        params = {**self.kwargs, **kwargs}  # plot-time kwargs override init-time
 
         self.logger.info(f"Creating Histogram visualisation for data (type={type(data)})")
 
@@ -36,19 +42,43 @@ class Histogram(Visualisation):
         except Exception:
             values = data
 
+
+
         # Allow callers to override bins per-call using kwargs['bins']
-        bins = kwargs.pop('bins', None)
+        bins = params.pop('bins', None)
         if bins is None:
             bins = self.bins
 
-        ax.hist(values, bins=bins, **kwargs)
-        ax.set_title(title or self.title)
-        if self.xlabel:
-            ax.set_xlabel(self.xlabel)
-        if self.ylabel:
-            ax.set_ylabel(self.ylabel or 'Count')
 
-        rotation = self.params.get('xticks_rotation')
+        # Axis scaling (e.g. log)
+        xscale = params.pop("xscale", self.xscale)
+        yscale = params.pop("yscale", self.yscale)
+        xlabel  = params.pop("xlabel", self.xlabel)
+        ylabel  = params.pop("ylabel", self.ylabel)
+        density = params.pop("density", False)
+        self.logger.info(f"Plotting histogram with bins={bins}, density={density}, xscale='{xscale}', yscale='{yscale}'")
+
+        if xscale:
+            self.logger.info(f"Setting x-axis scale to '{xscale}'")
+            ax.set_xscale(xscale)
+
+
+        if yscale:
+            self.logger.info(f"Setting y-axis scale to '{yscale}'")
+            ax.set_yscale(yscale)
+
+        self.logger.info(f"Received xscale='{xscale}' and yscale='{yscale}' for histogram")
+
+
+        ax.hist(values, bins=bins, density=density, **params)
+
+        ax.set_title(title or self.title)
+        if xlabel:
+            ax.set_xlabel(xlabel)
+        if ylabel:
+            ax.set_ylabel(ylabel or 'Count')
+
+        rotation = params.get('xticks_rotation')
         if rotation is not None:
             ax.tick_params(axis='x', labelrotation=rotation)
 
