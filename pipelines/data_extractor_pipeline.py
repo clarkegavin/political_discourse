@@ -19,7 +19,7 @@ class DataExtractorPipeline(Pipeline):
         self.extractor = extractor
         self.logger = get_logger(self.__class__.__name__)
         self.df: Optional[pd.DataFrame] = None
-        self.output_csv = output_csv or os.getenv("OUTPUT_CSV", "output.csv")
+        self.output_csv = output_csv or os.getenv("OUTPUT_CSV")
 
     @classmethod
     def from_config(cls, cfg: dict):
@@ -71,7 +71,7 @@ class DataExtractorPipeline(Pipeline):
 
     def load(self) -> None:
         """Save transformed data to CSV."""
-        if self.df is not None:
+        if self.df is not None and self.output_csv:
             output_dir = os.path.dirname(self.output_csv)
             if output_dir and not os.path.exists(output_dir):
                 os.makedirs(output_dir, exist_ok=True)

@@ -24,3 +24,45 @@ TODO: add supporting literature
 * TODO: add reasons for rejecting the alternative
 ### Supporting literature:
 TODO: add supporting literature
+
+## Decision: Why not use the Twitter Parliamentarian Database for Social Media Data?
+* date: 21/02/2026*
+### Reason:
+* The dataset is older than what we are interested in analyzing, from 2021 and may not reflect the current political landscape or public sentiment.
+### Alternative considered:
+* boards.ie
+### Alternative Rejected because:
+* TODO: add reasons for rejecting the alternative
+### Supporting literature:
+* https://figshare.com/articles/dataset/The_Twitter_Parliamentarian_Database/10120685?file=18238637
+
+## Decision: Why discuss Agenda-Setting
+* date: 21/02/2026*
+### Reason:
+* Agenda-setting is a key concept in political communication that explains how media and public discourse can influence the topics that politicians choose to address in parliamentary questions. It is relevant to our analysis as it provides
+* a theoretical framework for understanding the relationship between public discourse and parliamentary questions, and can help us interpret our findings in the context of political communication theories.
+* Additionally, discussing agenda-setting can help us identify potential mechanisms through which public discourse may influence parliamentary questions, such as media coverage or public opinion.
+### Alternative considered:
+* Not discussing agenda-setting
+### Alternative Rejected because:
+* Not discussing agenda-setting would limit our ability to contextualize our findings within the broader field of political communication and would miss an opportunity to explore the potential influence of public discourse on parliamentary questions.
+### Supporting literature:
+* McCombs, M. E., & Shaw, D. L. (1972). The agenda-setting function of mass media. Public Opinion Quarterly, 36(2), 176-187.
+
+## Decision: Why not include a discussion on the first (salience of issues) and second level (framing of attriubutes for those issues) of agenda setting?
+* date: 21/02/2026*
+### Reason:
+* The focus of our analysis is on the salience of issues in parliamentary questions, which aligns 
+
+## Decision: Why discuss Institutional Responsiveness?
+* date: 24/02/2026*
+### Reason:
+* Institutional responsiveness is a key concept in political science that refers to the extent to which political institutions
+* respond to the needs and concerns of citizens. It is relevant to our analysis as it provides a theoretical framework for understanding how parliamentary questions may reflect the responsiveness of political institutions to public concerns.
+* Additionally, it will help us interpret our findings in the context of political science theories and can provide insights into the relationship between public discourse and institutional responsiveness, measuring for example  how the parliament and public are aligned, i.e. is there lead/lag, does one drive the other
+### Alternative considered:
+* Not discussing institutional responsiveness
+* ### Alternative Rejected because:
+* Not discussing institutional responsiveness would limit our ability to contextualize our findings within the broader field of political science and would miss an opportunity to explore the potential implications of our findings for understanding the responsiveness of political institutions to public concerns.
+### Supporting literature:
+* Stimson, J. A., MacKuen, M. B., & Erikson, R. S. (1995). Dynamic representation. American Political Science Review, 89(3), 543-565.
