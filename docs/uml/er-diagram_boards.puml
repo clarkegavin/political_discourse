@@ -1,7 +1,7 @@
 @startuml
 hide circle
 skinparam classAttributeIconSize 0
-
+left to right direction
 
 ' =========================
 ' BOARDS.IE DOMAIN

@@ -284,6 +284,7 @@ pipelines:
 
   - name: oireachtas_question_document_eda
     type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+    enabled: false
     extractor_type: table
     params:
       extractor_params:
@@ -295,6 +296,7 @@ pipelines:
 
   - name: eda
     type: pipelines.eda_pipeline.EDAPipeline
+    enabled: false
     params:
       save_path: "output/eda"
       steps:
@@ -374,6 +376,7 @@ pipelines:
 
   - name: boards_discussions_extract
     type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+    enabled: false
     extractor_type: table
     params:
       extractor_params:
@@ -381,6 +384,7 @@ pipelines:
 
   - name: boards_comments_eda
     type: pipelines.eda_pipeline.EDAPipeline
+    enabled: false
     params:
       save_path: "output/eda"
       steps:

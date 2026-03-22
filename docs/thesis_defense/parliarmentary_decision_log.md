@@ -53,3 +53,16 @@ TODO: add supporting literature
 * date: 21/02/2026*
 ### Reason:
 * The focus of our analysis is on the salience of issues in parliamentary questions, which aligns 
+
+## Decision: Why discuss Institutional Responsiveness?
+* date: 24/02/2026*
+### Reason:
+* Institutional responsiveness is a key concept in political science that refers to the extent to which political institutions
+* respond to the needs and concerns of citizens. It is relevant to our analysis as it provides a theoretical framework for understanding how parliamentary questions may reflect the responsiveness of political institutions to public concerns.
+* Additionally, it will help us interpret our findings in the context of political science theories and can provide insights into the relationship between public discourse and institutional responsiveness, measuring for example  how the parliament and public are aligned, i.e. is there lead/lag, does one drive the other
+### Alternative considered:
+* Not discussing institutional responsiveness
+* ### Alternative Rejected because:
+* Not discussing institutional responsiveness would limit our ability to contextualize our findings within the broader field of political science and would miss an opportunity to explore the potential implications of our findings for understanding the responsiveness of political institutions to public concerns.
+### Supporting literature:
+* Stimson, J. A., MacKuen, M. B., & Erikson, R. S. (1995). Dynamic representation. American Political Science Review, 89(3), 543-565.
