@@ -16,7 +16,7 @@ class OireachtasAnswerXMLParser:
         self.logger = get_logger(self.__class__.__name__)
         self.session = requests.Session()
         self.session.headers.update({
-            "User-Agent": "Mozilla/5.0",
+            "User-Agent": "OireachtasResearchBot/1.0 (MSc Thesis; contact: B00177505@myTUDublin.ie)",
             "Connection": "close",  # important for this API
         })
         retries = Retry(
@@ -37,13 +37,6 @@ class OireachtasAnswerXMLParser:
 
 
     def fetch_xml(self, uri: str) -> Optional[str]:
-        #self.logger.info(f"Fetching XML from {uri}")
-
-        # resp = requests.get(
-        #     uri,
-        #     headers={"User-Agent": "Mozilla/5.0"},
-        #     timeout=30,
-        # )
 
         try:
             resp = self.session.get(uri, timeout=(5, 60))
@@ -57,7 +50,6 @@ class OireachtasAnswerXMLParser:
         return resp.text
 
     def parse(self, xml_text: str) -> Dict:
-        #self.logger.info("Parsing answer XML")
         root = etree.fromstring(xml_text.encode("utf-8"))
 
         speech = root.find(".//akn:speech", namespaces=AKN_NS)
