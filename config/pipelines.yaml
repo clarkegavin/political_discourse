@@ -284,7 +284,7 @@ pipelines:
 
   - name: oireachtas_question_document_eda
     type: pipelines.data_extractor_pipeline.DataExtractorPipeline
-    enabled: false
+    enabled: true
     extractor_type: table
     params:
       extractor_params:
@@ -293,6 +293,28 @@ pipelines:
           QuestionDate:
             from: "2025-01-01"
             to: "2025-12-31"
+
+
+  - name: eda
+    type: pipelines.eda_pipeline.EDAPipeline
+    enabled: true
+    params:
+      save_path: "output/eda"
+      steps:
+        - name: consolidation
+          params:
+            group_by: DebateSectionURI
+            metric: records
+            viz_params:
+              - name: bar
+                figsize: [10,6]
+                xticks_rotation: 45
+                show_percent: true
+                label_max_chars: 0
+                color: "tab:blue"
+                ylabel: "Responses"
+                filename: "oireachtas_questions_consolidated_records.png"
+                title: "Consolidated vs Non-consolidated Responses"
 
   - name: eda
     type: pipelines.eda_pipeline.EDAPipeline

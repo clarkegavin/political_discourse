@@ -10,6 +10,7 @@ from .boxplot_eda import BoxPlotEDA
 from .pair_scatter_eda import PairScatterEDA
 from .scatter_eda import ScatterPlotEDA
 from .document_length_eda import DocumentLengthEDA
+from .consolidation_eda import ConsolidationEDA
 
 EDAFactory.register_eda("class_balance", ClassBalanceEDA)
 EDAFactory.register_eda("wordcloud_global", lambda: WordCloudEDA(per_class=False))
@@ -23,6 +24,7 @@ EDAFactory.register_eda("boxplots", BoxPlotEDA)
 EDAFactory.register_eda("pair_scatter", PairScatterEDA)
 EDAFactory.register_eda("scatter_plot", ScatterPlotEDA)
 EDAFactory.register_eda("document_length", DocumentLengthEDA)
+EDAFactory.register_eda("consolidation", ConsolidationEDA)
 
 __all__ = [
     "EDAFactory",
@@ -36,4 +38,5 @@ __all__ = [
     "PairScatterEDA",
     "ScatterPlotEDA",
     "DocumentLengthEDA",
+    "ConsolidationEDA",
 ]

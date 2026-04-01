@@ -62,7 +62,8 @@ class BarChart(Visualisation):
 
         # If title matches an excluded column, skip plotting and place a placeholder in the axis
         # Determine effective plot title/name for exclusion checks
-        plot_title = title or getattr(data, 'name', None) or self.title
+        #plot_title = title or getattr(data, 'name', None) or self.title
+        plot_title = title or self.title or getattr(data, 'name', None)
 
         # Build a robust exclude set with multiple normalisations (raw, lower, stripped, alphanumeric-only)
         def _norms(x):
@@ -196,7 +197,31 @@ class BarChart(Visualisation):
                         values_arr = list(values)
 
                 ax.bar(truncated_labels, values_arr, **kwargs)
+                bars = ax.bar(truncated_labels, values_arr, color=self.params.get("color", None), **kwargs)
                 # ensure tick positions match labels and set rotated labels if requested
+
+                show_values = self.params.get("show_values", False)
+                show_percent = self.params.get("show_percent", False)
+
+                if show_values or show_percent:
+                    total = sum(values_arr) if show_percent else None
+
+                    for bar, value in zip(bars, values_arr):
+                        height = bar.get_height()
+
+                        if show_percent and total:
+                            label = f"{(value / total) * 100:.1f}%"
+                        else:
+                            label = f"{int(value)}"
+
+                        ax.text(
+                            bar.get_x() + bar.get_width() / 2,
+                            height,
+                            label,
+                            ha='center',
+                            va='bottom'
+                        )
+
                 try:
                     ax.set_xticks(range(len(truncated_labels)))
                     rotation = self.params.get("xticks_rotation")
@@ -236,6 +261,13 @@ class BarChart(Visualisation):
                 ax.tick_params(axis='x', labelrotation=rotation)
 
             self.logger.info("Bar Chart visualisation created")
+            try:
+                self.logger.info("Adjusting layout for Bar Chart visualisation")
+                created_fig.tight_layout()
+                created_fig.subplots_adjust(bottom=0.2)
+            except Exception:
+                pass
+
             return created_fig, ax
 
         except Exception as e:
