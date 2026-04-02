@@ -12,6 +12,9 @@ from .random_forest_classifier_model import RandomForestClassifierModel
 from .kmeans_clusterer import KMeansClusterer
 from .kmeans_mini_clusterer import KMeansMiniClusterer
 from .agglomerative_clusterer import AgglomerativeClusterer
+from .bertopic_model import BERTopicModel
+from .lda_model import LDAModel
+from .nmf_model import NMFModel
 
 # Register models
 ModelFactory.register_model("naive_bayes", NaiveBayesClassificationModel)
@@ -26,6 +29,9 @@ ModelFactory.register_model("linear_regression", LinearRegressionModel)
 ModelFactory.register_model("logistic_regression", LogisticRegressionModel)
 ModelFactory.register_model("random_forest", RandomForestClassifierModel)
 ModelFactory.register_model("kmeans_mini", KMeansMiniClusterer)
+ModelFactory.register_model("bertopic", BERTopicModel)
+ModelFactory.register_model("lda", LDAModel)
+ModelFactory.register_model("nmf", NMFModel)
 
 
 

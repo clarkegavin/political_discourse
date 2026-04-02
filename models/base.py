@@ -65,6 +65,12 @@ class Model(ABC):
 
         self.logger.info(f"Model saved with name: {self.name} in MLflow")
 
+    @property
+    def estimator(self):
+        """
+        Return the underlying model/estimator instance.
+        """
+        return self.model
 
     # @abstractmethod
     # def to_dict(self):

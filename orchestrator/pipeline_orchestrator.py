@@ -5,6 +5,7 @@ import pandas as pd
 
 from pipelines import TargetFeaturePipeline, DataSplitterPipeline, FeatureEncoderPipeline, FilterPipeline, \
     ExperimentPipeline, DataExtractorPipeline, OireachtasDataPipeline
+from pipelines.topic_modeling_pipeline import TopicModelingPipeline
 
 
 # from pipelines.experiment_pipeline import ExperimentPipeline
@@ -112,6 +113,10 @@ class PipelineOrchestrator:
                     "target_encoder": target_encoder,
                     #"global_config": self.global_config
                 })
+            elif isinstance(pipeline, TopicModelingPipeline):
+                # TopicModellingPipeline may need to operate on the full dataset before splitting
+                self.logger.info("Running TopicModellingPipeline on full dataset")
+                current_data = self.run_pipeline(pipeline, data=current_data)
             else:
                 # Other pipelines that operate on the full dataset
                 self.logger.info(f"Running general pipeline: {pipeline.__class__.__name__}")
@@ -121,6 +126,7 @@ class PipelineOrchestrator:
                     if pipeline.__class__ != DataExtractorPipeline and pipeline.__class__ != OireachtasDataPipeline:
                         self.logger.error(f"No data available for pipeline {pipeline.__class__.__name__}")
                 else:
+                    self.logger.info(f" Data Type: {type(current_data)}")
                     self.logger.info(
                         f"Current data shape before {pipeline.__class__.__name__}: {current_data.shape}"
                     )
