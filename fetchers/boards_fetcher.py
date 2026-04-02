@@ -4,6 +4,8 @@ from typing import List, Dict, Optional
 import requests
 from logs.logger import get_logger
 from .base import Fetcher
+import random
+
 REQUEST_DELAY = 1.0  # seconds
 BASE_URL = "https://www.boards.ie/api/v2/discussions"
 
@@ -21,6 +23,8 @@ class BoardsFetcher(Fetcher):
         limit: int = 50,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
+        max_retries: int = 5,
+        backoff_base: float = 2.0,
     ):
         """Generator yielding batches of discussions from the API."""
         if start_date and end_date:
@@ -48,19 +52,49 @@ class BoardsFetcher(Fetcher):
                 if date:
                     params["dateLastComment"] = date
 
-                resp = requests.get(
-                    BASE_URL,
-                    params=params,
-                    timeout=self.context.timeout,
-                    headers=self.context.headers,
-                )
+                attempt = 0
+                while True:
+                    try:
+                        resp = requests.get(
+                            BASE_URL,
+                            params=params,
+                            timeout=self.context.timeout,
+                            headers=self.context.headers,
+                        )
+                    except requests.RequestException as exc:
+                        attempt += 1
+                        if attempt > max_retries:
+                            self.logger.error("Request failed after %d attempts: %s", attempt, exc)
+                            raise
+                        sleep_sec = (backoff_base ** attempt) + random.uniform(0, 1)
+                        self.logger.warning(
+                            "Request error: %s. Retrying in %.1f s (attempt %d/%d)",
+                            exc,
+                            sleep_sec,
+                            attempt,
+                            max_retries,
+                        )
+                        time.sleep(sleep_sec)
+                        continue
 
-                if resp.status_code == 429:
-                    self.logger.warning("Rate limited – backing off")
-                    time.sleep(10)
-                    continue
+                    if resp.status_code == 429:
+                        attempt += 1
+                        if attempt > max_retries:
+                            self.logger.error("Rate limited after %d attempts", attempt)
+                            resp.raise_for_status()
+                        sleep_sec = (backoff_base ** attempt) + random.uniform(0, 1)
+                        self.logger.warning(
+                            "Rate limited – backing off %.1f s (attempt %d/%d)",
+                            sleep_sec,
+                            attempt,
+                            max_retries,
+                        )
+                        time.sleep(sleep_sec)
+                        continue
 
-                resp.raise_for_status()
+                    resp.raise_for_status()
+                    break
+
                 batch = resp.json()
                 time.sleep(REQUEST_DELAY)
 
