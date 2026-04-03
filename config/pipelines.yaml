@@ -504,7 +504,7 @@ pipelines:
               applies_to: text
               params:
                 field: "QuestionText"
-          viz_params:
+          visualisations:
             - name: topic_distribution
               output_dir: output/topic_modelling/bertopic_default
               filename: "bertopic_default_topic_distribution.png"

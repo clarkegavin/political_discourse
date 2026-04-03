@@ -14,6 +14,8 @@ class PreprocessorFactory:
 
     @classmethod
     def register(cls, name: str, preprocessor_cls: Type[Preprocessor]) -> None:
+        if name in cls._registry:
+            return
         cls._registry[name] = preprocessor_cls
 
     @classmethod

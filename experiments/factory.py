@@ -13,6 +13,8 @@ class ExperimentFactory:
         """
         Register an experiment class under a key (e.g., "classification").
         """
+        if key in cls._registry:
+            return
         cls._registry[key] = experiment_cls
         cls.logger.info(f"Registered experiment: {key}")
 
@@ -26,5 +28,5 @@ class ExperimentFactory:
         if not experiment_cls:
             cls.logger.warning(f"Experiment '{key}' not found in registry")
             return None
-        cls.logger.info(f"Instantiating experiment '{key}' with kwargs: {kwargs}")
+        #cls.logger.info(f"Instantiating experiment '{key}' with kwargs: {kwargs}")
         return experiment_cls(**kwargs)

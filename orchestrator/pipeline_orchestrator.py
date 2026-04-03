@@ -4,8 +4,8 @@ from logs.logger import get_logger
 import pandas as pd
 
 from pipelines import TargetFeaturePipeline, DataSplitterPipeline, FeatureEncoderPipeline, FilterPipeline, \
-    ExperimentPipeline, DataExtractorPipeline, OireachtasDataPipeline
-from pipelines.topic_modeling_pipeline import TopicModelingPipeline
+    ExperimentPipeline, DataExtractorPipeline, OireachtasDataPipeline, TopicModelingPipeline
+
 
 
 # from pipelines.experiment_pipeline import ExperimentPipeline

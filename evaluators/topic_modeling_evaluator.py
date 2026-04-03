@@ -8,8 +8,6 @@ from .base import Evaluator
 from gensim.corpora import Dictionary
 
 
-logger = get_logger("TopicModelingEvaluator")
-
 class TopicModelingEvaluator(Evaluator):
     """Evaluator for topic models. Computes coherence, diversity and topic sizes."""
 
@@ -17,7 +15,8 @@ class TopicModelingEvaluator(Evaluator):
         self.name = name
         self.coherence_type = coherence_type
         self.top_n = top_n
-        self.logger = logger
+        self.logger = get_logger(self.__class__.__name__)
+        self.logger.info(f"Initialized TopicModelingEvaluator(coherence_type={coherence_type}, top_n={top_n})")
 
     # def _extract_top_terms(self, model, top_n):
     #     # model may be BERTopic (has get_topic) or sklearn (has components_)
@@ -78,15 +77,18 @@ class TopicModelingEvaluator(Evaluator):
         Returns:
           dict of metrics
         """
+        self.logger.info("Evaluating topic model assignments")
         estimator = model.estimator
         docs = X["__topic_input_text__"].fillna("").tolist()
         metrics = {}
 
+        self.logger.info(f"Number of documents: {len(docs)}, Number of topic assignments: {len(topics)}")
         # Topic sizes
         unique, counts = np.unique(topics, return_counts=True)
         sizes = dict(zip(unique.tolist(), counts.tolist()))
         metrics["topic_sizes"] = sizes
 
+        self.logger.info(f"Topic sizes: {sizes}")
         # Topic diversity: proportion of unique top terms across topics
         top_terms = self._extract_top_terms(estimator, self.top_n)
         flat = [t for terms in top_terms for t in terms]
@@ -95,9 +97,11 @@ class TopicModelingEvaluator(Evaluator):
         else:
             metrics["topic_diversity"] = 0.0
 
+        self.logger.info(f"Extracted top terms for diversity calculation: {flat}")
         # Topic coherence using gensim (c_v recommended) when we can extract topic terms
         if top_terms:
             try:
+                self.logger.info("Computing topic coherence using gensim")
                 # Build gensim objects
                 vec = CountVectorizer()
                 doc_term = vec.fit_transform(docs)
@@ -113,9 +117,11 @@ class TopicModelingEvaluator(Evaluator):
                 if topics_for_gensim:
                     tokenized = [d.split() for d in docs]
                     dictionary = Dictionary(tokenized)
-
-                    cm = CoherenceModel(topics=topics_for_gensim, texts=tokenized, dictionary=dictionary, coherence=self.coherence_type)
+                    self.logger.info(f"Computing coherence with {len(topics_for_gensim)} topics and {len(tokenized)} documents")
+                    cm = CoherenceModel(topics=topics_for_gensim, texts=tokenized, dictionary=dictionary, coherence=self.coherence_type, processes=1)
+                    self.logger.info("Coherence model computed successfully, extracting coherence score")
                     coherence = cm.get_coherence()
+                    self.logger.info(f"Computed coherence: {coherence}")
                     metrics["coherence"] = float(coherence)
             except Exception as e:
                 self.logger.warning(f"Could not compute coherence: {e}")

@@ -13,6 +13,7 @@ from .feature_scaler_pipeline import FeatureScalerPipeline
 from .oireachtas_pipeline import OireachtasDataPipeline
 from .boards_discussion_pipeline import BoardsDataPipeline
 from .boards_comments_pipeline import BoardsCommentsPipeline
+from .topic_modeling_pipeline import TopicModelingPipeline
 
 
 __all__ = [
@@ -30,4 +31,5 @@ __all__ = [
     "OireachtasDataPipeline",
     "BoardsDataPipeline",
     "BoardsCommentsPipeline",
+    "TopicModelingPipeline",
 ]

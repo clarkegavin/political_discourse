@@ -8,6 +8,8 @@ class FilterFactory:
 
     @classmethod
     def register_filter(cls, name: str, filter_cls):
+        if name in cls._filters:
+            return
         cls._filters[name] = filter_cls
 
     @classmethod

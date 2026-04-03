@@ -21,6 +21,8 @@ class EncoderFactory:
     @classmethod
     def register(cls, name: str, encoder_cls: Type[Encoder]) -> None:
         """Register a new encoder class under a friendly name."""
+        if name in cls._registry:
+            return
         cls._registry[name] = encoder_cls
 
     @classmethod

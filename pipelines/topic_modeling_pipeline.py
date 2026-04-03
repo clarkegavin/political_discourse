@@ -1,4 +1,136 @@
-# pipelines/topic_modeling_pipeline.py
+ # pipelines/topic_modeling_pipeline.py
+#
+# from typing import Dict, Any, Optional, List
+# from .base import Pipeline
+# from logs.logger import get_logger
+# from experiments.factory import ExperimentFactory
+# from preprocessing.factory import PreprocessorFactory
+# from preprocessing.sequential import SequentialPreprocessor
+#
+# class TopicModelingPipeline(Pipeline):
+#     def __init__(
+#         self,
+#         model_name: str,
+#         evaluator_name: str,
+#         experiments: Optional[List[Dict[str, Any]]] = None,
+#         mlflow_experiment: Optional[str] = None,
+#         name: Optional[str] = None,
+#         default_text_field: Optional[Any] = "text",
+#         **kwargs,
+#     ):
+#         super().__init__(name=name or "TopicModelingPipeline")
+#         self.model_name = model_name
+#         self.evaluator_name = evaluator_name
+#         self.experiments = experiments or [{}]
+#         self.mlflow_experiment = mlflow_experiment
+#         self.logger = get_logger(self.__class__.__name__)
+#         self.default_text_field = default_text_field
+#
+#     @classmethod
+#     def from_config(cls, entry: Dict[str, Any], global_config=None) -> "TopicModelingPipeline":
+#         params = entry.get("params", {})
+#         return cls(**params, name=entry.get("name"))
+
+    # def execute(self, data=None):
+    #
+    #     self.logger.info("Starting topic modelling pipeline")
+    #
+    #     exp_cfg = self.experiments[0]
+    #     run_name = exp_cfg.get("run_name", f"{self.model_name}_default")
+    #     self.logger.info(f"Starting topic experiment: {run_name}")
+    #
+    #     X_exp = data.copy()
+    #
+    #     # ... preprocessing (keep your existing preprocessing code) ...
+    #     tf = self.default_text_field
+    #     preprocessing_steps = exp_cfg.get("preprocessing", [])
+    #
+    #     if isinstance(tf, (list, tuple)):
+    #         combined = X_exp[tf[0]].fillna("").str.cat(
+    #             [X_exp[col].fillna("") for col in tf[1:]], sep=" "
+    #         )
+    #     else:
+    #         combined = X_exp[tf].fillna("")
+    #
+    #     if preprocessing_steps:
+    #         steps = [PreprocessorFactory.create(pre["name"], **pre.get("params", {}))
+    #                  for pre in preprocessing_steps]
+    #         preprocessor = SequentialPreprocessor(steps)
+    #         combined = preprocessor.fit_transform(combined)
+    #
+    #     X_exp["__topic_input_text__"] = combined
+    #
+    #
+    #     exp_params = {
+    #         "name": run_name,
+    #         "model_name": self.model_name,
+    #         "evaluator_name": self.evaluator_name,
+    #         "mlflow_experiment": self.mlflow_experiment,
+    #         "X": X_exp,
+    #         "save_path": exp_cfg.get("save_path", "output/topic_modelling/bertopic_default"),
+    #         **exp_cfg.get("params", {})
+    #     }
+    #
+    #     self.logger.info(f"getting experiment with params: {exp_params.keys()}")
+    #     experiment = ExperimentFactory.get_experiment("topic_modeling", **exp_params)
+    #     self.logger.info(f"Experiment instance created: {experiment}")
+    #
+    #
+    #     result_df = experiment.run()
+    #
+    #     self.logger.info("Topic modelling pipeline complete.")
+    #     return result_df
+
+    # def execute(self, data=None):
+    #     self.logger.info("Starting topic modelling pipeline")
+    #
+    #     if len(self.experiments) != 1:
+    #         self.logger.warning(f"Expected 1 experiment config, got {len(self.experiments)}")
+    #
+    #     exp_cfg = self.experiments[0]
+    #     run_name = exp_cfg.get("run_name", f"{self.model_name}_default")
+    #
+    #     X_exp = data.copy()
+    #
+    #     # Preprocessing
+    #     tf = self.default_text_field
+    #     preprocessing_steps = exp_cfg.get("preprocessing", [])
+    #
+    #     if isinstance(tf, (list, tuple)):
+    #         combined = X_exp[tf[0]].fillna("").str.cat(
+    #             [X_exp[col].fillna("") for col in tf[1:]], sep=" "
+    #         )
+    #     else:
+    #         combined = X_exp[tf].fillna("")
+    #
+    #     if preprocessing_steps:
+    #         steps = [PreprocessorFactory.create(pre["name"], **pre.get("params", {}))
+    #                  for pre in preprocessing_steps]
+    #         preprocessor = SequentialPreprocessor(steps)
+    #         combined = preprocessor.fit_transform(combined)
+    #
+    #     X_exp["__topic_input_text__"] = combined
+    #
+    #     # === ONE creation, ONE run ===
+    #     exp_params = {
+    #         "name": run_name,
+    #         "model_name": self.model_name,
+    #         "evaluator_name": self.evaluator_name,
+    #         "mlflow_experiment": self.mlflow_experiment,
+    #         "X": X_exp,
+    #         "save_path": exp_cfg.get("save_path", "output/topic_modelling/bertopic_default"),
+    #         **exp_cfg.get("params", {})
+    #     }
+    #
+    #     self.logger.info("Instantiating topic modelling experiment...")
+    #     experiment = ExperimentFactory.get_experiment("topic_modeling", **exp_params)
+    #
+    #     self.logger.info(f"Running experiment {run_name}")
+    #     result_df = experiment.run()
+    #
+    #     self.logger.info("Topic modelling pipeline complete.")
+    #     return result_df
+
 from typing import Dict, Any, Optional, List
 from .base import Pipeline
 from logs.logger import get_logger
@@ -112,9 +244,68 @@ class TopicModelingPipeline(Pipeline):
                 self.logger.warning("Experiment factory returned None for topic_modeling")
 
         self.logger.info("Topic modelling pipeline complete.")
+
         if data_with_topics is not None:
             self.logger.info("Returning data with attached topic assignments")
+            print("=== DEBUG: Finished one execute() call ===\n")
             return data_with_topics
         else:
             self.logger.warning("No data to return from topic modelling pipeline")
+            print("=== DEBUG: Finished one execute() call ===\n")
             return X
+
+    # def execute(self, data=None):
+    #
+    #     X = data
+    #     self.logger.info("Starting topic modelling pipeline")
+    #
+    #     # We expect only ONE experiment config
+    #     if len(self.experiments) != 1:
+    #         self.logger.warning(f"Expected 1 experiment, got {len(self.experiments)}")
+    #
+    #     exp_cfg = self.experiments[0]   # take the first (and only) one
+    #
+    #     run_name = exp_cfg.get("run_name", f"{self.model_name}_default")
+    #     self.logger.info(f"Starting topic experiment: {run_name}")
+    #
+    #     X_exp = X.copy()
+    #
+    #     # === Preprocessing (your existing logic, simplified) ===
+    #     tf = self.default_text_field
+    #     preprocessing_steps = exp_cfg.get("preprocessing", [])
+    #
+    #     if isinstance(tf, (list, tuple)):
+    #         combined = X_exp[tf[0]].fillna("").str.cat(
+    #             [X_exp[col].fillna("") for col in tf[1:]], sep=" "
+    #         )
+    #     else:
+    #         combined = X_exp[tf].fillna("")
+    #
+    #     if preprocessing_steps:
+    #         steps = [PreprocessorFactory.create(pre["name"], **pre.get("params", {}))
+    #                 for pre in preprocessing_steps]
+    #         preprocessor = SequentialPreprocessor(steps)
+    #         combined = preprocessor.fit_transform(combined)
+    #
+    #     X_exp["__topic_input_text__"] = combined
+    #
+    #     # === Create and run EXACTLY ONCE ===
+    #     exp_params = {
+    #         "name": run_name,
+    #         "model_name": self.model_name,
+    #         "evaluator_name": self.evaluator_name,
+    #         "mlflow_experiment": self.mlflow_experiment,
+    #         "X": X_exp,
+    #         "save_path": exp_cfg.get("save_path", "output/topic_modelling/bertopic_default"),
+    #         **exp_cfg.get("params", {})
+    #     }
+    #
+    #     self.logger.info("Instantiating topic modelling experiment...")
+    #     experiment = ExperimentFactory.get_experiment("topic_modeling", **exp_params)
+    #
+    #     self.logger.info(f"Running experiment {run_name}")
+    #     result_df = experiment.run()          # ← only one call
+    #
+    #     self.logger.info("Topic modelling pipeline complete.")
+    #     print("=== DEBUG: Finished execute() ===\n")
+    #     return result_df
