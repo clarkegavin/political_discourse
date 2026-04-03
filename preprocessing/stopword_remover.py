@@ -46,16 +46,17 @@ class StopwordRemover(Preprocessor):
         "if", "they", "you", "he", "she", "we", "his", "her", "its", "my", "your", "their",
         "what", "which", "when", "where", "who", "how", "there", "so", "no", "yes", "do",
         "does", "did", "have", "has", "had", "will", "would", "can", "could", "should",
-        "i", "me", "us", "them", "our", "yours", "theirs"
+        "i", "me", "us", "them", "our", "yours", "theirs", "asked"
     }
 
-    ROBLOX_STOPWORDS: Set[str] = {
-        "game", "play", "playing", "plays", "fun", "awesome", "cool", "best", "epic",
-        "new", "update", "updates", "updated", "soon", "like", "likes", "favorite",
-        "favorites", "fav", "follow", "join", "visit", "check", "share", "welcome",
-        "enjoy", "thanks", "thank", "please", "plz", "pls", "blox", "roblox", "robux",
-        "join", "fun", "welcome", "good luck", "favorite", "best", "group", "unlock",
-        "will", "free"
+    PROCEDURAL_STOPWORDS: Set[str] = {
+        "minister", "department", "government", "office", "agency", "bureau", "commission",
+        "council", "committee", "secretary", "director", "manager", "head", "leader", "chief", "executive", "administrator", "official",
+        "deputy", "assistant", "associate", "vice", "president", "prime", "minister", "king", "queen",
+        "emperor", "empress", "duke", "duchess", "prince", "princess", "lord", "lady", "sir", "madam",
+        "mr", "mrs", "ms", "miss", "dr", "professor", "prof", "engineer", "scientist", "researcher", "analyst",
+        "consultant", "advisor", "counselor", "attorney", "lawyer", "judge", "justice", "clerk", "secretary", "treasurer",
+        "auditor", "accountant", "officer", "agent", "representative", "case", "possible", "respond", "directly", "matter", "service"
     }
 
     def __init__(self, field: str, language: str = "english",
@@ -78,7 +79,7 @@ class StopwordRemover(Preprocessor):
             except Exception:
                 self.logger.warning("Provided stopwords not iterable; falling back to defaults")
                 #self.stopwords = set(self.DEFAULT_STOPWORDS)
-                self.stopwords = set(self.DEFAULT_STOPWORDS).union(self.ROBLOX_STOPWORDS)
+                self.stopwords = set(self.DEFAULT_STOPWORDS).union(self.PROCEDURAL_STOPWORDS)
         else:
             # try to load from nltk if available
             if _nltk_stopwords is not None:
@@ -86,14 +87,14 @@ class StopwordRemover(Preprocessor):
                     #self.stopwords = set(_nltk_stopwords.words(self.language))
                     #base_sw = set(_nltk_stopwords.words(self.language))
                     base_sw = set(_nltk_stopwords.words(self.language)) if _nltk_stopwords else set()
-                    self.stopwords = base_sw.union(self.ROBLOX_STOPWORDS)
+                    self.stopwords = base_sw.union(self.PROCEDURAL_STOPWORDS)
                     self.logger.info(f"Loaded {len(self.stopwords)} stopwords for language '{self.language}' from NLTK")
                 except Exception:
                     self.logger.warning(f"NLTK stopwords for '{self.language}' not available; using default set")
-                    self.stopwords = set(self.DEFAULT_STOPWORDS).union(self.ROBLOX_STOPWORDS)
+                    self.stopwords = set(self.DEFAULT_STOPWORDS).union(self.PROCEDURAL_STOPWORDS)
             else:
                 self.logger.warning("NLTK stopwords not available; using small built-in default set")
-                self.stopwords = set(self.DEFAULT_STOPWORDS).union(self.ROBLOX_STOPWORDS)
+                self.stopwords = set(self.DEFAULT_STOPWORDS).union(self.PROCEDURAL_STOPWORDS)
 
         # choose tokenizer
         self._tokenize = _word_tokenize if _word_tokenize is not None else None
