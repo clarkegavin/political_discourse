@@ -499,18 +499,18 @@ pipelines:
 # Topic modelling experiments
 #-------------------------------------------------------------------
 
-  - name: filter_features
-    type: pipelines.filter_pipeline.FilterPipeline
-    filter_features:
-      - name: filter_rows
-        params:
-          field: "QuestionNumber"
-          values: [859, 860, 861]
-          operator: "in"
-          include: true
-          case_sensitive: false
-#        - name: lowercase
-#          applies_to: text
+#  - name: filter_features
+#    type: pipelines.filter_pipeline.FilterPipeline
+#    filter_features:
+#      - name: filter_rows
+#        params:
+#          field: "QuestionNumber"
+#          values: [859, 860, 861]
+#          operator: "in"
+#          include: true
+#          case_sensitive: false
+##        - name: lowercase
+##          applies_to: text
 
 
   # Sample Topic Modelling pipeline using BERTopic
