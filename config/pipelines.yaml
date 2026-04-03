@@ -461,6 +461,40 @@ pipelines:
 
 
 #-------------------------------------------------------------------
+# Preprocessing
+#-------------------------------------------------------------------
+
+
+  # anything that changes the shape of teh data will need to be in this cleanup block
+  - name: data_cleanup
+    type: pipelines.data_cleanup_pipeline.DataCleanupPipeline
+    params:
+      # cleanup_steps is a list of preprocessors (built via PreprocessorFactory)
+      cleanup_steps:
+        - name: lowercase
+          params:
+            fields: ["QuestionText", "AnswerText"]
+        - name: remove_punctuation_noise
+          params:
+            field: "QuestionText"
+            pattern: '([!?.,])\1+'
+        - name: remove_punctuation_noise
+          params:
+            field: "AnswerText"
+            pattern: '([!?.,])\1+'
+        - name: stopword_remover
+          params:
+            language: "english"
+            lower: true
+            field: "QuestionText"
+        - name: stopword_remover
+          params:
+            language: "english"
+            lower: true
+            field: "AnswerText"
+
+
+  #-------------------------------------------------------------------
 # Topic modelling experiments
 #-------------------------------------------------------------------
 
