@@ -33,7 +33,7 @@ class TopicWordClouds:
 
         # Get top N topics by frequency (excluding -1
         topic_counts = (
-            df[df["_topic_id"] != -1]["_topic_id"]
+            df[df[self.topic_id] != -1][self.topic_id]
             .value_counts()
             .head(self.top_n_topics)
         )
