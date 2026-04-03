@@ -12,6 +12,11 @@ from typing import Optional, Dict, Any
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
 import json
+import inspect
+
+TOPIC_ID = "_topic_id"
+TOPIC_PROB = "topic_probability"
+
 
 class TopicModelingExperiment(Experiment):
     """Generic topic modelling experiment wrapper.
@@ -45,6 +50,8 @@ class TopicModelingExperiment(Experiment):
         self.evaluator_params = evaluator_params or {}
         self.X = X
         self.visualisations = visualisations or []
+        if not self.visualisations:
+            self.logger.info("No visualisations specified for this experiment")
         self.save_path = save_path
         self.preprocessing_metadata = preprocessing_metadata or {}
         self.logger.info(f"Initialized TopicModelingExperiment with model '{self.model_name}' '")
@@ -61,13 +68,13 @@ class TopicModelingExperiment(Experiment):
         """Attach topic assignments to the original dataframe and return result df."""
         df = self.X.copy()
 
-        df["_topic_id"] = topics
+        df[TOPIC_ID] = topics
 
         # If probs is a 2D array (doc x topic distribution), take max probability for assigned topic; otherwise use as-is
         if probs is not None and len(probs) > 0 and isinstance(probs[0], (list, np.ndarray)):
             probs = np.max(probs, axis=1)
 
-        df["topic_probability"] = probs
+        df[TOPIC_PROB] = probs
 
         # topic_info is a dataframe with columns like 'Topic', 'Name', 'Count' for BERTopic; we want to merge this back to doc-level df
         if topic_info is not None:
@@ -78,7 +85,7 @@ class TopicModelingExperiment(Experiment):
 
                 # Rename for clarity
                 topic_meta = topic_meta.rename(columns={
-                    "Topic": "_topic_id",
+                    "Topic": TOPIC_ID,
                     "Name": "topic_label",
                     "Count": "topic_count"
                 })
@@ -86,26 +93,17 @@ class TopicModelingExperiment(Experiment):
                 topic_words = {}
                 topics_dict = self.model.get_topics()
 
-                # for topic in topic_meta["_topic_id"]:
-                #     if topic == -1:
-                #         continue
-                #
-                #     words = topics_dict.get(topic)
-                #
-                #     if words:
-                #         topic_words[topic] = ", ".join([word for word, _ in words])
-
                 topic_words = {
                     topic_id: ", ".join(word for word, _ in words)
                     for topic_id, words in topics_dict.items()
                     if topic_id != -1
                 }
 
-                topic_meta["top_words"] = topic_meta["_topic_id"].map(topic_words)
+                topic_meta["top_words"] = topic_meta[TOPIC_ID].map(topic_words)
 
                 # Merge into document-level dataframe
-                self.logger.info(f"Merging topic info into document-level dataframe on '_topic_id'")
-                df = df.merge(topic_meta, on="_topic_id", how="left")
+                self.logger.info(f"Merging topic info into document-level dataframe on '{TOPIC_ID}'")
+                df = df.merge(topic_meta, on=TOPIC_ID, how="left")
 
             except Exception as e:
                 self.logger.warning(f"Could not merge topic info: {e}")
@@ -214,21 +212,30 @@ class TopicModelingExperiment(Experiment):
             for viz_cfg in self.visualisations:
                 self.logger.info(f"Creating visualisation with config: {viz_cfg}")
                 viz_name = viz_cfg.get("name")
-                #viz_params = viz_cfg.get("params", {})
                 viz_params = {k: v for k, v in viz_cfg.items() if k != "name"}
                 try:
+                    self.logger.info(f"Instantiating visualisation '{viz_name}' with params: {viz_params}")
                     viz = VisualisationFactory.get_visualisation(viz_name, **viz_params)
                     if viz:
-                        fig = viz.plot(result_df)
-                        # save via viz if possible
-                        if hasattr(viz, "save") and self.save_path:
-                            filename = viz_cfg.get("filename")
-                            if not filename:
-                                filename = f"{self.name}_{viz_name}.png"
-                            full_path = os.path.join(self.save_path, filename)
-                            viz.save(fig, full_path)
-                            mlflow.log_artifact(full_path)
-                            #viz.save(fig, os.path.join(self.save_path, f"{self.name}_{viz_name}.png"))
+                        sig = inspect.signature(viz.plot)
+
+                        if "model" in sig.parameters:
+                            self.logger.info(f"Visualisation '{viz_name}' supports model parameter; passing model to plot()")
+                            fig = viz.plot(result_df, model=self.model, topic_id = TOPIC_ID)
+                        else:
+                            self.logger.info(f"Visualisation '{viz_name}' does not support model parameter; calling plot() with dataframe only")
+                            fig = viz.plot(result_df)
+
+                        # Handle saving / MLflow
+                        if isinstance(fig, list):
+                            for path in fig:
+                                mlflow.log_artifact(path)
+                        else:
+                            if hasattr(viz, "save") and self.save_path:
+                                filename = viz_cfg.get("filename", f"{self.name}_{viz_name}.png")
+                                full_path = os.path.join(self.save_path, filename)
+                                viz.save(fig, full_path)
+                                mlflow.log_artifact(full_path)
                 except Exception as e:
                     self.logger.warning(f"Could not create viz {viz_name}: {e}")
 

@@ -9,6 +9,7 @@ from .correlation_matrix import CorrelationMatrix
 from .histogram import Histogram
 from .boxplot import BoxPlot
 from .pair_scatter import PairScatter
+from .topic_wordclouds import TopicWordClouds
 
 # Register visualisations
 
@@ -21,6 +22,7 @@ VisualisationFactory.register_visualisation("dython_correlation_matrix", Correla
 VisualisationFactory.register_visualisation("histogram", Histogram)
 VisualisationFactory.register_visualisation("boxplot", BoxPlot)
 VisualisationFactory.register_visualisation("pair_scatter", PairScatter)
+VisualisationFactory.register_visualisation("topic_wordclouds", TopicWordClouds)
 
 __all__ = [
     "ConfusionMatrixChart",
@@ -32,5 +34,6 @@ __all__ = [
     "CorrelationMatrix",
     "Histogram",
     "BoxPlot",
-    "PairScatter"
+    "PairScatter",
+    "TopicWordClouds",
 ]

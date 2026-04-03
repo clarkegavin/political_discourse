@@ -508,9 +508,10 @@ pipelines:
             - name: topic_distribution
               output_dir: output/topic_modelling/bertopic_default
               filename: "bertopic_default_topic_distribution.png"
-            - name: word_cloud
+            - name: topic_wordclouds
               output_dir: output/topic_modelling/bertopic_default
               filename_prefix: "bertopic_default_topic"
+              top_n_topics: 10
 
 # Sample Data Saver pipeline: writes a provided DataFrame to SQL Server
   - name: save_extracted_table
