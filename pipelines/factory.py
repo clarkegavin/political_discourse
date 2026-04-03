@@ -1,4 +1,4 @@
-# data/pipeline_factory.py
+# pipelines/factory.py
 from typing import List, Type, Dict, Any
 from logs.logger import get_logger
 import yaml
@@ -16,6 +16,8 @@ class PipelineFactory:
 
     @classmethod
     def register_pipeline(cls, name: str, pipeline: Pipeline):
+        if name in cls._registry:
+            return
         cls._registry[name] = pipeline
         logger.info(f"Registered pipeline: {name}")
 

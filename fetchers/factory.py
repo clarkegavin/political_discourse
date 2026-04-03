@@ -14,6 +14,8 @@ class FetcherFactory:
     @classmethod
     def register(cls, name: str, fetcher_cls: type) -> None:
         """Register a new fetcher class under a friendly name."""
+        if name in cls._registry:
+            return
         cls._registry[name] = fetcher_cls
 
     @classmethod

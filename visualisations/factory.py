@@ -8,6 +8,8 @@ class VisualisationFactory:
 
     @classmethod
     def register_visualisation(cls, name: str, viz_cls):
+        if name in cls._registry:
+            return
         cls._registry[name] = viz_cls
         cls.logger.info(f"Registered visualisation: {name}")
 

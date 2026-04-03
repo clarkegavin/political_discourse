@@ -12,6 +12,8 @@ class ModelFactory:
 
     @classmethod
     def register_model(cls, name: str, model):
+        if name in cls._registry:
+            return
         cls._registry[name] = model
         cls.logger.info(f"Registered model: {name}")
 

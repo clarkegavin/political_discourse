@@ -153,20 +153,20 @@ pipelines:
 # Extracts oireachtas questions and answers from DB tables
 #-------------------------------------------------------------------
 
-#  - name: oireachtas_questions_extract
-#    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
-#    extractor_type: table
-#    params:
-#      extractor_params:
-#        model: OireachtasQuestion
-#        filters:
-#          #discussionID: 2058391856
-#          QuestionDate:
-#            from: "2025-01-01"
-#            to: "2025-12-31"
-#        order_by:
-#          column: QuestionDate
-#          direction: desc
+  - name: oireachtas_questions_extract
+    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+    extractor_type: table
+    params:
+      extractor_params:
+        model: OireachtasQuestion
+        filters:
+          #discussionID: 2058391856
+          QuestionDate:
+            from: "2025-01-01"
+            to: "2025-12-31"
+        order_by:
+          column: QuestionDate
+          direction: desc
 #
 #  - name: eda
 #    type: pipelines.eda_pipeline.EDAPipeline
@@ -284,7 +284,7 @@ pipelines:
 
   - name: oireachtas_question_document_eda
     type: pipelines.data_extractor_pipeline.DataExtractorPipeline
-    enabled: true
+    enabled: false
     extractor_type: table
     params:
       extractor_params:
@@ -297,7 +297,7 @@ pipelines:
 
   - name: eda
     type: pipelines.eda_pipeline.EDAPipeline
-    enabled: true
+    enabled: false
     params:
       save_path: "output/eda"
       steps:
@@ -458,3 +458,68 @@ pipelines:
                 filename: "boards_comments_sentence_length_histogram.png"
               - name: boxplot
                 filename: "boards_comments_sentence_length_boxplot.png"
+
+
+#-------------------------------------------------------------------
+# Topic modelling experiments
+#-------------------------------------------------------------------
+
+  - name: filter_features
+    type: pipelines.filter_pipeline.FilterPipeline
+    filter_features:
+      - name: filter_rows
+        params:
+          field: "QuestionNumber"
+          values: [859, 860, 861]
+          operator: "in"
+          include: true
+          case_sensitive: false
+#        - name: lowercase
+#          applies_to: text
+
+
+  # Sample Topic Modelling pipeline using BERTopic
+  - name: topic_modeling_bertopic
+    type: pipelines.topic_modeling_pipeline.TopicModelingPipeline
+    enabled: true
+    params:
+      model_name: bertopic
+      evaluator_name: topic_modeling
+      mlflow_experiment: topic_modelling
+      default_text_field: ["QuestionText", "AnswerText"]
+      experiments:
+        - run_name: bertopic_default
+          params:
+            model_params:
+              nr_topics: null
+              min_topic_size: 10
+              embedding_model: "all-MiniLM-L6-v2"
+#              vectorizer:  # optional vectorizer config for non-bertopic models
+#                name: tfidf
+#                params:
+#                  max_features: 20000
+            save_path: output/topic_modelling/bertopic_default
+          preprocessing:
+            - name: remove_urls
+              applies_to: text
+              params:
+                field: "QuestionText"
+          visualisations:
+            - name: topic_distribution
+              output_dir: output/topic_modelling/bertopic_default
+              filename: "bertopic_default_topic_distribution.png"
+            - name: word_cloud
+              output_dir: output/topic_modelling/bertopic_default
+              filename_prefix: "bertopic_default_topic"
+
+# Sample Data Saver pipeline: writes a provided DataFrame to SQL Server
+  - name: save_extracted_table
+    type: pipelines.data_saver_pipeline.DataSaverPipeline
+    #enabled: true
+    params:
+      saver_name: sql_server
+      table_name: topic_output
+      if_exists: replace
+      chunk_size: 1000
+      schema: dbo
+      connector_params: {}

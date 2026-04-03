@@ -11,6 +11,8 @@ class EvaluatorFactory:
 
     @classmethod
     def register_evaluator(cls, name: str, evaluator):
+        if name in cls._registry:
+            return
         cls._registry[name] = evaluator
         cls.logger.info(f"Registered evaluator: {name}")
 

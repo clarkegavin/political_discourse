@@ -10,6 +10,8 @@ class VectorizerFactory:
 
     @classmethod
     def register_vectorizer(cls, name: str, vectorizer_cls):
+        if name in cls._registry:
+            return
         cls._registry[name] = vectorizer_cls
         cls.logger.info(f"Registered vectorizer: {name}")
 

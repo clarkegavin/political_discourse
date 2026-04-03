@@ -12,6 +12,8 @@ class ImputerFactory:
 
     @classmethod
     def register(cls, name: str, imputer_cls: Type[Imputer]) -> None:
+        if name in cls._registry:
+            return
         cls._registry[name] = imputer_cls
 
     @classmethod

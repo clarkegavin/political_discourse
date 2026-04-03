@@ -3,13 +3,8 @@ from typing import Iterable, List, Any, Optional
 from .base import Preprocessor
 from logs.logger import get_logger
 import re
+import pandas as pd
 
-# optional pandas support
-try:
-    import importlib
-    pd = importlib.import_module('pandas')
-except Exception:
-    pd = None
 
 
 class FilterRows(Preprocessor):

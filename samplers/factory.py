@@ -10,6 +10,8 @@ class SamplerFactory:
 
     @classmethod
     def register_sampler(cls, name: str, sampler_cls):
+        if name in cls._registry:
+            return
         cls._registry[name] = sampler_cls
         cls.logger.info(f"Registered sampler: {name}")
 

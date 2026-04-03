@@ -14,6 +14,8 @@ class ReducerFactory:
 
     @classmethod
     def register(cls, name: str, reducer_cls: Any):
+        if name in cls._registry:
+            return
         cls._registry[name] = reducer_cls
         cls.logger.info(f"Registered reducer: {name}")
 
