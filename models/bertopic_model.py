@@ -9,7 +9,7 @@ class BERTopicModel(Model):
     """Wrapper around BERTopic to fit into ModelFactory pattern."""
     def __init__(self, name: str = "bertopic", **params: Dict[str, Any]):
         super().__init__(name, **params)
-        self.logger = get_logger(f"BERTopicModel.{name}")
+        self.logger = get_logger(self.__class__.__name__)
         self.params = params or {}
         self.model = None
         self.topics_ = None
