@@ -10,6 +10,7 @@ from .histogram import Histogram
 from .boxplot import BoxPlot
 from .pair_scatter import PairScatter
 from .topic_wordclouds import TopicWordClouds
+from .topic_distribution import TopicDistribution
 
 # Register visualisations
 
@@ -23,6 +24,8 @@ VisualisationFactory.register_visualisation("histogram", Histogram)
 VisualisationFactory.register_visualisation("boxplot", BoxPlot)
 VisualisationFactory.register_visualisation("pair_scatter", PairScatter)
 VisualisationFactory.register_visualisation("topic_wordclouds", TopicWordClouds)
+VisualisationFactory.register_visualisation("topic_distribution", TopicDistribution)
+
 
 __all__ = [
     "ConfusionMatrixChart",

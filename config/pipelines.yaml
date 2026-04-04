@@ -522,17 +522,20 @@ pipelines:
       evaluator_name: topic_modeling
       mlflow_experiment: topic_modelling
       default_text_field: ["QuestionText", "AnswerText"]
+      combined_text_field_name: "CombinedText" # new field that combines text from default_text_field for embedding/vectorization
       experiments:
         - run_name: bertopic_default
           params:
             model_params:
               nr_topics: null
               min_topic_size: 10
-              embedding_model: "all-MiniLM-L6-v2"
-#              vectorizer:  # optional vectorizer config for non-bertopic models
-#                name: tfidf
-#                params:
-#                  max_features: 20000
+              #embedding_model: "all-MiniLM-L6-v2" '# sentence-transformers model for embedding generation'
+              vectorizer:  # optional vectorizer config for non-bertopic models
+                name: bert
+                column: "CombinedText"
+                model_name: "all-MiniLM-L6-v2"
+                params:
+                  max_features: 20000
             save_path: output/topic_modelling/bertopic_default
           preprocessing:
             - name: remove_urls

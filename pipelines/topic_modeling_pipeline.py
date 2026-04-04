@@ -28,6 +28,7 @@ class TopicModelingPipeline(Pipeline):
         name: Optional[str] = None,
         global_config: Optional[Dict[str, Any]] = None,
         default_text_field: Optional[Any] = "text",
+        combined_text_field_name: str = "__topic_input_text__",
         **kwargs,
     ) -> None:
         super().__init__(name=name or "TopicModelingPipeline")
@@ -38,6 +39,7 @@ class TopicModelingPipeline(Pipeline):
         self.global_config = global_config or {}
         self.logger = get_logger(self.__class__.__name__)
         self.default_text_field = default_text_field
+        self.combined_text_field_name = combined_text_field_name
 
     @classmethod
     def from_config(cls, entry: Dict[str, Any], global_config=None) -> "TopicModelingPipeline":
@@ -80,7 +82,7 @@ class TopicModelingPipeline(Pipeline):
                 combined_transformed = preprocessor.fit_transform(combined)
 
                 # Attach back to a dedicated column used by the experiment
-                X_exp["__topic_input_text__"] = combined_transformed
+                X_exp[self.combined_text_field_name] = combined_transformed
             else:
                 # No preprocessors: just combine fields into column
                 if isinstance(tf, (list, tuple)):
@@ -89,7 +91,7 @@ class TopicModelingPipeline(Pipeline):
                         combined = combined + " " + X_exp[col].fillna("")
                 else:
                     combined = X_exp[tf].fillna("")
-                X_exp["__topic_input_text__"] = combined
+                X_exp[self.combined_text_field_name] = combined
 
             # Prepare params for the experiment
             exp_params = {
