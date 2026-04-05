@@ -20,26 +20,38 @@ class BERTopicModel(Model):
         self.model = BERTopic(**self.params)
         return self.model
 
-    def fit(self, X, y=None):
+    def fit(self, X, embeddings = None, y=None):
+        """Fit BERTopic model on documents X, optionally using embeddings."""
         self.logger.info("Fitting BERTopicModel")
         if self.model is None:
             self.build()
-        # X is expected to be list-like of documents
-        self.topics_, self.probs_ = self.model.fit_transform(X)
+        if embeddings is not None:
+            self.topics_, self.probs_ = self.model.fit_transform(X, embeddings)
+        else:
+            self.topics_, self.probs_ = self.model.fit_transform(X)
         return self
 
-    def transform(self, X):
+    def transform(self, X, embeddings = None):
         self.logger.info("Transforming data with BERTopicModel")
         if self.model is None:
             self.logger.error("Attempted to transform with unbuilt/unfitted model")
             raise RuntimeError("Model not built/fitted")
+
+        if embeddings is not None:
+            return self.model.transform(X, embeddings)
+
         return self.model.transform(X)
 
-    def fit_transform(self, X):
+    def fit_transform(self, X, embeddings = None):
         self.logger.info("Starting fit_transform for BERTopicModel")
         if self.model is None:
             self.build()
-        return self.model.fit_transform(X)
+
+        if embeddings is not None:
+            self.logger.info("Using provided embeddings for fit_transform")
+            return self.model.fit_transform(X, embeddings)
+        else:
+            return self.model.fit_transform(X)
 
     def get_topic_info(self):
         if self.model is None:

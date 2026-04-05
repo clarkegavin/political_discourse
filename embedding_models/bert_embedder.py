@@ -1,10 +1,10 @@
-# vectorizers/bert_vectorizer.py
+# embedding_models/bert_vectorizer.py
 from sentence_transformers import SentenceTransformer
-from .base import Vectorizer
+from .base import EmbeddingModel
 import numpy as np
 from logs.logger import get_logger
 
-class BERTVectorizer(Vectorizer):
+class BERTEmbeddingModel(EmbeddingModel):
     def __init__(self, name: str, column: str, model_name="sentence-transformers/all-mpnet-base-v2", **params):
         self.name = name
         self.column = column
@@ -18,7 +18,7 @@ class BERTVectorizer(Vectorizer):
         return  # no fitting
 
     def transform(self, X):
-        self.logger.info(f"Transforming data using BERTVectorizer {self.model_name} on column '{self.column}'")
+        self.logger.info(f"Transforming data using BERTEmbeddingModel {self.model_name} on column '{self.column}'")
         texts = X[self.column].fillna("").tolist()
 
         # Prefix logic - works for E5 models, which can benefit from task-specific prefixes, but is optional and can be used with any model
