@@ -104,6 +104,7 @@ class TopicModelingPipeline(Pipeline):
                 },
                 "X": X_exp,
                 "visualisations": exp_cfg.get("visualisations", []),
+                "combined_text_field_name": self.combined_text_field_name,
                 **exp_cfg.get("params", {}),
 
             }
@@ -116,6 +117,9 @@ class TopicModelingPipeline(Pipeline):
                 data_with_topics = experiment.run()
             else:
                 self.logger.warning("Experiment factory returned None for topic_modeling")
+
+            self.logger.info("-------------------------Experiment complete-------------------------")
+
 
         self.logger.info("Topic modelling pipeline complete.")
 

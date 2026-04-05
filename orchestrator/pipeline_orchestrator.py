@@ -123,7 +123,7 @@ class PipelineOrchestrator:
 
                 if current_data is None:
                     # This can happen if the first pipeline is a DataExtractorPipeline or the OireachtasDataPipelin
-                    if pipeline.__class__ != DataExtractorPipeline and pipeline.__class__ != OireachtasDataPipeline:
+                    if pipeline.__class__ != DataExtractorPipeline and pipeline.__class__ != OireachtasDataPipeline :
                         self.logger.error(f"No data available for pipeline {pipeline.__class__.__name__}")
                 else:
                     self.logger.info(f" Data Type: {type(current_data)}")

@@ -17,35 +17,9 @@ class TopicModelingEvaluator(Evaluator):
         self.top_n = top_n
         self.logger = get_logger(self.__class__.__name__)
         self.logger.info(f"Initialized TopicModelingEvaluator(coherence_type={coherence_type}, top_n={top_n})")
+        self.combined_text_field_name = kwargs.get("combined_text_field_name", "__topic_input_text__")
 
-    # def _extract_top_terms(self, model, top_n):
-    #     # model may be BERTopic (has get_topic) or sklearn (has components_)
-    #     topics_terms = []
-    #     if hasattr(model, "get_topic"):
-    #         # BERTopic: topics are keyed by integer, get_topic returns list of (term, score)
-    #         i = 0
-    #         while True:
-    #             try:
-    #                 terms = model.get_topic(i)
-    #                 if not terms:
-    #                     break
-    #                 topics_terms.append([t for t, _ in terms][:top_n])
-    #                 i += 1
-    #             except Exception:
-    #                 break
-    #     elif hasattr(model, "components_"):
-    #         # sklearn topic model
-    #         try:
-    #             # Need vectorizer to map indices back to terms - not available here, so return placeholders
-    #             n_topics = model.components_.shape[0]
-    #             for i in range(n_topics):
-    #                 comp = model.components_[i]
-    #                 top_idx = np.argsort(comp)[-top_n:][::-1]
-    #                 terms = [str(idx) for idx in top_idx]
-    #                 topics_terms.append(terms)
-    #         except Exception:
-    #             pass
-    #     return topics_terms
+
 
     def _extract_top_terms(self, estimator, top_n):
 
@@ -79,7 +53,7 @@ class TopicModelingEvaluator(Evaluator):
         """
         self.logger.info("Evaluating topic model assignments")
         estimator = model.estimator
-        docs = X["__topic_input_text__"].fillna("").tolist()
+        docs = X[self.combined_text_field_name].fillna("").tolist()
         metrics = {}
 
         self.logger.info(f"Number of documents: {len(docs)}, Number of topic assignments: {len(topics)}")

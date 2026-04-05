@@ -15,12 +15,13 @@ class WordCloudChart:
     #     plt.tight_layout()
     #     plt.savefig(save_path)
     #     plt.close()
-    def __init__(self, output_dir=None, filename_prefix="wordcloud"):
+    def __init__(self, output_dir=None, filename_prefix="wordcloud", **kwargs):
         self.output_dir = output_dir
         self.filename_prefix = filename_prefix
+        self.combined_text_field_name = kwargs.get("combined_text_field_name", "__topic_input_text__")
 
     def plot(self, df, **kwargs):
-        text = " ".join(df["__topic_input_text__"].astype(str))
+        text = " ".join(df[self.combined_text_field_name].astype(str))
 
         wc = WordCloud(width=800, height=400).generate(text)
 
