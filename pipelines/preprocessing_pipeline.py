@@ -197,6 +197,7 @@ class PreprocessingPipeline(Pipeline):
                 self.logger.info(f"Applying text preprocessor: {name} with params: {params}")
                 try:
                     pre = PreprocessorFactory.create(name, **params)
+
                 except Exception as e:
                     self.logger.warning(f"Could not construct text preprocessor {name}: {e}")
                     continue

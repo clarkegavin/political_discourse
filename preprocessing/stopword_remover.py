@@ -74,8 +74,8 @@ class StopwordRemover(Preprocessor):
         # determine stopword set
         if stopwords is not None:
             try:
-                self.stopwords = set(s for s in stopwords if s is not None)
-                self.logger.info("Using explicit stopword list provided in params")
+                self.stopwords = set(stopwords).union(self.PROCEDURAL_STOPWORDS).union(self.DEFAULT_STOPWORDS)
+                self.logger.info("Using explicit stopword list provided in params + procedural/default stopwords")
             except Exception:
                 self.logger.warning("Provided stopwords not iterable; falling back to defaults")
                 #self.stopwords = set(self.DEFAULT_STOPWORDS)
@@ -110,30 +110,7 @@ class StopwordRemover(Preprocessor):
 
     def _clean_text(self, text: str) -> str:
         """Internal utility to remove stopwords from one string."""
-        # if text is None:
-        #     return ""
-        #
-        # s = str(text)
-        # if self.lower:
-        #     s = s.lower()
-        #
-        # # Use NLTK tokenizer if available, else fallback
-        # try:
-        #     tokens = self._tokenize(s) if self._tokenize else s.split()
-        # except Exception:
-        #     tokens = s.split()
-        #
-        # # Strip punctuation and filter stopwords
-        # cleaned_tokens = []
-        # for t in tokens:
-        #     # remove surrounding punctuation
-        #     t_clean = t.strip(string.punctuation)
-        #     # remove extra repeated punctuation inside word
-        #     t_clean = re.sub(r'[!?.,]{2,}', '', t_clean)
-        #     if t_clean and t_clean not in self.stopwords:
-        #         cleaned_tokens.append(t_clean)
-        #
-        # return " ".join(cleaned_tokens)
+
         if text is None:
             return ""
 
@@ -153,29 +130,19 @@ class StopwordRemover(Preprocessor):
 
         return " ".join(filtered)
 
-    def transform(self, X: Iterable[Any]) -> Any:
-        self.logger.info(f"Applying StopwordRemover on field '{self.field}'")
-
-        # pandas.DataFrame path (main)
+    def transform(self, X: Any) -> pd.DataFrame:
+        """Always return a DataFrame if a field is specified."""
         if pd is not None and isinstance(X, pd.DataFrame):
             df = X.copy()
-
             if self.field not in df.columns:
-                self.logger.warning(
-                    f"Field '{self.field}' not present in DataFrame; returning original DataFrame"
-                )
+                self.logger.warning(f"Field '{self.field}' not present in DataFrame; returning original DataFrame")
                 return df
-
             df[self.field] = df[self.field].apply(self._clean_text)
-
-            self.logger.info("Completed StopwordRemover on DataFrame")
             return df
 
-        # terable path (fallback)
+        # fallback for iterable input
         out = [self._clean_text(item) for item in X]
-
-        self.logger.info("Completed StopwordRemover on iterable")
-        return out
+        return pd.DataFrame({self.field: out})
 
     def get_params(self) -> dict:
         return {

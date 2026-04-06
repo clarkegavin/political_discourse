@@ -60,30 +60,21 @@ class RemoveURLs(Preprocessor):
         except Exception:
             return s
 
-    def transform(self, X: Iterable[Any]) -> Any:
+    def transform(self, X: Any) -> pd.DataFrame:
         self.logger.info(f"Applying RemoveURLs on field '{self.field}'")
 
-        # DataFrame path
-        if pd is not None and isinstance(X, pd.DataFrame):
+
+        # If input is already a DataFrame
+        if isinstance(X, pd.DataFrame):
+            self.logger.info(f"Input is a DataFrame with columns: {X.columns.tolist()}")
             df = X.copy()
             if self.field not in df.columns:
                 self.logger.warning(f"Field '{self.field}' not present in DataFrame; returning original DataFrame")
                 return df
-
-            try:
-                # use pandas vectorised replace where possible
-                try:
-                    df[self.field] = df[self.field].astype(str).replace(self._compiled or self.pattern, self.replace_with, regex=True)
-                except Exception:
-                    # fallback to apply
-                    df[self.field] = df[self.field].apply(self._remove_from_text)
-            except Exception as e:
-                self.logger.warning(f"Failed to remove URLs via vectorised replace; falling back to per-row apply: {e}")
-                df[self.field] = df[self.field].apply(self._remove_from_text)
-
+            df[self.field] = df[self.field].astype(str).apply(self._remove_from_text)
             return df
 
-        # Iterable/dict-like path
+        # If input is a list, dict-like iterable, or Series (applies_to='text')
         out: List[Any] = []
         for item in X:
             try:
@@ -91,20 +82,14 @@ class RemoveURLs(Preprocessor):
                     copy = dict(item)
                     copy[self.field] = self._remove_from_text(copy.get(self.field, ""))
                     out.append(copy)
-                elif hasattr(item, 'get') and self.field in item:
-                    # pandas.Series-like
-                    try:
-                        new_item = dict(item)
-                        new_item[self.field] = self._remove_from_text(item.get(self.field, ""))
-                        out.append(new_item)
-                    except Exception:
-                        out.append(item)
                 else:
-                    # can't find field => leave unchanged
-                    out.append(item)
+                    # fallback for plain strings
+                    out.append(self._remove_from_text(item))
             except Exception:
                 out.append(item)
-        return out
+
+        # Wrap result as DataFrame
+        return pd.DataFrame({self.field: out})
 
     def get_params(self) -> dict:
         return {"field": self.field, "pattern": self.pattern, "replace_with": self.replace_with}
