@@ -9,10 +9,12 @@ from data.models.oireachtas_member import OireachtasMember
 from data.models.oireachtas_member_membership import OireachtasMemberMembership
 from data.models.oireachtas_member_party_membership import OireachtasMemberPartyMembership
 from data.models.oireachtas_member_representation import OireachtasMemberRepresentation
+from data.models.boards_combined import BoardsConsolidated
 
 MODEL_REGISTRY = {
     "BoardsComment": BoardsComment,
     "BoardsDiscussion": BoardsDiscussion,
+    "BoardsConsolidated": BoardsConsolidated,
     "OireachtasQuestion": OireachtasQuestion,
     "OireachtasParty": OireachtasParty,
     "OireachtasMember": OireachtasMember,

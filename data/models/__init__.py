@@ -10,6 +10,7 @@ from .oireachtas_debate import OireachtasDebateSection
 from .oireachtas_contribution import OireachtasDebateContribution
 from .boards_comment import BoardsComment
 from .boards_discussion import BoardsDiscussion
+from .boards_combined import BoardsConsolidated
 
 from .oireachtas_party import OireachtasParty
 from .oireachtas_member import OireachtasMember
@@ -30,9 +31,11 @@ __all__ = [
     "OireachtasDebateContribution",
     "BoardsComment",
     "BoardsDiscussion",
+    "BoardsConsolidated",
     "OireachtasParty",
     "OireachtasMember",
     "OireachtasMemberMembership",
     "OireachtasMemberPartyMembership",
     "OireachtasMemberRepresentation",
+
 ]

@@ -284,7 +284,7 @@ pipelines:
 
   - name: oireachtas_question_document_eda
     type: pipelines.data_extractor_pipeline.DataExtractorPipeline
-    enabled: true
+    enabled: false
     extractor_type: table
     params:
       extractor_params:
@@ -486,7 +486,7 @@ pipelines:
   # Sample Topic Modelling pipeline using BERTopic
   - name: topic_modeling_bertopic
     type: pipelines.topic_modeling_pipeline.TopicModelingPipeline
-    enabled: true
+    enabled: false
     params:
       model_name: bertopic
       evaluator_name: topic_modeling
@@ -534,9 +534,11 @@ pipelines:
             save_path: output/topic_modelling/bertopic_e5
           preprocessing:
             - name: remove_urls
-              applies_to: text
               params:
-                field: "QuestionText"
+                columns: ["QuestionText", "AnswerText"]
+            - name: stopword_remover
+              params:
+                - columns: ["QuestionText", "AnswerText"]
           visualisations:
             - name: topic_distribution
               output_dir: output/topic_modelling/bertopic_e5
@@ -549,10 +551,184 @@ pipelines:
 # Sample Data Saver pipeline: writes a provided DataFrame to SQL Server
   - name: save_extracted_table
     type: pipelines.data_saver_pipeline.DataSaverPipeline
-    #enabled: true
+    enabled: false
     params:
       saver_name: sql_server
       table_name: topic_output
+      if_exists: replace
+      chunk_size: 1000
+      schema: dbo
+      connector_params: {}
+
+#-------------------------------------------------------------------------------
+# Merge boards discussions and comments tables using an inner join on the discussion ID fields
+# This is a one off as we will save the output as a new consolidated table in the DB
+#-------------------------------------------------------------------------------
+
+  # Merge dbo.discussions with dbo.comments example
+  - name: discussions_comments_merge
+    type: pipelines.merge_pipeline.MergeTablesPipeline
+    enabled: false
+    params:
+      # Left: discussions table
+      left:
+        extractor_type: table
+        extractor_params:
+          model: BoardsDiscussion
+      # Right: comments table
+      right:
+        extractor_type: table
+        extractor_params:
+          model: BoardsComment
+      # Asymmetric join: DiscussionID on left vs discussionID on right
+      left_on: ["DiscussionID"]
+      right_on: ["CommentDiscussionID"]
+      left_fields:
+        DiscussionId: DiscussionID
+        Type: DiscussionType
+        Title: DiscussionTitle
+        Body: DiscussionBody
+        CategoryId: DiscussionCategoryID
+        DateInserted: DiscussionDateInserted
+        DateUpdated: DiscussionDateUpdated
+        DateLastComment: DiscussionDateLastComment
+        insertUserId: DiscussionInsertUserID
+        UpdateUserId: DiscussionUpdateUserID
+        LastUserId: DiscussionLastUserID
+        Closed: DiscussionClosed
+        countComments: DiscussionCountComments
+        CanonicalURL: DiscussionCanonicalUrl
+      # include 'discussionID' here so it is available for the join (note camel/lowercase difference)
+      right_fields:
+        Id: Id
+        commentID: CommentID
+        discussionID: CommentDiscussionID
+        name: CommentName
+        categoryID: CommentCategoryID
+        body: CommentBody
+        dateInserted: CommentDateInserted
+        dateUpdated: CommentDateUpdated
+        updateUserID: CommentUpdateUserID
+        score: CommentScore
+        depth: CommentDepth
+        scoreChildComments: CommentScoreChildComments
+        countChildComments: CommentCountChildComments
+        url: CommentUrl
+      how: inner
+
+  - name: save_extracted_table
+    type: pipelines.data_saver_pipeline.DataSaverPipeline
+    enabled: false
+    params:
+      saver_name: sql_server
+      table_name: consolidated_boards
+      if_exists: replace
+      chunk_size: 1000
+      schema: dbo
+      connector_params: {}
+
+
+#-------------------------------------------------------------------------------
+# Topic Modelling of boards data.  Data is not aggregated temporally
+
+#-------------------------------------------------------------------------------
+
+  - name: boards_discussions_extract
+    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+    enabled: true
+    extractor_type: table
+    params:
+      extractor_params:
+        model: BoardsConsolidated
+        filters:
+          CommentDateInserted:
+            from: "2025-06-19"
+            to: "2025-06-20"
+
+  # Sample Topic Modelling pipeline using BERTopic
+  - name: topic_modeling_bertopic
+    type: pipelines.topic_modeling_pipeline.TopicModelingPipeline
+    enabled: true
+    params:
+      model_name: bertopic
+      evaluator_name: topic_modeling
+      mlflow_experiment: topic_modelling
+      default_text_field: ["DiscussionBody", "CommentBody"]
+      combined_text_field_name: "CombinedText" # new field that combines text from default_text_field for embedding/vectorization
+      experiments:
+        - run_name: bertopic_default
+          params:
+            model_params:
+              nr_topics: null
+              min_topic_size: 10
+              embedding_model: "all-MiniLM-L6-v2"  # sentence-transformers model for embedding generation, gets passed to BERTopic as the embedding_model parameter - can be a string model name or a custom embedding model config dict (see below)
+#              vectorizer:  # optional vectorizer config for non-bertopic models
+#                name: bert
+#                column: "CombinedText"
+#                model_name: "all-MiniLM-L6-v2"
+#                params:
+#                  max_features: 20000
+            save_path: output/topic_modelling/boards/bertopic_default
+          preprocessing:
+            - name: remove_urls
+              params:
+                columns: ["DiscussionBody", "CommentBody"]
+            - name: stopword_remover
+              params:
+                language: "english"
+                lower: true
+                columns:  ["DiscussionBody", "CommentBody"]
+            - name: remove_html_tags
+              params:
+                columns: ["DiscussionBody", "CommentBody"]
+          visualisations:
+            - name: topic_distribution
+              output_dir: output/topic_modelling/boards/bertopic_default
+              filename: "bertopic_default_topic_distribution.png"
+            - name: topic_wordclouds
+              output_dir: output/topic_modelling/boards/bertopic_default
+              filename_prefix: "bertopic_default_topic"
+              top_n_topics: 10
+        - run_name: bertopic_e5
+          params:
+            model_params:
+              nr_topics: null
+              min_topic_size: 10
+            embedding_model:  # optional custom embedding model config
+              name: bert
+              column: "CombinedText"
+              model_name: "intfloat/e5-base-v2"
+              params:
+                prefix: "passage" # e5 models require a prefix to be added to the text for embedding generation
+            save_path: output/topic_modelling/boards/bertopic_e5
+          preprocessing:
+            - name: remove_urls
+              params:
+                columns: [ "DiscussionBody", "CommentBody" ]
+            - name: stopword_remover
+              params:
+                language: "english"
+                lower: true
+                columns: [ "DiscussionBody", "CommentBody" ]
+            - name: remove_html_tags
+              params:
+                columns: [ "DiscussionBody", "CommentBody" ]
+          visualisations:
+            - name: topic_distribution
+              output_dir: output/topic_modelling/boards/bertopic_e5
+              filename: "bertopic_default_topic_distribution.png"
+            - name: topic_wordclouds
+              output_dir: output/topic_modelling/boards/bertopic_e5
+              filename_prefix: "bertopic_default_topic"
+              top_n_topics: 10
+
+# Sample Data Saver pipeline: writes a provided DataFrame to SQL Server
+  - name: save_extracted_table
+    type: pipelines.data_saver_pipeline.DataSaverPipeline
+    enabled: true
+    params:
+      saver_name: sql_server
+      table_name: boards_topic_output
       if_exists: replace
       chunk_size: 1000
       schema: dbo

@@ -1,12 +1,10 @@
-# preprocessing/stopword_remover.py
 from typing import Iterable, List, Optional, Set, Any
 from .base import Preprocessor
 from logs.logger import get_logger
 import pandas as pd
 import string
-import re
 
-# dynamic imports to avoid hard dependency at import time
+# dynamic imports
 try:
     import importlib
     _nltk_corpus = importlib.import_module("nltk.corpus")
@@ -19,26 +17,6 @@ except Exception:
 
 
 class StopwordRemover(Preprocessor):
-    """Removes stopwords from text.
-
-    Parameters
-    ----------
-    language: str
-        Language for stopword lookup (default: "english").
-    stopwords: Optional[Iterable[str]]
-        Optional explicit stopword list to use. If provided this takes precedence
-        over library-provided stopwords.
-    lower: bool
-        If True, text is lowercased prior to stopword removal.
-
-    Behaviour
-    ---------
-    - If NLTK stopwords are available they will be used (unless explicit list
-      is provided). If not available and no explicit list provided a small
-      default stopword set will be used.
-    - Tokenization uses NLTK's word_tokenize when available, otherwise a
-      simple split() is used.
-    """
 
     DEFAULT_STOPWORDS: Set[str] = {
         "the", "and", "is", "in", "it", "of", "to", "a", "for", "on", "with", "that", "this",
@@ -52,134 +30,103 @@ class StopwordRemover(Preprocessor):
     PROCEDURAL_STOPWORDS: Set[str] = {
         "minister", "department", "government", "office", "agency", "bureau", "commission",
         "council", "committee", "secretary", "director", "manager", "head", "leader", "chief", "executive", "administrator", "official",
-        "deputy", "assistant", "associate", "vice", "president", "prime", "minister", "king", "queen",
-        "emperor", "empress", "duke", "duchess", "prince", "princess", "lord", "lady", "sir", "madam",
-        "mr", "mrs", "ms", "miss", "dr", "professor", "prof", "engineer", "scientist", "researcher", "analyst",
-        "consultant", "advisor", "counselor", "attorney", "lawyer", "judge", "justice", "clerk", "secretary", "treasurer",
-        "auditor", "accountant", "officer", "agent", "representative", "case", "possible", "respond", "directly", "matter", "service"
+        "deputy", "assistant", "associate", "vice", "president", "prime",
+        "king", "queen", "emperor", "empress", "duke", "duchess",
+        "prince", "princess", "lord", "lady", "sir", "madam",
+        "mr", "mrs", "ms", "miss", "dr", "professor", "prof",
+        "engineer", "scientist", "researcher", "analyst",
+        "consultant", "advisor", "counselor", "attorney", "lawyer",
+        "judge", "justice", "clerk", "treasurer", "auditor",
+        "accountant", "officer", "agent", "representative",
+        "case", "possible", "respond", "directly", "matter", "service"
     }
 
-    def __init__(self, field: str, language: str = "english",
-                 stopwords: Optional[Iterable[str]] = None, lower: bool = True):
-
-        if not field:
-            raise ValueError("'field' parameter is required for StopwordRemover")
-
+    def __init__(
+        self,
+        columns: Optional[List[str]] = None,
+        language: str = "english",
+        stopwords: Optional[Iterable[str]] = None,
+        lower: bool = True,
+    ):
         self.logger = get_logger(self.__class__.__name__)
-        self.field = field
+
+        self.columns = columns
         self.language = language
         self.lower = bool(lower)
-        self.logger.info(f"Initializing StopwordRemover language={language} lower={self.lower}")
 
-        # determine stopword set
-        if stopwords is not None:
-            try:
-                self.stopwords = set(s for s in stopwords if s is not None)
-                self.logger.info("Using explicit stopword list provided in params")
-            except Exception:
-                self.logger.warning("Provided stopwords not iterable; falling back to defaults")
-                #self.stopwords = set(self.DEFAULT_STOPWORDS)
-                self.stopwords = set(self.DEFAULT_STOPWORDS).union(self.PROCEDURAL_STOPWORDS)
-        else:
-            # try to load from nltk if available
-            if _nltk_stopwords is not None:
-                try:
-                    #self.stopwords = set(_nltk_stopwords.words(self.language))
-                    #base_sw = set(_nltk_stopwords.words(self.language))
-                    base_sw = set(_nltk_stopwords.words(self.language)) if _nltk_stopwords else set()
-                    self.stopwords = base_sw.union(self.PROCEDURAL_STOPWORDS)
-                    self.logger.info(f"Loaded {len(self.stopwords)} stopwords for language '{self.language}' from NLTK")
-                except Exception:
-                    self.logger.warning(f"NLTK stopwords for '{self.language}' not available; using default set")
-                    self.stopwords = set(self.DEFAULT_STOPWORDS).union(self.PROCEDURAL_STOPWORDS)
-            else:
-                self.logger.warning("NLTK stopwords not available; using small built-in default set")
-                self.stopwords = set(self.DEFAULT_STOPWORDS).union(self.PROCEDURAL_STOPWORDS)
-
-        # choose tokenizer
-        self._tokenize = _word_tokenize if _word_tokenize is not None else None
-
-        self.logger.info(f"Stopwords: {sorted(list(self.stopwords))}")
         self.logger.info(
-            f"Initialized StopwordRemover(field={field}, language={language}, lower={self.lower})"
+            f"Initializing StopwordRemover(columns={columns}, language={language}, lower={self.lower})"
         )
 
-    def fit(self, X: Iterable[str]):
-        # stateless
+        # Build stopword set
+        if stopwords is not None:
+            try:
+                base = set(stopwords)
+                self.stopwords = base | self.DEFAULT_STOPWORDS | self.PROCEDURAL_STOPWORDS
+                self.logger.info("Using explicit + default + procedural stopwords")
+            except Exception:
+                self.logger.warning("Invalid stopwords provided; falling back to defaults")
+                self.stopwords = self.DEFAULT_STOPWORDS | self.PROCEDURAL_STOPWORDS
+
+        else:
+            if _nltk_stopwords is not None:
+                try:
+                    base = set(_nltk_stopwords.words(self.language))
+                    self.stopwords = base | self.PROCEDURAL_STOPWORDS
+                    self.logger.info(f"Loaded NLTK stopwords ({len(base)})")
+                except Exception:
+                    self.logger.warning("NLTK stopwords unavailable; using defaults")
+                    self.stopwords = self.DEFAULT_STOPWORDS | self.PROCEDURAL_STOPWORDS
+            else:
+                self.logger.warning("NLTK not available; using defaults")
+                self.stopwords = self.DEFAULT_STOPWORDS | self.PROCEDURAL_STOPWORDS
+
+        # tokenizer (optional)
+        self._tokenize = _word_tokenize if _word_tokenize else None
+
+    def fit(self, X: Any):
         return self
 
-    def _clean_text(self, text: str) -> str:
-        """Internal utility to remove stopwords from one string."""
-        # if text is None:
-        #     return ""
-        #
-        # s = str(text)
-        # if self.lower:
-        #     s = s.lower()
-        #
-        # # Use NLTK tokenizer if available, else fallback
-        # try:
-        #     tokens = self._tokenize(s) if self._tokenize else s.split()
-        # except Exception:
-        #     tokens = s.split()
-        #
-        # # Strip punctuation and filter stopwords
-        # cleaned_tokens = []
-        # for t in tokens:
-        #     # remove surrounding punctuation
-        #     t_clean = t.strip(string.punctuation)
-        #     # remove extra repeated punctuation inside word
-        #     t_clean = re.sub(r'[!?.,]{2,}', '', t_clean)
-        #     if t_clean and t_clean not in self.stopwords:
-        #         cleaned_tokens.append(t_clean)
-        #
-        # return " ".join(cleaned_tokens)
-        if text is None:
-            return ""
+    def _clean_text(self, text: Any) -> Any:
+        if not isinstance(text, str):
+            return text
 
-            # Convert to string and lowercase if needed
-        s = str(text)
-        if self.lower:
-            s = s.lower()
+        s = text.lower() if self.lower else text
 
-        # Remove punctuation
+        # remove punctuation
         s = s.translate(str.maketrans("", "", string.punctuation))
 
-        # Tokenize (simple whitespace split is enough after punctuation removed)
-        tokens = s.split()
+        # tokenize
+        tokens = self._tokenize(s) if self._tokenize else s.split()
 
-        # Remove stopwords
+        # remove stopwords
         filtered = [t for t in tokens if t not in self.stopwords]
 
         return " ".join(filtered)
 
-    def transform(self, X: Iterable[Any]) -> Any:
-        self.logger.info(f"Applying StopwordRemover on field '{self.field}'")
+    def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        df = df.copy()
 
-        # pandas.DataFrame path (main)
-        if pd is not None and isinstance(X, pd.DataFrame):
-            df = X.copy()
+        target_columns = (
+            self.columns
+            if self.columns is not None
+            else df.select_dtypes(include=["object", "string"]).columns
+        )
 
-            if self.field not in df.columns:
-                self.logger.warning(
-                    f"Field '{self.field}' not present in DataFrame; returning original DataFrame"
-                )
-                return df
+        self.logger.info(f"Applying StopwordRemover to columns: {list(target_columns)}")
 
-            df[self.field] = df[self.field].apply(self._clean_text)
+        for col in target_columns:
+            if col not in df.columns:
+                self.logger.warning(f"Column '{col}' not found, skipping")
+                continue
 
-            self.logger.info("Completed StopwordRemover on DataFrame")
-            return df
+            df[col] = df[col].apply(self._clean_text)
 
-        # terable path (fallback)
-        out = [self._clean_text(item) for item in X]
-
-        self.logger.info("Completed StopwordRemover on iterable")
-        return out
+        return df
 
     def get_params(self) -> dict:
         return {
-            "field": self.field,
+            "columns": self.columns,
             "language": self.language,
             "lower": self.lower,
             "stopwords_count": len(self.stopwords),
