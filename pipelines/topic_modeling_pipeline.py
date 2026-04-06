@@ -61,6 +61,7 @@ class TopicModelingPipeline(Pipeline):
             self.logger.info(f"Starting topic experiment {i} ({run_name})")
 
             # Work on a copy so metadata is preserved
+            self.logger.info("Topic modelling pipeline - data type is %s", type(X))
             X_exp = X.copy()
 
             # Preprocessing for experiment (only applied to text field)
@@ -70,7 +71,23 @@ class TopicModelingPipeline(Pipeline):
                          for pre in preprocessing_steps]
                 preprocessor = SequentialPreprocessor(steps)
 
-                # Combine text fields if necessary
+                # # Combine text fields if necessary
+                # if isinstance(tf, (list, tuple)):
+                #     combined = X_exp[tf[0]].fillna("")
+                #     for col in tf[1:]:
+                #         combined = combined + " " + X_exp[col].fillna("")
+                # else:
+                #     combined = X_exp[tf].fillna("")
+                #
+                # self.logger.info(f"Applying {len(steps)} preprocessors to text field(s): {tf}")
+                # combined_transformed = preprocessor.fit_transform(combined)
+                #
+                # # Attach back to a dedicated column used by the experiment
+                # X_exp[self.combined_text_field_name] = combined_transformed
+                self.logger.info(f"Applying {len(steps)} preprocessors to DataFrame")
+                X_exp = preprocessor.fit_transform(X_exp)
+
+                # Now combine AFTER preprocessing
                 if isinstance(tf, (list, tuple)):
                     combined = X_exp[tf[0]].fillna("")
                     for col in tf[1:]:
@@ -78,11 +95,7 @@ class TopicModelingPipeline(Pipeline):
                 else:
                     combined = X_exp[tf].fillna("")
 
-                self.logger.info(f"Applying {len(steps)} preprocessors to text field(s): {tf}")
-                combined_transformed = preprocessor.fit_transform(combined)
-
-                # Attach back to a dedicated column used by the experiment
-                X_exp[self.combined_text_field_name] = combined_transformed
+                X_exp[self.combined_text_field_name] = combined
             else:
                 # No preprocessors: just combine fields into column
                 if isinstance(tf, (list, tuple)):

@@ -534,9 +534,11 @@ pipelines:
             save_path: output/topic_modelling/bertopic_e5
           preprocessing:
             - name: remove_urls
-              applies_to: text
               params:
-                field: "QuestionText"
+                columns: ["QuestionText", "AnswerText"]
+            - name: stopword_remover
+              params:
+                - columns: ["QuestionText", "AnswerText"]
           visualisations:
             - name: topic_distribution
               output_dir: output/topic_modelling/bertopic_e5
@@ -669,25 +671,16 @@ pipelines:
             save_path: output/topic_modelling/boards/bertopic_default
           preprocessing:
             - name: remove_urls
-              applies_to: text
               params:
-                field: "DiscussionBody"
+                columns: ["DiscussionBody", "CommentBody"]
             - name: stopword_remover
               params:
                 language: "english"
                 lower: true
-                field: "DiscussionBody"
-            - name: remove_urls
-              applies_to: data
-              params:
-                field: "CommentBody"
-            - name: stopword_remover
-              params:
-                language: "english"
-                lower: true
-                field: "CommentBody"
+                columns:  ["DiscussionBody", "CommentBody"]
             - name: remove_html_tags
-              columns: ["DiscussionBody", "CommentBody"]
+              params:
+                columns: ["DiscussionBody", "CommentBody"]
           visualisations:
             - name: topic_distribution
               output_dir: output/topic_modelling/boards/bertopic_default
@@ -710,9 +703,16 @@ pipelines:
             save_path: output/topic_modelling/boards/bertopic_e5
           preprocessing:
             - name: remove_urls
-              applies_to: data
               params:
-                field: "QuestionText"
+                columns: [ "DiscussionBody", "CommentBody" ]
+            - name: stopword_remover
+              params:
+                language: "english"
+                lower: true
+                columns: [ "DiscussionBody", "CommentBody" ]
+            - name: remove_html_tags
+              params:
+                columns: [ "DiscussionBody", "CommentBody" ]
           visualisations:
             - name: topic_distribution
               output_dir: output/topic_modelling/boards/bertopic_e5
