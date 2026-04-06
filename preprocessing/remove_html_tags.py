@@ -3,7 +3,8 @@ from logs.logger import get_logger
 import re
 import pandas as pd
 from typing import List, Optional
-
+import html
+from bs4 import BeautifulSoup
 
 class RemoveHTMLTags(Preprocessor):
     """
@@ -35,26 +36,52 @@ class RemoveHTMLTags(Preprocessor):
     def fit(self, X):
         return self
 
+    # def _clean_value(self, v):
+    #     try:
+    #         if pd.isna(v):
+    #             return v
+    #
+    #         if not isinstance(v, str):
+    #             return v
+    #
+    #         s = v
+    #
+    #         # replace <br> first
+    #         s = self._re_br.sub(self.br_replace, s)
+    #
+    #         # remove all other tags
+    #         s = self._re_tags.sub("", s)
+    #
+    #         if self.strip:
+    #             s = s.strip()
+    #
+    #         return s
+    #
+    #     except Exception as e:
+    #         self.logger.warning(f"Failed to clean value: {e}")
+    #         return v
+
     def _clean_value(self, v):
         try:
-            if pd.isna(v):
+            if pd.isna(v) or not isinstance(v, str):
                 return v
 
-            if not isinstance(v, str):
-                return v
 
-            s = v
 
-            # replace <br> first
-            s = self._re_br.sub(self.br_replace, s)
+            # 1. Decode HTML entities
+            s = html.unescape(v)
 
-            # remove all other tags
-            s = self._re_tags.sub("", s)
+            # 2. Remove embedded JSON blobs
+            s = re.sub(r'data-embedjson=".*?"', '', s, flags=re.DOTALL)
 
-            if self.strip:
-                s = s.strip()
+            # 3. Parse HTML properly
+            soup = BeautifulSoup(s, "html.parser")
+            text = soup.get_text(" ")
 
-            return s
+            # 4. Normalize whitespace
+            text = re.sub(r"\s+", " ", text).strip()
+
+            return text
 
         except Exception as e:
             self.logger.warning(f"Failed to clean value: {e}")

@@ -635,7 +635,7 @@ pipelines:
 
   - name: boards_discussions_extract
     type: pipelines.data_extractor_pipeline.DataExtractorPipeline
-    enabled: true
+    enabled: false
     extractor_type: table
     params:
       extractor_params:
@@ -648,7 +648,7 @@ pipelines:
   # Sample Topic Modelling pipeline using BERTopic
   - name: topic_modeling_bertopic
     type: pipelines.topic_modeling_pipeline.TopicModelingPipeline
-    enabled: true
+    enabled: false
     params:
       model_name: bertopic
       evaluator_name: topic_modeling
@@ -725,7 +725,7 @@ pipelines:
 # Sample Data Saver pipeline: writes a provided DataFrame to SQL Server
   - name: save_extracted_table
     type: pipelines.data_saver_pipeline.DataSaverPipeline
-    enabled: true
+    enabled: false
     params:
       saver_name: sql_server
       table_name: boards_topic_output
@@ -733,3 +733,82 @@ pipelines:
       chunk_size: 1000
       schema: dbo
       connector_params: {}
+
+
+    #--------------------------------------------------------------------------
+      # EDA on oireachtas questions
+      #--------------------------------------------------------------------------
+  - name: oireachtas_question_document_eda
+    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+    enabled: false
+    extractor_type: table
+    params:
+      extractor_params:
+        model: OireachtasQuestion
+        filters:
+          QuestionDate:
+            from: "2025-01-01"
+            to: "2025-12-31"
+
+## Example EDA step for term frequency computation
+#  - name: eda
+#    type: pipelines.eda_pipeline.EDAPipeline
+#    params:
+#      save_path: "output/eda"
+#      steps:
+#        - name: term_frequency
+#          params:
+#            fields_to_combine: ["QuestionText", "AnswerText"]
+#            combined_field_name: "CombinedQA"
+#            target_field: "CombinedQA"
+#            saver_name: sql_server
+#            table_name: oireachtas_term_frequency
+#            if_exists: replace
+#            chunk_size: 1000
+#            schema: dbo
+#            connector_params: {}
+
+
+#--------------------------------------------------------------------------
+      # EDA on boards discussions
+      #--------------------------------------------------------------------------
+  - name: oireachtas_question_document_eda
+    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+    enabled: true
+    extractor_type: table
+    params:
+      extractor_params:
+        model: BoardsConsolidated
+#        filters:
+#          QuestionDate:
+#            from: "2025-01-01"
+#            to: "2025-12-31"
+
+
+  - name: preprocess_boards_data
+    type: pipelines.preprocessing_pipeline.PreprocessingPipeline
+    enabled: true
+    params:
+      preprocessors:
+        - name: remove_html_tags
+          params:
+            columns: ["DiscussionBody", "CommentBody"]
+
+# Example EDA step for term frequency computation
+  - name: eda
+    type: pipelines.eda_pipeline.EDAPipeline
+    params:
+      save_path: "output/eda"
+      steps:
+        - name: term_frequency
+          params:
+            fields_to_combine: ["DiscussionBody", "CommentBody"]
+            combined_field_name: "CombinedBody"
+            target_field: "CombinedBody"
+            saver_name: sql_server
+            table_name: boards_term_frequency
+            if_exists: replace
+            chunk_size: 1000
+            schema: dbo
+            connector_params: {}
+
