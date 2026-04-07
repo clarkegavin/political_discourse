@@ -22,14 +22,12 @@ class RemovePunctuationNoise(Preprocessor):
 
     def __init__(
         self,
-        field: str,
+        columns: list[str],
         pattern: str = r"([!?.,])\1+",
-        replace_with: str = r"\1"
+        replace_with: str = r"\1",
     ):
-        self.field = field
-        if not self.field:
-            raise ValueError("`field` must be provided")
 
+        self.columns = columns
         self._pattern = re.compile(pattern)
         self.replace_with = replace_with
 
@@ -39,7 +37,7 @@ class RemovePunctuationNoise(Preprocessor):
 
     def transform(self, X):
         self.logger.info("Transforming data with RemovePunctuationNoise")
-        # Now supports DataFrame, Series, and iterables
+        # Supports DataFrame, Series, and iterables
         if isinstance(X, pd.DataFrame):
             return self.apply(X)
         elif isinstance(X, pd.Series):
@@ -67,14 +65,17 @@ class RemovePunctuationNoise(Preprocessor):
 
     # -------------------------------------------------------------------------
     def apply(self, df: pd.DataFrame) -> pd.DataFrame:
-        if self.field not in df.columns:
-            self.logger.warning(
-                f"Field `{self.field}` not found in dataframe; skipping RemovePunctuationNoise."
-            )
-            return df
-
         df = df.copy()
-        df[self.field] = df[self.field].apply(self._clean_value)
+        if not self.columns:
+            self.columns = df.columns.tolist()
+
+        for column in self.columns:
+            if column not in df.columns:
+                self.logger.warning(
+                    f"Column `{column}` not found in dataframe; skipping."
+                )
+                continue
+            df[column] = df[column].apply(self._clean_value)
         return df
 
     # Alias for pipelines

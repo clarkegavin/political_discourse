@@ -654,7 +654,7 @@ pipelines:
       evaluator_name: topic_modeling
       mlflow_experiment: topic_modelling
       default_text_field: ["DiscussionBody", "CommentBody"]
-      combined_text_field_name: "CombinedText" # new field that combines text from default_text_field for embedding/vectorization
+      combined_text_field_name: "CombinedText" # new field that combines text from default_text_field for embedding
       experiments:
         - run_name: bertopic_default
           params:
@@ -770,8 +770,8 @@ pipelines:
 
 
 #--------------------------------------------------------------------------
-      # EDA on boards discussions
-      #--------------------------------------------------------------------------
+# EDA on boards discussions
+#--------------------------------------------------------------------------
   - name: oireachtas_question_document_eda
     type: pipelines.data_extractor_pipeline.DataExtractorPipeline
     enabled: true
@@ -793,8 +793,37 @@ pipelines:
         - name: remove_html_tags
           params:
             columns: ["DiscussionBody", "CommentBody"]
+        - name: lowercase
+          params:
+            columns: ["DiscussionBody", "CommentBody"]
+        - name: remove_punctuation_noise
+          params:
+              columns: ["DiscussionBody", "CommentBody"]
+        - name: combine_text
+          type: preprocessing.combine_aggregate_text.CombineOrAggregateText
+          params:
+            fields_to_combine: [ "DiscussionBody", "CommentBody" ]
+            combined_field_name: "CombinedBody"
 
-# Example EDA step for term frequency computation
+## Example EDA step for term frequency computation
+#  - name: eda
+#    type: pipelines.eda_pipeline.EDAPipeline
+#    params:
+#      save_path: "output/eda"
+#      steps:
+#        - name: term_frequency
+#          params:
+#            fields_to_combine: ["DiscussionBody", "CommentBody"]
+#            combined_field_name: "CombinedBody"
+#            target_field: "CombinedBody"
+#            saver_name: sql_server
+#            table_name: boards_term_frequency
+#            if_exists: replace
+#            chunk_size: 1000
+#            schema: dbo
+#            connector_params: {}
+#
+ #Example EDA step for term frequency computation - comments are aggregated per discussion to avoid duplicating discussion text
   - name: eda
     type: pipelines.eda_pipeline.EDAPipeline
     params:
@@ -802,13 +831,24 @@ pipelines:
       steps:
         - name: term_frequency
           params:
-            fields_to_combine: ["DiscussionBody", "CommentBody"]
-            combined_field_name: "CombinedBody"
-            target_field: "CombinedBody"
+            fields_to_aggregate: ["DiscussionBody", "CommentBody"]
+            aggregated_field_name: "AggregatedBody"
+            target_field: "AggregatedBody"
+            group_by_field: "DiscussionId"
             saver_name: sql_server
-            table_name: boards_term_frequency
+            table_name: boards_term_frequency_aggregated
             if_exists: replace
             chunk_size: 1000
             schema: dbo
             connector_params: {}
 
+  - name: save_extracted_table
+    type: pipelines.data_saver_pipeline.DataSaverPipeline
+    enabled: false
+    params:
+      saver_name: sql_server
+      table_name: consolidated_boards_clean
+      if_exists: replace
+      chunk_size: 1000
+      schema: dbo
+      connector_params: {}
