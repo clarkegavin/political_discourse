@@ -808,6 +808,9 @@ pipelines:
         - name: remove_repeated_characters # reduces character repetition to a max of 3 to reduce noise in topic modelling (e.g. coooool -> cooool)
           params:
             columns: [ "DiscussionBody", "CommentBody" ]
+        - name: date_normaliser # normalises date expressions to a common placeholder token to reduce noise in topic modelling
+          params:
+            columns: [ "DiscussionBody", "CommentBody" ]
         - name: combine_text
           type: preprocessing.combine_aggregate_text.CombineOrAggregateText
           params:

@@ -45,11 +45,11 @@ class NumericNormalizer(Preprocessor):
 
         # Apply replacements
         # Money
-        text = self._re_money.sub('money_amount', text)
+        text = self._re_money.sub('[MONEY_AMOUNT]', text)
         # Percentages
-        text = self._re_percentage.sub('percentage', text)
+        text = self._re_percentage.sub('[PERCENTAGE]', text)
         # Years
-        text = self._re_year.sub('year', text)
+        text = self._re_year.sub('[YEAR]', text)
 
         # Normalize whitespace
         text = self._re_whitespace.sub(' ', text)
