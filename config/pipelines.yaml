@@ -805,7 +805,8 @@ pipelines:
             fields_to_combine: [ "DiscussionBody", "CommentBody" ]
             combined_field_name: "CombinedBody"
 
-## Example EDA step for term frequency computation
+## Example EDA step for term frequency computation - as this contains
+## duplicated discussion text for each comment, we should not use this.
 #  - name: eda
 #    type: pipelines.eda_pipeline.EDAPipeline
 #    params:
@@ -844,7 +845,7 @@ pipelines:
 
   - name: save_extracted_table
     type: pipelines.data_saver_pipeline.DataSaverPipeline
-    enabled: false
+    enabled: true
     params:
       saver_name: sql_server
       table_name: consolidated_boards_clean
