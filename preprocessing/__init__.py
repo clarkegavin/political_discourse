@@ -25,6 +25,7 @@ from .normalise_feature import NormaliseFeature
 from .cyclic_encode import CyclicEncode
 from .combine_aggregate_text import CombineOrAggregateText
 from .numeric_normalizer import NumericNormalizer
+from .normalize_dates import DateNormalizer
 import nltk
 
 # Register built-in preprocessors
@@ -75,6 +76,8 @@ PreprocessorFactory.register("combine_text", CombineOrAggregateText)
 PreprocessorFactory.register("aggregate_text", CombineOrAggregateText)
 PreprocessorFactory.register("numeric_normalizer", NumericNormalizer)
 PreprocessorFactory.register("numeric_normaliser", NumericNormalizer)
+PreprocessorFactory.register("date_normalizer", DateNormalizer)
+PreprocessorFactory.register("date_normaliser", DateNormalizer)
 
 # List of required resources
 REQUIRED_NLTK_RESOURCES = ["punkt", "stopwords"]
