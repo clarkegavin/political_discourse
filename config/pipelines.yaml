@@ -799,6 +799,15 @@ pipelines:
         - name: remove_punctuation_noise
           params:
               columns: ["DiscussionBody", "CommentBody"]
+        - name: remove_urls
+          params:
+            columns: ["DiscussionBody", "CommentBody"]
+        - name: numeric_normaliser # imputes a placeholder token for numeric values to reduce noise in topic modelling
+          params:
+            columns: [ "DiscussionBody", "CommentBody" ]
+        - name: remove_repeated_characters # reduces character repetition to a max of 3 to reduce noise in topic modelling (e.g. coooool -> cooool)
+          params:
+            columns: [ "DiscussionBody", "CommentBody" ]
         - name: combine_text
           type: preprocessing.combine_aggregate_text.CombineOrAggregateText
           params:

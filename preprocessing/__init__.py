@@ -24,6 +24,7 @@ from .catalog_count import CatalogCount
 from .normalise_feature import NormaliseFeature
 from .cyclic_encode import CyclicEncode
 from .combine_aggregate_text import CombineOrAggregateText
+from .numeric_normalizer import NumericNormalizer
 import nltk
 
 # Register built-in preprocessors
@@ -72,6 +73,8 @@ PreprocessorFactory.register("cyclic", CyclicEncode)
 PreprocessorFactory.register("combine_or_aggregate_text", CombineOrAggregateText)
 PreprocessorFactory.register("combine_text", CombineOrAggregateText)
 PreprocessorFactory.register("aggregate_text", CombineOrAggregateText)
+PreprocessorFactory.register("numeric_normalizer", NumericNormalizer)
+PreprocessorFactory.register("numeric_normaliser", NumericNormalizer)
 
 # List of required resources
 REQUIRED_NLTK_RESOURCES = ["punkt", "stopwords"]
