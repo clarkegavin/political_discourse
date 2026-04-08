@@ -1,94 +1,109 @@
-from .base import Preprocessor
-from logs.logger import get_logger
 import re
+import html
 import pandas as pd
 from typing import List, Optional
+from bs4 import BeautifulSoup
+
+from .base import Preprocessor
+from logs.logger import get_logger
 
 
 class RemoveHTMLTags(Preprocessor):
     """
-    Removes HTML tags from specified DataFrame columns while preserving inner text.
-
-    - Replaces <br> and <br/> with a configurable separator
-    - Removes other HTML tags but keeps inner text
+    Aggressive cleaning for boards.ie style posts.
+    - Completely removes all js-embed divs and spans (quotes, PDFs, links)
+    - Keeps only the actual main comment text
     """
 
-    def __init__(
-        self,
-        columns: Optional[List[str]] = None,
-        br_replace: str = ", ",
-        strip: bool = True,
-    ):
+    def __init__(self, columns: Optional[List[str]] = None, strip: bool = True):
         self.columns = columns
-        self.br_replace = br_replace
         self.strip = strip
-
         self.logger = get_logger(self.__class__.__name__)
-        self.logger.info(
-            f"Initialized RemoveHTMLTags(columns={self.columns}, br_replace='{self.br_replace}', strip={self.strip})"
-        )
+        self.logger.info(f"Initialized RemoveHTMLTags(columns={self.columns}, strip={self.strip})")
 
-        # compiled regexes
-        self._re_br = re.compile(r"<br\s*/?>", flags=re.IGNORECASE)
-        self._re_tags = re.compile(r"<[^>]+>")
+        self._re_whitespace = re.compile(r"\s+")
 
     def fit(self, X):
+        # Stateless transformer
         return self
 
-    def _clean_value(self, v):
-        try:
-            if pd.isna(v):
-                return v
+    def _remove_embed_blocks(self, text: str) -> str:
+        """Remove entire embed divs and spans (most important step)"""
+        if not text:
+            return text
 
-            if not isinstance(v, str):
-                return v
+        # 1. Remove entire <div class="js-embed ..."> ... </div> (handles malformed)
+        text = re.sub(r'<div[^>]*class="[^"]*js-embed[^"]*"[^>]*>.*?</div>',
+                      ' ', text, flags=re.DOTALL | re.IGNORECASE)
 
-            s = v
+        # 2. Remove entire <span class="js-embed ..."> ... </span>
+        text = re.sub(r'<span[^>]*class="[^"]*js-embed[^"]*"[^>]*>.*?</span>',
+                      ' ', text, flags=re.DOTALL | re.IGNORECASE)
 
-            # replace <br> first
-            s = self._re_br.sub(self.br_replace, s)
+        # 3. Safety: remove any remaining data-embedjson blocks
+        text = re.sub(r'data-embedjson="[^"]*"', ' ', text, flags=re.DOTALL)
 
-            # remove all other tags
-            s = self._re_tags.sub("", s)
+        return text
 
-            if self.strip:
-                s = s.strip()
+    def _clean_text(self, text: str) -> str:
+        """Full cleaning pipeline"""
+        if not isinstance(text, str) or not text.strip():
+            return ""
 
-            return s
+        # Decode HTML entities first
+        text = html.unescape(text)
 
-        except Exception as e:
-            self.logger.warning(f"Failed to clean value: {e}")
-            return v
+        # Remove entire embed blocks (critical)
+        text = self._remove_embed_blocks(text)
+
+        # Remove scripts, styles
+        text = re.sub(r'<script.*?</script>|<style.*?</style>', ' ', text, flags=re.DOTALL | re.IGNORECASE)
+
+        # Remove all <a> tags and their content
+        text = re.sub(r'<a[^>]*>.*?</a>', ' ', text, flags=re.DOTALL | re.IGNORECASE)
+
+        # Remove all remaining HTML tags
+        text = re.sub(r'<[^>]+>', ' ', text)
+
+        # Remove PDF binary garbage (just in case anything leaked)
+        text = re.sub(r'%PDF-.*?(?:endobj|endstream)', ' ', text, flags=re.DOTALL)
+        text = re.sub(r'\d+\s+0\s+obj', ' ', text)
+
+        # Normalize whitespace
+        text = self._re_whitespace.sub(' ', text)
+        text = re.sub(r'\s+([.,!?])', r'\1', text)  # fix punctuation spacing
+
+        return text.strip()
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
         if not isinstance(df, pd.DataFrame):
             raise ValueError("RemoveHTMLTags.transform expects a pandas DataFrame")
 
         df = df.copy()
-
-        # Correct default behaviour
-        target_columns = (
-            self.columns
-            if self.columns is not None
-            else df.select_dtypes(include=["object", "string"]).columns
-        )
+        target_columns = (self.columns if self.columns is not None
+                          else df.select_dtypes(include=["object", "string"]).columns)
 
         self.logger.info(f"Applying RemoveHTMLTags to columns: {list(target_columns)}")
 
         for col in target_columns:
             if col not in df.columns:
-                self.logger.warning(f"Column '{col}' not found, skipping")
                 continue
 
-            self.logger.info(f"Cleaning HTML tags in column: {col}")
-            df[col] = df[col].apply(self._clean_value)
+            self.logger.info(f"Cleaning column: {col}")
 
-        self.logger.info("Completed RemoveHTMLTags.transform")
+            s = df[col].fillna("").astype(str)
+            s = s.str.strip()  # optional: clean whitespace early
+
+            # Apply cleaning
+            s = s.map(self._clean_text)
+
+            if self.strip:
+                s = s.str.strip()
+
+            df[col] = s
+
+        self.logger.info("RemoveHTMLTags.transform completed")
         return df
 
     def get_params(self) -> dict:
-        return {
-            "columns": self.columns,
-            "br_replace": self.br_replace,
-            "strip": self.strip,
-        }
+        return {"columns": self.columns, "strip": self.strip}

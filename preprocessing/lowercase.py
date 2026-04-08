@@ -15,7 +15,7 @@ class Lowercase(Preprocessor):
       operating on columns.
     """
 
-    def __init__(self, fields: Optional[List[str]] = None, field: Optional[str] = None):
+    def __init__(self, columns: Optional[List[str]] = None, column: Optional[str] = None):
         """Initialise Lowercase.
 
         Parameters
@@ -25,11 +25,11 @@ class Lowercase(Preprocessor):
         """
         self.logger = get_logger(self.__class__.__name__)
         # normalize legacy `field` -> `fields`
-        if field is not None and (fields is None or len(fields) == 0):
-            fields = [field]
-        self.fields = fields or []
+        if column is not None and (columns is None or len(columns) == 0):
+            columns = [column]
+        self.columns = columns or []
         self.lower_case = True
-        self.logger.info(f"Initialized Lowercase preprocessor fields={self.fields}")
+        self.logger.info(f"Initialized Lowercase preprocessor fields={self.columns}")
 
     def fit(self, X: Iterable[str]):
         # stateless
@@ -46,12 +46,12 @@ class Lowercase(Preprocessor):
 
         # pandas DataFrame path when fields are provided
         if isinstance(X, pd.DataFrame):
-            if not self.fields:
+            if not self.columns:
                 # nothing to do
                 self.logger.warning("Lowercase.transform called with DataFrame but no `fields` configured; returning original DataFrame")
                 return X
             df = X.copy()
-            for col in self.fields:
+            for col in self.columns:
                 if col not in df.columns:
                     self.logger.info(f"Column '{col}' not found in DataFrame; skipping")
                     continue
@@ -76,4 +76,4 @@ class Lowercase(Preprocessor):
         return out
 
     def get_params(self) -> dict:
-        return {"fields": self.fields, "lower_case": self.lower_case}
+        return {"columns": self.columns, "lower_case": self.lower_case}
