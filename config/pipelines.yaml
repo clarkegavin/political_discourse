@@ -772,7 +772,7 @@ pipelines:
 #--------------------------------------------------------------------------
 # EDA on boards discussions
 #--------------------------------------------------------------------------
-  - name: oireachtas_question_document_eda
+  - name: boards_consolidated_data
     type: pipelines.data_extractor_pipeline.DataExtractorPipeline
     enabled: true
     extractor_type: table
