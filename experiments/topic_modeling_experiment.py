@@ -2,11 +2,9 @@
 from .base import Experiment
 from logs.logger import get_logger
 from evaluators.factory import EvaluatorFactory
-from visualisations.factory import VisualisationFactory
 from models.factory import ModelFactory
 from vectorizers.factory import VectorizerFactory
 from embedding_models.factory import EmbeddingModelFactory
-import mlflow
 import pandas as pd
 import os
 from typing import Optional, Dict, Any
@@ -77,6 +75,7 @@ class TopicModelingExperiment(Experiment):
 
 
 
+
     def _attach_topics(self, topics, probs, topic_info):
         """Attach topic assignments to the original dataframe and return result df."""
         df = self.X.copy()
@@ -130,209 +129,142 @@ class TopicModelingExperiment(Experiment):
         self.logger.info(f"Extracted {len(docs)} documents for topic modeling from combined text field '{self.combined_text_field_name}'")
         topic_info = None
 
-        with mlflow.start_run(run_name=self.name):
-            # Build model via factory
-            self.model = ModelFactory.get_model(self.model_name, **(self.model_params or {}))
+        # Build model via factory
+        self.model = ModelFactory.get_model(self.model_name, **(self.model_params or {}))
 
-            # For non-bertopic models, use embedding_model if provided via params or default to TF-IDF
-            if not self.model_name.lower().startswith("bertopic"):
-                pass
-                #embedding_model_cfg = self.model_params.get("embedding_model") if isinstance(self.model_params, dict) else None
-                # embedding_model_cfg = self.kwargs.get("embedding_model") if isinstance(self.kwargs, dict) else None
-                # if embedding_model_cfg:
-                #     vec_name = embedding_model_cfg.get("name")
-                #     vec_params = embedding_model_cfg.get("params", {})
-                #     embedding_model = VectorizerFactory.get_vectorizer(vec_name, **vec_params)
-                #     X_vec = embedding_model.fit_transform(pd.Series(docs))
-                # else:
-                #     self.logger.warning("No embedding_model specified for non-BERTopic model; defaulting to TF-IDF with max_features=20000")
-                #     # default TF-IDF
-                #     vec = TfidfVectorizer(max_features=20000)
-                #     X_vec = vec.fit_transform(docs)
-                #
-                # # Fit / transform using model wrapper
-                # try:
-                #     topics_matrix = self.model.fit_transform(X_vec)
-                #     # topics_matrix: doc x topic distribution
-                #     if hasattr(topics_matrix, "argmax"):
-                #         import numpy as np
-                #         top = np.argmax(topics_matrix, axis=1)
-                #         probs = topics_matrix.max(axis=1).tolist()
-                #         topics = top.tolist()
-                #     else:
-                #         topics = [int(t) for t in topics_matrix]
-                #         probs = [1.0 for _ in topics]
-                # except Exception as e:
-                #     self.logger.error(f"Model fit_transform failed: {e}")
-                #     raise
+        # For non-bertopic models, use embedding_model if provided via params or default to TF-IDF
+        if not self.model_name.lower().startswith("bertopic"):
+            # If an embedding_model is provided via kwargs, use VectorizerFactory/EmbeddingModelFactory as appropriate
+            embedding_model_cfg = self.kwargs.get("embedding_model")
+            if embedding_model_cfg:
+                vec_name = embedding_model_cfg.get("name")
+                vec_params = embedding_model_cfg.get("params", {})
+                embedding_model = VectorizerFactory.get_vectorizer(vec_name, **vec_params)
+                X_vec = embedding_model.fit_transform(pd.Series(docs))
             else:
-                # BERTopic via factory wrapper
-                self.logger.info(f"Instantiating BERTopic model with params: {self.model_params}")
-                embedding_model_cfg = self.kwargs.get("embedding_model")
+                # default TF-IDF
+                vec = TfidfVectorizer(max_features=20000)
+                X_vec = vec.fit_transform(docs)
 
-                if embedding_model_cfg:
-                    self.logger.info(f"Using Embedding Model '{embedding_model_cfg.get('name')}' for BERTopic embeddings with column '{embedding_model_cfg.get('column')}' and model_name '{embedding_model_cfg.get('model_name')}'")
-                    embedding_model = EmbeddingModelFactory.get_embedding_model(
-                        embedding_model_cfg.get("name"),
-                        column=embedding_model_cfg.get("column"),
-                        model_name=embedding_model_cfg.get("model_name")
-                    )
-
-                    self.logger.info(f"Fitting embedding_model on BERTopic input texts")
-                    embeddings = embedding_model.transform(self.X)
-                    self.logger.info(f"Embedding model produced embeddings with shape {embeddings.shape}")
-
-                    topics, probs = self.model.fit_transform(docs, embeddings)
-                    self.logger.info(f"BERTopic model fit_transform completed with embedding_model; assigned topics for {len(topics)} documents")
-                else:
-                    self.logger.info("No custom embedding_model specified for BERTopic; using default embedding model")
-                    topics, probs = self.model.fit_transform(docs)
-                # get topic info
-                try:
-                    topic_info = self.model.get_topic_info()
-                    if topic_info is not None:
-                        csv_path = os.path.join(self.save_path or ".", f"{self.name}_topic_info.csv")
-                        topic_info.to_csv(csv_path, index=False)
-                        mlflow.log_artifact(csv_path)
-
-                    #mlflow.log_artifact(topic_info.to_csv(index=False), artifact_path=f"{self.name}_topic_info.csv")
-                except Exception as e:
-                    self.logger.warning(f"Could not get topic info: {e}")
-
-            # Attach back
-            result_df = self._attach_topics(topics=topics, probs=probs, topic_info=topic_info)
-            self.logger.info(f"Attached topic assignments to original dataframe; result shape: {result_df.shape}")
-
-
-            # Evaluate
-            self.logger.info(f"Evaluating topic model assignments for experiment '{self.name}' using evaluator '{self.evaluator_name}'")
             try:
-                metrics = self.evaluator.evaluate(self.X, topics, self.model)
-                self.logger.info(f"Evaluator returned metrics: {metrics}")
-                for k, v in metrics.items():
-                    self.logger.info(f"Logging metric '{k}': {v}")
-                    if isinstance(v, (int, float)):
-                        mlflow.log_metric(k, v)
+                topics_matrix = self.model.fit_transform(X_vec)
+                # topics_matrix: could be
+                # - 1D list/array of topic ids
+                # - 2D array/matrix of doc x topic distribution
+                # - list of lists (handle defensively)
+                import numpy as _np
+
+                try:
+                    arr = _np.array(topics_matrix)
+                except Exception:
+                    arr = None
+
+                if arr is not None and hasattr(arr, 'ndim'):
+                    if arr.ndim == 1:
+                        # 1D: elements may still be lists/objects
+                        if arr.dtype == object and len(arr) > 0 and isinstance(arr[0], (list, tuple, _np.ndarray)):
+                            # take first element of each inner list as topic id
+                            topics = [int(v[0]) if len(v) > 0 else -1 for v in arr]
+                            probs = [1.0 for _ in topics]
+                        else:
+                            topics = arr.astype(int).tolist()
+                            probs = [1.0 for _ in topics]
+                    elif arr.ndim == 2:
+                        top = _np.argmax(arr, axis=1)
+                        probs = arr.max(axis=1).tolist()
+                        topics = top.tolist()
                     else:
-                        # save dict/list metrics as artifacts
-                        self.logger.info(f"Saving non-numeric metric '{k}' as artifact")
-                        filename = f"{k}.json"
-                        with open(filename, "w") as f:
-                            json.dump(v, f)
-                        mlflow.log_artifact(filename)
+                        # unexpected shape: fall back to iteration
+                        topics = []
+                        for t in topics_matrix:
+                            if isinstance(t, (list, tuple, _np.ndarray)):
+                                topics.append(int(t[0]) if len(t) > 0 else -1)
+                            else:
+                                topics.append(int(t))
+                        probs = [1.0 for _ in topics]
+                else:
+                    # not convertible to numpy array; iterate defensively
+                    topics = []
+                    for t in topics_matrix:
+                        if isinstance(t, (list, tuple)):
+                            topics.append(int(t[0]) if len(t) > 0 else -1)
+                        else:
+                            topics.append(int(t))
+                    probs = [1.0 for _ in topics]
             except Exception as e:
-                self.logger.warning(f"Evaluator failed: {e}")
+                self.logger.error(f"Model fit_transform failed: {e}")
+                raise
+        else:
+            # BERTopic via factory wrapper
+            self.logger.info(f"Instantiating BERTopic model with params: {self.model_params}")
+            embedding_model_cfg = self.model_params.get("embedding_model")
+            self.logger.info(f"BERTopic embedding_model config: {embedding_model_cfg}")
+            # tst_model_cfg = self.model_params.get("embedding_model") if self.model_params else None
+            # self.logger.info(f"BERTopic model_params embedding_model config: {tst_model_cfg}")
 
-            # log parameters
-            self._log_params()
+            if embedding_model_cfg:
+                self.logger.info(f"Using Embedding Model '{embedding_model_cfg.get('name')}' for BERTopic embeddings with column '{embedding_model_cfg.get('column')}' and model_name '{embedding_model_cfg.get('model_name')}'")
+                embedding_model = EmbeddingModelFactory.get_embedding_model(
+                    embedding_model_cfg.get("name"),
+                    column=embedding_model_cfg.get("column"),
+                    model_name=embedding_model_cfg.get("model_name"),
+                    params = embedding_model_cfg.get("params", {})
+                )
 
-            self.logger.info(f"Completed evaluation for experiment '{self.name}'")
+                self.logger.info(f"Fitting embedding_model on BERTopic input texts")
+                embeddings = embedding_model.transform(self.X)
+                self.logger.info(f"Embedding model produced embeddings with shape {embeddings.shape}")
 
-            # Save artifacts
-            if self.save_path:
-                self.logger.info(f"Saving artifacts for experiment '{self.name}' to {self.save_path}")
+                topics, probs = self.model.fit_transform(docs, embeddings)
+                self.logger.info(f"BERTopic model fit_transform completed with embedding_model; assigned topics for {len(topics)} documents")
+            else:
+                self.logger.info("No custom embedding_model specified for BERTopic; using default embedding model")
+                topics, probs = self.model.fit_transform(docs)
+        # get topic info
+        try:
+            topic_info = self.model.get_topic_info()
+            if topic_info is not None and self.save_path:
+                self.logger.info(f"Saving topic info to CSV at {self.save_path}")
+                csv_path = os.path.join(self.save_path or ".", f"{self.name}_topic_info.csv")
                 os.makedirs(self.save_path, exist_ok=True)
-                # Save per-document topics
-                doc_path = os.path.join(self.save_path, f"{self.name}_doc_topics.parquet")
-                try:
-                    result_df.to_parquet(doc_path)
-                    mlflow.log_artifact(doc_path)
-                except Exception as e:
-                    self.logger.warning(f"Could not save doc topics: {e}")
+                topic_info.to_csv(csv_path, index=False)
+                artifacts = [csv_path]
+            else:
+                artifacts = []
+        except Exception as e:
+            self.logger.warning(f"Could not get topic info: {e}")
+            artifacts = []
 
-            # Visualisations
-            self.logger.info(f"Generating visualisations for experiment '{self.name}'")
-            for viz_cfg in self.visualisations:
-                self.logger.info(f"Creating visualisation with config: {viz_cfg}")
-                viz_name = viz_cfg.get("name")
-                viz_params = {k: v for k, v in viz_cfg.items() if k != "name"}
-                try:
-                    self.logger.info(f"Instantiating visualisation '{viz_name}' with params: {viz_params}")
-                    viz = VisualisationFactory.get_visualisation(viz_name, **viz_params)
-                    if viz:
-                        sig = inspect.signature(viz.plot)
+        # Attach back
+        result_df = self._attach_topics(topics=topics, probs=probs, topic_info=topic_info)
+        self.logger.info(f"Attached topic assignments to original dataframe; result shape: {result_df.shape}")
 
-                        if "model" in sig.parameters:
-                            self.logger.info(f"Visualisation '{viz_name}' supports model parameter; passing model to plot()")
-                            fig = viz.plot(result_df, model=self.model, topic_id = TOPIC_ID)
-                        else:
-                            self.logger.info(f"Visualisation '{viz_name}' does not support model parameter; calling plot() with dataframe only")
-                            fig = viz.plot(result_df)
+        # Experiments are responsible for returning results; evaluation & visualisation are handled by runners
+        metadata = {
+            "model_name": self.model_name,
+            "model_params": self.model_params,
+            "evaluator_name": self.evaluator_name,
+            "evaluator_params": self.evaluator_params,
+            "preprocessing_metadata": self.preprocessing_metadata,
+            "combined_text_field_name": self.combined_text_field_name,
+            "visualisations": self.visualisations,
+            "topics": topics,
+            "model": self.model,
+        }
 
-                        # Handle saving / MLflow
-                        if isinstance(fig, list):
-                            for path in fig:
-                                mlflow.log_artifact(path)
-                        else:
-                            if hasattr(viz, "save") and self.save_path:
-                                filename = viz_cfg.get("filename", f"{self.name}_{viz_name}.png")
-                                full_path = os.path.join(self.save_path, filename)
-                                viz.save(fig, full_path)
-                                mlflow.log_artifact(full_path)
-                except Exception as e:
-                    self.logger.warning(f"Could not create viz {viz_name}: {e}")
-
-        self.logger.info(f"Topic modelling experiment '{self.name}' complete")
-        return result_df
-
+        return {"df": result_df, "metadata": metadata, "artifacts": artifacts}
 
     def _log_params(self):
-        # model_params
-        mlflow.log_param("model_name", self.model_name)
-        for k, v in (self.model_params or {}).items():
-            mlflow.log_param(f"model_param_{k}", v)
+        # Deprecated: experiments should not log directly to MLflow. Use collect_params() instead.
+        return self.collect_params()
 
-        embedding_model_cfg = self.kwargs.get("embedding_model") if isinstance(self.kwargs, dict) else None
-        if embedding_model_cfg:
-            for k, v in embedding_model_cfg.items():
-                if isinstance(v, dict):
-                    for sub_k, sub_v in v.items():
-                        mlflow.log_param(f"embedding_model_{k}_{sub_k}", sub_v)
-                else:
-                    mlflow.log_param(f"embedding_model_{k}", v)
-        # #
-        # # # evaluator_params
-        # # mlflow.log_param("evaluator_name", self.evaluator_name)
-        # # for k, v in (self.evaluator_params or {}).items():
-        # #     mlflow.log_param(f"evaluator_param_{k}", v)
-        # #
-        preprocessing_steps = getattr(self, "preprocessing_metadata", {})
-
-        # If the steps are nested inside 'experiment_preprocessing', unwrap them
-        if isinstance(preprocessing_steps, dict) and "experiment_preprocessing" in preprocessing_steps:
-            preprocessing_steps = preprocessing_steps["experiment_preprocessing"]
-
-        self.logger.info(
-            f"ML Logging preprocessing steps for experiment '{self.name}'; found {len(preprocessing_steps)} steps")
-        self.logger.info(f"Preprocessing steps: {preprocessing_steps}")
-
-        for i, step in enumerate(preprocessing_steps):
-            if isinstance(step, dict):
-                name = step.get("name", str(step))
-                applies_to = step.get("applies_to", "unknown")
-                params = step.get("params", {})
-                self.logger.info(
-                    f"Processing preprocessing step {i}: name={name}, applies_to={applies_to}, params={params}")
-                mlflow.log_param(f"preprocessing_{i}_name", name)
-                mlflow.log_param(f"preprocessing_{i}_applies_to", applies_to)
-                for param_k, param_v in params.items():
-                    mlflow.log_param(f"preprocessing_{i}_param_{param_k}", param_v)
-            else:
-                self.logger.info(f"Processing preprocessing step {i} as string: {step}")
-                mlflow.log_param(f"preprocessing_{i}_name", str(step))
-
-
-        #visualisations = getattr(self, "visualisations", [])
-        self.logger.info(
-            f"ML Logging visualisations for experiment '{self.name}'; found {len(self.visualisations)} visualisations")
-        self.logger.info(f"Visualisations: {self.visualisations}")
-        for i, viz in enumerate(self.visualisations):
-            self.logger.info(f"Processing visualisation {i}: {viz}")
-            if isinstance(viz, dict):
-                mlflow.log_param(f"visualisation_{i}_name", viz.get("name", str(viz)))
-                for k, v in viz.items():
-                    if k != "name":
-                        mlflow.log_param(f"visualisation_{i}_{k}", v)
-            else:
-                # fallback if viz is just a string
-                mlflow.log_param(f"visualisation_{i}_name", str(viz))
+    def collect_params(self) -> dict:
+        """Expose experiment params for external logging by ExperimentRunner."""
+        return {
+            "model_name": self.model_name,
+            **(self.model_params or {}),
+            "evaluator_name": self.evaluator_name,
+            **(self.evaluator_params or {}),
+            "visualisations": self.visualisations,
+            "preprocessing": self.preprocessing_metadata,
+        }

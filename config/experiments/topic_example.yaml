@@ -1,0 +1,18 @@
+# config/experiments/topic_example.yaml
+# Example experiment config for topic modelling
+name: topic_example_run
+model_name: fake_model
+evaluator_name: ev1
+mlflow_experiment: topic_modelling
+visualisations:
+  - name: v1
+    init:
+      figsize: [10,6]
+    plot:
+      title: "Example Topic Viz"
+params:
+  combined_text_field_name: text
+  save_path: output/experiments/topic_example
+sweep:
+  params.nr_topics: [5,10]
+

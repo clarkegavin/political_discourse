@@ -1,0 +1,15 @@
+## config/pipelines/topic_pipeline_example.yaml
+#pipelines:
+#  - name: topic_pipeline_example
+#    type: pipelines.topic_modeling_pipeline.TopicModelingPipeline
+#    params:
+#      model_name: bertopic_default
+#      evaluator_name: topic_modeling
+#      experiments:
+#        - run_name: topic_example_{nr_topics}
+#          params:
+#            combined_text_field_name: text
+#            save_path: output/experiments/topic_example
+#          sweep:
+#            params.nr_topics: [5,10]
+

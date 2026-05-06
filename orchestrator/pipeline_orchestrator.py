@@ -76,6 +76,15 @@ class PipelineOrchestrator:
             self.logger.info("No target encoder at start of orchestration")
 
         for pipeline in self.pipelines:
+            # If the orchestrator has an ExperimentRunner attached, propagate it to the pipeline
+            try:
+                if hasattr(self, "experiment_runner"):
+                    # only set if pipeline allows dynamic attributes (most do) or already has attr
+                    setattr(pipeline, "experiment_runner", getattr(self, "experiment_runner"))
+                    self.logger.debug(f"Attached experiment_runner to pipeline {pipeline.__class__.__name__}")
+            except Exception as e:
+                self.logger.warning(f"Could not attach experiment_runner to pipeline {pipeline.__class__.__name__}: {e}")
+
             if isinstance(pipeline, DataSplitterPipeline):
                 # Split data into train/test
                 splits = pipeline.execute(current_data)

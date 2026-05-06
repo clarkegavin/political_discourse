@@ -52,7 +52,13 @@ class TopicModelingEvaluator(Evaluator):
           dict of metrics
         """
         self.logger.info("Evaluating topic model assignments")
-        estimator = model.estimator
+        self.logger.info(f"Model type received in evaluator: {type(model)}")
+        #estimator = model.estimator
+        if isinstance(model, dict):
+            estimator = model.get("model") or model.get("estimator")
+        else:
+            estimator = getattr(model, "estimator", model)
+
         docs = X[self.combined_text_field_name].fillna("").tolist()
         metrics = {}
 

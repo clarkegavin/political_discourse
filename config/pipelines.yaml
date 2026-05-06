@@ -284,15 +284,15 @@ pipelines:
 
   - name: oireachtas_question_document_eda
     type: pipelines.data_extractor_pipeline.DataExtractorPipeline
-    enabled: false
+    enabled: true
     extractor_type: table
     params:
       extractor_params:
         model: OireachtasQuestion
         filters:
           QuestionDate:
-            from: "2025-01-01"
-            to: "2025-12-31"
+            from: "2025-06-19"
+            to: "2025-06-20"
 
 
   - name: eda
@@ -486,7 +486,7 @@ pipelines:
   # Sample Topic Modelling pipeline using BERTopic
   - name: topic_modeling_bertopic
     type: pipelines.topic_modeling_pipeline.TopicModelingPipeline
-    enabled: false
+    enabled: true
     params:
       model_name: bertopic
       evaluator_name: topic_modeling
@@ -509,9 +509,8 @@ pipelines:
             save_path: output/topic_modelling/bertopic_default
           preprocessing:
             - name: remove_urls
-              applies_to: text
               params:
-                field: "QuestionText"
+                columns: ["QuestionText", "AnswerText"]
           visualisations:
             - name: topic_distribution
               output_dir: output/topic_modelling/bertopic_default
@@ -538,7 +537,9 @@ pipelines:
                 columns: ["QuestionText", "AnswerText"]
             - name: stopword_remover
               params:
-                - columns: ["QuestionText", "AnswerText"]
+                language: "english"
+                lower: true
+                columns: ["QuestionText", "AnswerText"]
           visualisations:
             - name: topic_distribution
               output_dir: output/topic_modelling/bertopic_e5
@@ -774,7 +775,7 @@ pipelines:
 #--------------------------------------------------------------------------
   - name: boards_consolidated_data
     type: pipelines.data_extractor_pipeline.DataExtractorPipeline
-    enabled: true
+    enabled: false
     extractor_type: table
     params:
       extractor_params:
@@ -787,7 +788,7 @@ pipelines:
 
   - name: preprocess_boards_data
     type: pipelines.preprocessing_pipeline.PreprocessingPipeline
-    enabled: true
+    enabled: false
     params:
       preprocessors:
         - name: remove_html_tags
@@ -837,27 +838,27 @@ pipelines:
 #            connector_params: {}
 #
  #Example EDA step for term frequency computation - comments are aggregated per discussion to avoid duplicating discussion text
-  - name: eda
-    type: pipelines.eda_pipeline.EDAPipeline
-    params:
-      save_path: "output/eda"
-      steps:
-        - name: term_frequency
-          params:
-            fields_to_aggregate: ["DiscussionBody", "CommentBody"]
-            aggregated_field_name: "AggregatedBody"
-            target_field: "AggregatedBody"
-            group_by_field: "DiscussionId"
-            saver_name: sql_server
-            table_name: boards_term_frequency_aggregated
-            if_exists: replace
-            chunk_size: 1000
-            schema: dbo
-            connector_params: {}
+#  - name: eda
+#    type: pipelines.eda_pipeline.EDAPipeline
+#    params:
+#      save_path: "output/eda"
+#      steps:
+#        - name: term_frequency
+#          params:
+#            fields_to_aggregate: ["DiscussionBody", "CommentBody"]
+#            aggregated_field_name: "AggregatedBody"
+#            target_field: "AggregatedBody"
+#            group_by_field: "DiscussionId"
+#            saver_name: sql_server
+#            table_name: boards_term_frequency_aggregated
+#            if_exists: replace
+#            chunk_size: 1000
+#            schema: dbo
+#            connector_params: {}
 
   - name: save_extracted_table
     type: pipelines.data_saver_pipeline.DataSaverPipeline
-    enabled: true
+    enabled: false
     params:
       saver_name: sql_server
       table_name: consolidated_boards_clean

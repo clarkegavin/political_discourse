@@ -1,0 +1,20 @@
+# file: `config/experiments/bertopic_default.yaml`
+run_name: "roosebert_k{model_params_nr_topics}_mts{model_params_min_topic_size}"
+params:
+  model_params:
+    embedding_model: # optional custom embedding model config
+      name: bert
+      column: "CombinedText"
+      model_name: "ddore14/RooseBERT-scr-cased"
+save_path: "output/topic_modelling/roosebert_k{model_params_nr_topics}_mts{model_params_min_topic_size}"
+sweep:
+  params.model_params.nr_topics: [ 10 ]
+  params.model_params.min_topic_size: [ 10 ]
+visualisations:
+  - name: topic_distribution
+    init:
+      filename: bertopic_default_topic_distribution.png
+  - name: topic_wordclouds
+    init:
+      filename_prefix: bertopic_default_topic
+      top_n_topics: 10

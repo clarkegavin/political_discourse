@@ -1,0 +1,12 @@
+pipelines:
+  - name: oireachtas_question_document_eda
+    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+    enabled: true
+    extractor_type: table
+    params:
+      extractor_params:
+        model: OireachtasQuestion
+        filters:
+          QuestionDate:
+            from: "2025-06-19"
+            to: "2025-06-20"
