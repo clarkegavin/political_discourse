@@ -1,3 +1,4 @@
+#embedding_models/__init__.py
 from .base import EmbeddingModel
 from .factory import EmbeddingModelFactory
 

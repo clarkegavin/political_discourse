@@ -1,0 +1,17 @@
+# file: `config/pipelines/topic_modeling_bertopic.yaml`
+name: topic_modeling_bertopic
+type: pipelines.topic_modeling_pipeline.TopicModelingPipeline
+enabled: true
+params:
+  model_name: bertopic
+  evaluator_name: topic_modeling
+  mlflow_experiment: topic_modeling
+  default_text_field:
+    - QuestionText
+    - AnswerText
+  combined_text_field_name: CombinedText
+  experiment_refs:
+    - config/experiments/minilm_embeddings.yaml
+    - config/experiments/roberta_embeddings.yaml
+    - config/experiments/rooseberta_embeddings.yaml
+    - config/experiments/mpnet_embeddings.yaml

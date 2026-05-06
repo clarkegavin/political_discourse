@@ -1,0 +1,58 @@
+pipelines:
+  - name: eda
+    type: pipelines.eda_pipeline.EDAPipeline
+    enabled: false
+    params:
+      save_path: output/eda
+      steps:
+      - name: document_length
+        params:
+          columns:
+          - QuestionText
+          - AnswerText
+          unit: characters
+          output_column: character_length
+          viz_params:
+          - name: histogram
+            bins: 30
+            xlabel: Character length
+            ylabel: Number of documents
+            xscale: log
+            density: true
+            filename: oireachtas_character_length_histogram.png
+          - name: boxplot
+            filename: oireachtas_character_length_boxplot.png
+      - name: document_length
+        params:
+          columns:
+          - QuestionText
+          - AnswerText
+          unit: words
+          output_column: word_length
+          viz_params:
+          - name: histogram
+            bins: 30
+            xlabel: Character length
+            ylabel: Number of documents
+            xscale: log
+            density: true
+            filename: oireachtas_words_length_histogram.png
+          - name: boxplot
+            filename: oireachtas_words_length_boxplot.png
+      - name: document_length
+        params:
+          columns:
+          - QuestionText
+          - AnswerText
+          unit: sentences
+          output_column: sentence_length
+          viz_params:
+          - name: histogram
+            bins: 30
+            xlabel: Character length
+            ylabel: Number of documents
+            xscale: log
+            density: true
+            filename: oireachtas_sentence_length_histogram.png
+          - name: boxplot
+            filename: oireachtas_sentence_length_boxplot.png

@@ -1,0 +1,36 @@
+# file: `config/experiments/bertopic_default.yaml`
+run_name: "bert_k{model_params_nr_topics}_mts{model_params_min_topic_size}"
+params:
+  model_params:
+#    nr_topics: null # will be overridden by sweep
+#    min_topic_size: 10 # will be overridden by sweep
+    embedding_model: # optional custom embedding model config
+      name: bert
+      column: "CombinedText"
+      model_name:  "bert-base-nli-mean-tokens"
+      # "sentence-transformers/all-mpnet-base-v2" #  "all-MiniLM-L6-v2" #"sentence-transformers/all-roberta-large-v1"
+#      params:
+#        prefix: "passage" # e5 models require a prefix to be added to the text for embedding generation
+save_path: "output/topic_modelling/bert_k{model_params_nr_topics}_mts{model_params_min_topic_size}"
+sweep:
+  params.model_params.nr_topics: [ 10 ]
+  params.model_params.min_topic_size: [ 10 ]
+#preprocessing: # optional preprocessing steps to be applied before topic modeling - we can do this in a separate preprocessing pipeline or include it here
+#  - name: remove_urls
+#    params:
+#      columns: [QuestionText, AnswerText]
+#  - name: stopword_remover
+#    params:
+#      language: "english"
+#      lower: true
+#      columns: [ "QuestionText", "AnswerText" ]
+visualisations:
+  - name: topic_distribution
+    init:
+      #output_dir: output/topic_modelling/bertopic_default # specifiy specific output dir for visualisation if different from default save_path
+      filename: bertopic_default_topic_distribution.png
+  - name: topic_wordclouds
+    init:
+      #output_dir: output/topic_modelling/bertopic_default
+      filename_prefix: bertopic_default_topic
+      top_n_topics: 10
