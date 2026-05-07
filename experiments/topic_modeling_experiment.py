@@ -5,13 +5,12 @@ from evaluators.factory import EvaluatorFactory
 from models.factory import ModelFactory
 from vectorizers.factory import VectorizerFactory
 from embedding_models.factory import EmbeddingModelFactory
+from reducers.factory import ReducerFactory
 import pandas as pd
 import os
 from typing import Optional, Dict, Any
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
-import json
-import inspect
 
 TOPIC_ID = "_topic_id"
 TOPIC_PROB = "topic_probability"
@@ -122,104 +121,134 @@ class TopicModelingExperiment(Experiment):
 
         return df
 
-    def run(self):
+    # Helper builders to keep run() tidy
+    def _build_embedding_model(self):
+        """Construct embedding model instance from model_params.embedding_model if present."""
+        cfg = (self.model_params or {}).get("embedding_model")
+        if not cfg:
+            return None
+        return EmbeddingModelFactory.get_embedding_model(
+            cfg.get("name"),
+            column=cfg.get("column"),
+            model_name=cfg.get("model_name"),
+            params=cfg.get("params", {}),
+        )
 
+    def _build_vectorizer(self):
+        """Construct a sklearn-style vectorizer for BERTopic or non-BERTopic usage.
+
+        Returns a raw sklearn-like vectorizer (e.g., CountVectorizer/TfidfVectorizer) or None.
+        If the factory returns a wrapper with `.vectorizer`, extract the underlying sklearn object.
+        """
+        cfg = (self.model_params or {}).get("vectorizer")
+        if not cfg:
+            return None
+        name = cfg.get("name")
+        params = cfg.get("params", {}) or {}
+        vec = VectorizerFactory.get_vectorizer(name, **params)
+        # If factory returned a wrapper exposing underlying sklearn vectorizer, unwrap it
+        if hasattr(vec, "vectorizer"):
+            return getattr(vec, "vectorizer")
+        return vec
+
+    def _build_reducer(self):
+        """Build reducer(s) from model_params.dimensionality_reduction_model if provided.
+
+        ReducerFactory.get_reducer accepts a dict or list; return single reducer or None.
+        """
+        cfg = (self.model_params or {}).get("dimensionality_reduction_model")
+        if not cfg:
+            return None
+        # ReducerFactory.get_reducer returns list; accept first reducer if list returned
+        reducers = ReducerFactory.get_reducers(cfg) if isinstance(cfg, list) or isinstance(cfg, dict) else []
+        if not reducers:
+            return None
+        return reducers[0]
+
+    def _build_clusterer(self):
+        """Build clusterer (e.g., HDBSCAN) using ModelFactory with config under model_params.clusterer."""
+        cfg = (self.model_params or {}).get("clusterer")
+        if not cfg:
+            return None
+        name = cfg.get("name")
+        params = cfg.get("params", {}) or {}
+        # ModelFactory.get_model will instantiate the clusterer wrapper/class
+        clusterer = ModelFactory.get_model(name, **params)
+        return clusterer
+
+    def _collect_bertopic_kwargs(self):
+        """Collect and return kwargs to pass into BERTopicModel via ModelFactory.
+
+        This will map known keys to the argument names BERTopic expects:
+         - vectorizer -> vectorizer_model
+         - dimensionality_reduction_model -> umap_model
+         - clusterer -> hdbscan_model
+        It will also remove embedding_model from the kwargs because embeddings are computed
+        and passed to fit_transform separately.
+        """
+        model_kwargs = dict(self.model_params or {})
+
+        # Build and inject vectorizer
+        vec = self._build_vectorizer()
+        if vec is not None:
+            model_kwargs.pop("vectorizer", None)
+            model_kwargs["vectorizer_model"] = vec
+
+        # Build and inject reducer (UMAP-like)
+        reducer = self._build_reducer()
+        if reducer is not None:
+            model_kwargs.pop("dimensionality_reduction_model", None)
+            # BERTopic expects umap_model
+            model_kwargs["umap_model"] = reducer
+
+        # Build and inject clusterer (HDBSCAN-like)
+        clusterer = self._build_clusterer()
+        if clusterer is not None:
+            model_kwargs.pop("clusterer", None)
+            # BERTopic expects hdbscan_model
+            model_kwargs["hdbscan_model"] = clusterer
+
+        # Remove embedding_model config because we compute embeddings in the experiment and pass them
+        if "embedding_model" in model_kwargs:
+            model_kwargs.pop("embedding_model", None)
+
+        return model_kwargs
+
+    def run(self):
         self.logger.info(f"Running topic modelling experiment '{self.name}' with model {self.model_name}")
         docs = self.X[self.combined_text_field_name].fillna("").tolist()
         self.logger.info(f"Extracted {len(docs)} documents for topic modeling from combined text field '{self.combined_text_field_name}'")
         topic_info = None
 
-        # Build model via factory
-        self.model = ModelFactory.get_model(self.model_name, **(self.model_params or {}))
-
-        # For non-bertopic models, use embedding_model if provided via params or default to TF-IDF
+        # Only support BERTopic models here. Log and return if another model is requested.
         if not self.model_name.lower().startswith("bertopic"):
-            # If an embedding_model is provided via kwargs, use VectorizerFactory/EmbeddingModelFactory as appropriate
-            embedding_model_cfg = self.kwargs.get("embedding_model")
-            if embedding_model_cfg:
-                vec_name = embedding_model_cfg.get("name")
-                vec_params = embedding_model_cfg.get("params", {})
-                embedding_model = VectorizerFactory.get_vectorizer(vec_name, **vec_params)
-                X_vec = embedding_model.fit_transform(pd.Series(docs))
-            else:
-                # default TF-IDF
-                vec = TfidfVectorizer(max_features=20000)
-                X_vec = vec.fit_transform(docs)
+            self.logger.warning(f"TopicModelingExperiment currently supports BERTopic models only. '{self.model_name}' is not supported.")
+            # Return a no-op result with original dataframe
+            return {"df": self.X.copy(), "metadata": {"model_name": self.model_name}, "artifacts": []}
 
-            try:
-                topics_matrix = self.model.fit_transform(X_vec)
-                # topics_matrix: could be
-                # - 1D list/array of topic ids
-                # - 2D array/matrix of doc x topic distribution
-                # - list of lists (handle defensively)
-                import numpy as _np
+        # BERTopic flow
+        self.logger.info(f"Preparing BERTopic model with params: {self.model_params}")
+        # Build model kwargs by collecting components via helpers
+        model_kwargs = self._collect_bertopic_kwargs()
 
-                try:
-                    arr = _np.array(topics_matrix)
-                except Exception:
-                    arr = None
-
-                if arr is not None and hasattr(arr, 'ndim'):
-                    if arr.ndim == 1:
-                        # 1D: elements may still be lists/objects
-                        if arr.dtype == object and len(arr) > 0 and isinstance(arr[0], (list, tuple, _np.ndarray)):
-                            # take first element of each inner list as topic id
-                            topics = [int(v[0]) if len(v) > 0 else -1 for v in arr]
-                            probs = [1.0 for _ in topics]
-                        else:
-                            topics = arr.astype(int).tolist()
-                            probs = [1.0 for _ in topics]
-                    elif arr.ndim == 2:
-                        top = _np.argmax(arr, axis=1)
-                        probs = arr.max(axis=1).tolist()
-                        topics = top.tolist()
-                    else:
-                        # unexpected shape: fall back to iteration
-                        topics = []
-                        for t in topics_matrix:
-                            if isinstance(t, (list, tuple, _np.ndarray)):
-                                topics.append(int(t[0]) if len(t) > 0 else -1)
-                            else:
-                                topics.append(int(t))
-                        probs = [1.0 for _ in topics]
-                else:
-                    # not convertible to numpy array; iterate defensively
-                    topics = []
-                    for t in topics_matrix:
-                        if isinstance(t, (list, tuple)):
-                            topics.append(int(t[0]) if len(t) > 0 else -1)
-                        else:
-                            topics.append(int(t))
-                    probs = [1.0 for _ in topics]
-            except Exception as e:
-                self.logger.error(f"Model fit_transform failed: {e}")
-                raise
+        # Build embedding model and compute embeddings if present
+        embedding_model = self._build_embedding_model()
+        if embedding_model is not None:
+            self.logger.info(f"Using embedding model: {embedding_model}")
+            embeddings = embedding_model.transform(self.X)
+            self.logger.info(f"Embedding model produced embeddings with shape {embeddings.shape}")
         else:
-            # BERTopic via factory wrapper
-            self.logger.info(f"Instantiating BERTopic model with params: {self.model_params}")
-            embedding_model_cfg = self.model_params.get("embedding_model")
-            self.logger.info(f"BERTopic embedding_model config: {embedding_model_cfg}")
-            # tst_model_cfg = self.model_params.get("embedding_model") if self.model_params else None
-            # self.logger.info(f"BERTopic model_params embedding_model config: {tst_model_cfg}")
+            embeddings = None
 
-            if embedding_model_cfg:
-                self.logger.info(f"Using Embedding Model '{embedding_model_cfg.get('name')}' for BERTopic embeddings with column '{embedding_model_cfg.get('column')}' and model_name '{embedding_model_cfg.get('model_name')}'")
-                embedding_model = EmbeddingModelFactory.get_embedding_model(
-                    embedding_model_cfg.get("name"),
-                    column=embedding_model_cfg.get("column"),
-                    model_name=embedding_model_cfg.get("model_name"),
-                    params = embedding_model_cfg.get("params", {})
-                )
+        # Instantiate BERTopicModel wrapper via ModelFactory with the collected kwargs
+        self.model = ModelFactory.get_model(self.model_name, **model_kwargs)
 
-                self.logger.info(f"Fitting embedding_model on BERTopic input texts")
-                embeddings = embedding_model.transform(self.X)
-                self.logger.info(f"Embedding model produced embeddings with shape {embeddings.shape}")
+        # Fit/transform using docs and optional embeddings
+        if embeddings is not None:
+            topics, probs = self.model.fit_transform(docs, embeddings)
+        else:
+            topics, probs = self.model.fit_transform(docs)
 
-                topics, probs = self.model.fit_transform(docs, embeddings)
-                self.logger.info(f"BERTopic model fit_transform completed with embedding_model; assigned topics for {len(topics)} documents")
-            else:
-                self.logger.info("No custom embedding_model specified for BERTopic; using default embedding model")
-                topics, probs = self.model.fit_transform(docs)
         # get topic info
         try:
             topic_info = self.model.get_topic_info()

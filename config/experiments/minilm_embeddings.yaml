@@ -6,10 +6,21 @@ params:
       name: bert
       column: "CombinedText"
       model_name: "all-MiniLM-L6-v2"
+    vectorizer:
+      name: CountVectorizer
+      params:
+        stop_words: "english"
+        #ngram_range: [1, 2]
+        #min_df: 5
+#      clusterer:
+#        name: HDBSCAN
+#        params:
+#          min_cluster_size: 10
 save_path: "output/topic_modelling/minilm_k{model_params_nr_topics}_mts{model_params_min_topic_size}"
 sweep:
   params.model_params.nr_topics: [ 10 ]
   params.model_params.min_topic_size: [ 10 ]
+  params.model_params.vectorizer.params.ngram_range: [ [1, 1], [1, 2] , [1, 3] ]
 visualisations:
   - name: topic_distribution
     init:

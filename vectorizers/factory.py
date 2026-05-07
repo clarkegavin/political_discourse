@@ -30,3 +30,6 @@ class VectorizerFactory:
 
         cls.logger.info(f"Instantiating vectorizer '{name}' with kwargs: {kwargs}")
         return vectorizer_cls(name=name, **kwargs)
+
+
+
