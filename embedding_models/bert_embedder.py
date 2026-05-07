@@ -19,7 +19,6 @@ class BERTEmbeddingModel(EmbeddingModel):
             self.logger.info(f"Loaded BERT model '{model_name}' successfully.")
         except Exception as e:
             self.logger.warning(f"Failed to load SentenceTransformer model '{model_name}'. Falling back to Transformer + Pooling. Error: {e}")
-
             # fallback: wrap hugging face model with pooling to get sentence embeddings
             word_embedding_model = models.Transformer(model_name)
             pooling_strategy = self.params.get("pooling_strategy", "mean")
