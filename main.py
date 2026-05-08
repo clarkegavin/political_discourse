@@ -5,6 +5,7 @@ from pipelines.factory import PipelineFactory
 from logs.logger import get_logger
 from pathlib import Path
 from experiments.runner import ExperimentRunner
+import os
 
 load_dotenv()
 
@@ -12,6 +13,7 @@ def main():
     # Prefer directory-based config, fall back to legacy single-file YAML
     dir_path = Path("config/pipelines")
     file_path = Path("config/pipelines.yaml")
+    os.environ["LOGNAME"]  = "Gavin"  # Set LOGNAME for consistent logger naming
 
     logger = get_logger("Main")
 

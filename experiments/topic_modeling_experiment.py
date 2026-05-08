@@ -1,4 +1,5 @@
 # experiments/topic_modeling_experiment.py
+from stopwords.provider import StopwordProvider
 from .base import Experiment
 from logs.logger import get_logger
 from evaluators.factory import EvaluatorFactory
@@ -144,7 +145,20 @@ class TopicModelingExperiment(Experiment):
         if not cfg:
             return None
         name = cfg.get("name")
-        params = cfg.get("params", {}) or {}
+        params = cfg.get("params", {}).copy() or {}
+
+        include_defaults = params.pop("include_default_stopwords", False)
+        include_procedural = params.pop("include_procedural_stopwords", False)
+        include_nltk = params.pop("include_nltk_stopwords", False)
+
+        custom_stopwords = StopwordProvider.get_stopwords(
+            include_defaults = include_defaults,
+            include_procedural = include_procedural,
+            include_nltk= include_nltk
+        )
+
+        params["stop_words"] = sorted(list(custom_stopwords)) if custom_stopwords else None
+
         vec = VectorizerFactory.get_vectorizer(name, **params)
         # If factory returned a wrapper exposing underlying sklearn vectorizer, unwrap it
         if hasattr(vec, "vectorizer"):
