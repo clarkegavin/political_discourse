@@ -23,7 +23,7 @@ class StopwordRemover(Preprocessor):
         stopwords: Optional[Iterable[str]] = None,
         lower: bool = True,
         include_nltk: bool = True,
-        include_defaults: bool = True,
+        include_default: bool = True,
         include_procedural: bool = True,
     ):
         self.logger = get_logger(self.__class__.__name__)
@@ -32,18 +32,18 @@ class StopwordRemover(Preprocessor):
         self.language = language
         self.lower = bool(lower)
         self.include_nltk = include_nltk
-        self.include_defaults = include_defaults
+        self.include_default = include_default
         self.include_procedural = include_procedural
 
         self.logger.info(
             f"Initializing StopwordRemover(columns={columns}, language={language}, lower={self.lower})"
         )
 
-        additional_stopwords = set(stopwords)
+        additional_stopwords = set(stopwords or [])
         self.stopwords = additional_stopwords | StopwordProvider.get_stopwords(
             language=language,
             include_nltk=include_nltk,
-            include_defaults=include_defaults,
+            include_default=include_default,
             include_procedural=include_procedural,
         )
 
@@ -97,5 +97,8 @@ class StopwordRemover(Preprocessor):
             "columns": self.columns,
             "language": self.language,
             "lower": self.lower,
+            "include_nltk": self.include_nltk,
+            "include_default": self.include_default,
+            "include_procedural": self.include_procedural,
             "stopwords_count": len(self.stopwords),
         }

@@ -19,7 +19,7 @@ class StopwordProvider:
     def get_stopwords(
             language: str = "english",
             include_nltk: bool = True,
-            include_defaults: bool = True,
+            include_default: bool = True,
             include_procedural: bool = True,
             additional_stopwords: Optional[Iterable[str]] = None,
     ) -> Set[str]:
@@ -34,7 +34,7 @@ class StopwordProvider:
                 pass
 
         # defaults
-        if include_defaults:
+        if include_default:
             stopwords |= DEFAULT_STOPWORDS
 
         # procedural

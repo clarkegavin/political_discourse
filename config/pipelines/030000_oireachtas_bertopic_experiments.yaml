@@ -12,6 +12,6 @@ params:
   combined_text_field_name: CombinedText
   experiment_refs:
     - config/experiments/minilm_embeddings.yaml
-    - config/experiments/roberta_embeddings.yaml
-    - config/experiments/rooseberta_embeddings.yaml
-    - config/experiments/mpnet_embeddings.yaml
+#    - config/experiments/roberta_embeddings.yaml
+#    - config/experiments/rooseberta_embeddings.yaml
+#    - config/experiments/mpnet_embeddings.yaml
