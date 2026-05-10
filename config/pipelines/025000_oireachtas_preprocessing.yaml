@@ -7,8 +7,12 @@ pipelines:
       - name: remove_urls
         params:
           columns: [ QuestionText, AnswerText ]
-#      - name: stopword_remover
-#        params:
-#          language: "english"
-#          lower: true
-#          columns: [ QuestionText, AnswerText ]
+      - name: stopword_remover
+        params:
+          language: "english"
+          lower: true
+          columns: [ QuestionText, AnswerText ]
+          include_procedural: false
+          include_nltk: false
+          include_default: true
+

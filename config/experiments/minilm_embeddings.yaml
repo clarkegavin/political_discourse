@@ -15,8 +15,8 @@ sweep:
   params.model_params.nr_topics: [ 10 ]
   params.model_params.min_topic_size: [ 10 ]
   params.model_params.vectorizer.params.ngram_range: [ [1, 1], [1, 2] , [1, 3] ]
-  params.model_params.vectorizer.params.include_procedural_stopwords: [ true, false ]
-  params.model_params.vectorizer.params.include_default_stopwords: [ true, false ]
+  params.model_params.vectorizer.params.include_procedural: [ true, false ]
+  params.model_params.vectorizer.params.include_default: [ true, false ]
 visualisations:
   - name: topic_distribution
     init:

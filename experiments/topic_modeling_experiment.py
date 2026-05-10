@@ -147,12 +147,12 @@ class TopicModelingExperiment(Experiment):
         name = cfg.get("name")
         params = cfg.get("params", {}).copy() or {}
 
-        include_defaults = params.pop("include_default_stopwords", False)
-        include_procedural = params.pop("include_procedural_stopwords", False)
-        include_nltk = params.pop("include_nltk_stopwords", False)
+        include_default = params.pop("include_default", False)
+        include_procedural = params.pop("include_procedural", False)
+        include_nltk = params.pop("include_nltk", False)
 
         custom_stopwords = StopwordProvider.get_stopwords(
-            include_defaults = include_defaults,
+            include_default= include_default,
             include_procedural = include_procedural,
             include_nltk= include_nltk
         )
