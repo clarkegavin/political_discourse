@@ -1,5 +1,6 @@
 # file: `config/experiments/bertopic_default.yaml`
 run_name: "minilm_k{model_params_nr_topics}_mts{model_params_min_topic_size}"
+#run_name: "minilm_001"
 params:
   model_params:
     embedding_model: # optional custom embedding model config
@@ -8,8 +9,11 @@ params:
       model_name: "all-MiniLM-L6-v2"
     vectorizer:
       name: CountVectorizer
-      params:
-        stop_words: "english"
+      params: {}
+#        stop_words: "english"
+    clusterer:
+      name: kmeans_mini
+      params: {}
 save_path: "output/topic_modelling/minilm_k{model_params_nr_topics}_mts{model_params_min_topic_size}"
 sweep:
   params.model_params.nr_topics: [ 10 ]
@@ -17,6 +21,11 @@ sweep:
   params.model_params.vectorizer.params.ngram_range: [ [1, 1], [1, 2] , [1, 3] ]
   params.model_params.vectorizer.params.include_procedural: [ true, false ]
   params.model_params.vectorizer.params.include_default: [ true, false ]
+  params.model_params.vectorizer.params.stop_words: [ "english", null ]
+  params.model_params.vectorizer.params.min_df: [ 1, 5, 10 ]
+#  params.model_params.clusterer.params.min_cluster_size: [ 5, 10, 20 ]
+#  params.model_params.clusterer.params.min_samples: [ 1, 5, 10 ]
+  params.model_params.clusterer.params.n_clusters: [ 8 ]
 visualisations:
   - name: topic_distribution
     init:

@@ -24,15 +24,23 @@ class BERTopicModel(Model):
         # embedding_model should not be passed to BERTopic constructor (embeddings passed to fit/transform)
         model_init_kwargs.pop("embedding_model", None)
 
+        self.logger.info(f"Model Init Kwargs before mapping: {model_init_kwargs}")
+
         # Support both explicit BERTopic kwargs and our higher-level keys coming from experiment layer.
         # Map common high-level keys to BERTopic constructor arg names if needed.
         if "dimensionality_reduction_model" in model_init_kwargs and "umap_model" not in model_init_kwargs:
             model_init_kwargs["umap_model"] = model_init_kwargs.pop("dimensionality_reduction_model")
 
+        self.logger.info(f"Preparing to extract clusterer params")
         if "clusterer" in model_init_kwargs and "hdbscan_model" not in model_init_kwargs:
+            self.logger.info("Mapping 'clusterer' param to 'hdbscan_model' for BERTopic constructor")
             model_init_kwargs["hdbscan_model"] = model_init_kwargs.pop("clusterer")
+        else:
+            self.logger.info("No 'clusterer' param found or 'hdbscan_model' already present; skipping clusterer mapping")
 
+        self.logger.info(f"Preparing to extract vectorizer params")
         if "vectorizer" in model_init_kwargs and "vectorizer_model" not in model_init_kwargs:
+            self.logger.info(f"Mapping 'vectorizer' param to 'vectorizer_model' for BERTopic constructor")
             model_init_kwargs["vectorizer_model"] = model_init_kwargs.pop("vectorizer")
 
         # ctfidf may be provided under 'ctfidf' or 'ctfidf_model' - forward as-is if present
@@ -65,8 +73,10 @@ class BERTopicModel(Model):
         if self.model is None:
             self.build()
         if embeddings is not None:
+            self.logger.info("Using provided embeddings for fit")
             self.topics_, self.probs_ = self.model.fit_transform(X, embeddings)
         else:
+            self.logger.info("No embeddings provided; fitting BERTopic with default embedding model")
             self.topics_, self.probs_ = self.model.fit_transform(X)
         return self
 

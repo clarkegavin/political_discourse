@@ -127,8 +127,8 @@ class TopicModelingPipeline(Pipeline):
             # Prepare a run-style experiment config expected by ExperimentRunner
             runner_exp = {
                 "run_name": run_name,
-                "sweep": exp_cfg.get("sweep"),  # ← ADD THIS
-                "save_path": exp_cfg.get("save_path"),  # ← recommended
+                "sweep": exp_cfg.get("sweep"),
+                "save_path": exp_cfg.get("save_path"),
                 "params": {
                     **exp_cfg.get("params", {}),
                     "name": run_name,

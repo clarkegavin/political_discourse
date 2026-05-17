@@ -8,5 +8,5 @@ pipelines:
         model: OireachtasQuestion
         filters:
           QuestionDate:
-            from: "2025-06-19"
-            to: "2025-06-20"
+            from: "2025-06-01"
+            to: "2025-06-30"

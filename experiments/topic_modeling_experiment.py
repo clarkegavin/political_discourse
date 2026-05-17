@@ -173,22 +173,65 @@ class TopicModelingExperiment(Experiment):
         cfg = (self.model_params or {}).get("dimensionality_reduction_model")
         if not cfg:
             return None
+
+        self.logger.info(f"Building reducer with config: {cfg}")
         # ReducerFactory.get_reducer returns list; accept first reducer if list returned
-        reducers = ReducerFactory.get_reducers(cfg) if isinstance(cfg, list) or isinstance(cfg, dict) else []
-        if not reducers:
+        reducer_list = ReducerFactory.get_reducers(cfg) if isinstance(cfg, list) or isinstance(cfg, dict) else []
+        if not reducer_list or len(reducer_list) == 0:
+            self.logger.warning(f"No reducers built from config: {cfg}")
             return None
-        return reducers[0]
+
+        reducer =  reducer_list[0] # Take the first one
+
+        # handle build pattern, e.g. PCA
+        if hasattr(reducer, "build") and callable(reducer.build):
+            self.logger.info(f"Building reducer using its build() method")
+            reducer = reducer.build()
+            self.logger.info(f"Called .build() on reducer")
+
+        # unwrap if it has an underlying model attribute (e.g., for BERTopic compatibility)
+        if hasattr(reducer, "model") and reducer.model is not None:
+            self.logger.info(f"Reducer has underlying model: {reducer.model}")
+            return reducer.model
+
+        # for lazy reducers that only build during fit/transform, return the wrapper itself (e.g., if it implements fit_transform directly)
+        self.logger.info(f"Reducer does not have an underlying model attribute; returning wrapper instance")
+        return reducer
 
     def _build_clusterer(self):
         """Build clusterer (e.g., HDBSCAN) using ModelFactory with config under model_params.clusterer."""
         cfg = (self.model_params or {}).get("clusterer")
         if not cfg:
             return None
+
+        if not isinstance(cfg, dict):
+            self.logger.warning(f"Clusterer config should be a dict with 'name' and optional 'params'. Got: {cfg}")
+            return None
+
         name = cfg.get("name")
         params = cfg.get("params", {}) or {}
+
+        self.logger.info(f"Building clusterer '{name}' with params: {params}")
+
         # ModelFactory.get_model will instantiate the clusterer wrapper/class
-        clusterer = ModelFactory.get_model(name, **params)
-        return clusterer
+        clusterer_wrapper = ModelFactory.get_model(name, **params)
+
+        if hasattr(clusterer_wrapper, "build") and callable(clusterer_wrapper.build):
+            self.logger.info(f"Building clusterer '{name}' using its build() method")
+            clusterer_wrapper = clusterer_wrapper.build()
+            self.logger.info(f"Called .build() on clusterer '{name}'")
+
+
+
+        self.logger.info(f"Built clusterer '{name}' with params: {params}")
+        # If factory returned a wrapper exposing underlying sklearn model, unwrap it
+        if hasattr(clusterer_wrapper, "model") and clusterer_wrapper.model is not None:
+            self.logger.info(f"Clusterer '{name}' has underlying model: {clusterer_wrapper.model}")
+            return clusterer_wrapper.model
+
+        # If no underlying model attribute, return the wrapper itself (e.g., if it implements fit_predict directly)
+        self.logger.info(f"Clusterer '{name}' does not have an underlying model attribute; returning wrapper instance")
+        return clusterer_wrapper
 
     def _collect_bertopic_kwargs(self):
         """Collect and return kwargs to pass into BERTopicModel via ModelFactory.
@@ -221,6 +264,8 @@ class TopicModelingExperiment(Experiment):
             model_kwargs.pop("clusterer", None)
             # BERTopic expects hdbscan_model
             model_kwargs["hdbscan_model"] = clusterer
+        else:
+            self.logger.warning("No clusterer built; BERTopic will use default HDBSCAN clusterer")
 
         # Remove embedding_model config because we compute embeddings in the experiment and pass them
         if "embedding_model" in model_kwargs:
@@ -244,6 +289,7 @@ class TopicModelingExperiment(Experiment):
         self.logger.info(f"Preparing BERTopic model with params: {self.model_params}")
         # Build model kwargs by collecting components via helpers
         model_kwargs = self._collect_bertopic_kwargs()
+        self.logger.info(f"Collected BERTopic kwargs: {model_kwargs}")
 
         # Build embedding model and compute embeddings if present
         embedding_model = self._build_embedding_model()
@@ -255,12 +301,16 @@ class TopicModelingExperiment(Experiment):
             embeddings = None
 
         # Instantiate BERTopicModel wrapper via ModelFactory with the collected kwargs
+        self.logger.info(f"Instantiating BERTopicModel with collected kwargs: {model_kwargs}")
         self.model = ModelFactory.get_model(self.model_name, **model_kwargs)
+        self.logger.info(f"Instantiated BERTopicModel: {self.model}")
 
         # Fit/transform using docs and optional embeddings
         if embeddings is not None:
+            self.logger.info("Fitting BERTopicModel with embeddings")
             topics, probs = self.model.fit_transform(docs, embeddings)
         else:
+            self.logger.info("Fitting BERTopicModel without embeddings")
             topics, probs = self.model.fit_transform(docs)
 
         # get topic info
