@@ -7,6 +7,7 @@ from models.factory import ModelFactory
 from vectorizers.factory import VectorizerFactory
 from embedding_models.factory import EmbeddingModelFactory
 from reducers.factory import ReducerFactory
+from representation_models.factory import RepresentationModelFactory
 import pandas as pd
 import os
 from typing import Optional, Dict, Any
@@ -233,6 +234,38 @@ class TopicModelingExperiment(Experiment):
         self.logger.info(f"Clusterer '{name}' does not have an underlying model attribute; returning wrapper instance")
         return clusterer_wrapper
 
+    def _build_representation_model(self):
+        """ Build representation """
+        cfg = (self.model_params or {}).get("representation_model")
+        if not cfg:
+            return None
+
+        if not isinstance(cfg, dict):
+            self.logger.warning(f"Representation model config should be a dict with 'name' and optional 'params'. Got: {cfg}")
+            return None
+
+        name = cfg.get("name")
+        params = cfg.get("params", {}) or {}
+        self.logger.info(f"Building representation model '{name}' with params: {params}")
+
+        representation_wrapper = RepresentationModelFactory.create_representation_model(name, **params)
+
+        if hasattr(representation_wrapper, "build") and callable(representation_wrapper.build):
+            self.logger.info(f"Building representation model '{name}' using its build() method")
+            representation_wrapper = representation_wrapper.build()
+            self.logger.info(f"Called .build() on representation model '{name}'")
+
+        self.logger.info(f"Built representation model '{name}' with params: {params}")
+        # If factory returned a wrapper exposing underlying model, unwrap it
+        if hasattr(representation_wrapper, "representation_model") and representation_wrapper.representation_model is not None:
+            self.logger.info(f"Representation model '{name}' has underlying model: {representation_wrapper.representation_model}")
+            return representation_wrapper.representation_model
+
+        # If no underlying model attribute, return the wrapper itself (e.g., if it implements fit_transform directly)
+        self.logger.info(f"Representation model '{name}' does not have an underlying model attribute; returning wrapper instance")
+        return representation_wrapper
+
+
     def _collect_bertopic_kwargs(self):
         """Collect and return kwargs to pass into BERTopicModel via ModelFactory.
 
@@ -267,9 +300,23 @@ class TopicModelingExperiment(Experiment):
         else:
             self.logger.warning("No clusterer built; BERTopic will use default HDBSCAN clusterer")
 
+        # Representation Model (e.g., KeyBERT/MMR) is not directly supported by BERTopic, but we can build it here for potential use in evaluation or visualisation. It will not be passed into BERTopicModel kwargs but can be included in metadata.
+        representation_model = self._build_representation_model()
+        if representation_model is not None:
+            model_kwargs.pop("representation_model", None)
+            model_kwargs["representation_model"] = representation_model
+
         # Remove embedding_model config because we compute embeddings in the experiment and pass them
         if "embedding_model" in model_kwargs:
             model_kwargs.pop("embedding_model", None)
+
+        # Retain the embedding model for topic representation model usage
+        # embedding_model = self._build_embedding_model()
+        # if embedding_model is not None:
+        #     model_kwargs["embedding_model"] = embedding_model
+        #     self.logger.info(f"Kept embedding_model in constructor: {type(embedding_model).__name__}")
+        # else:
+        #     model_kwargs.pop("embedding_model", None)
 
         return model_kwargs
 

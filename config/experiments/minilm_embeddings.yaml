@@ -17,6 +17,9 @@ params:
     dimensionality_reduction_model:
       name: umap
       params: {}
+    representation_model:
+      name: keybert
+      params: {}
 save_path: "output/topic_modelling/minilm_k{model_params_nr_topics}_mts{model_params_min_topic_size}"
 sweep:
 #  params.model_params.nr_topics: [ 10 ]
@@ -30,6 +33,17 @@ sweep:
   params.model_params.clusterer.params.min_samples: [ 1, 5, 10 ]
   params.model_params.dimensionality_reduction_model.params.n_neighbors: [ 15, 30 ]
   params.model_params.dimensionality_reduction_model.params.min_dist: [ 0.0, 0.1, 0.5 ]
+  #params.model_params.representation_model.params.name: [ keybert, mmr ]
+  params.model_params.representation_model:
+    - name: mmr
+      params:
+        diversity: [ 0.3]
+    - name: keybert
+      params:
+        top_n_words: [ 10 ]
+
+
+
 
 visualisations:
   - name: topic_distribution
