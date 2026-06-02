@@ -70,8 +70,30 @@ class ExperimentRunner:
             self.logger.info(f"Sweep keys: {keys}")
             self.logger.info(f"Values: {values_lists}")
 
+            # PREPROCESS: detect any sweep value that is a list of model configs (dicts)
+            # and expand nested parameter lists inside those model configs into concrete variants.
+            processed_values_lists = []
+            for key, vlist in zip(keys, values_lists):
+                if isinstance(vlist, list) and len(vlist) > 0 and all(isinstance(el, dict) for el in vlist):
+                    # Attempt to expand nested model configs
+                    try:
+                        expanded = self._expand_nested_model_configs(vlist)
+                        self.logger.info(
+                            "Expanded sweep key '%s' from %d model configs into %d concrete variants",
+                            key,
+                            len(vlist),
+                            len(expanded),
+                        )
+                        self.logger.debug("Expanded models for %s: %s", key, expanded)
+                        processed_values_lists.append(expanded)
+                    except Exception as e:
+                        self.logger.warning(f"Could not expand nested model configs for key {key}: {e}")
+                        processed_values_lists.append(vlist)
+                else:
+                    processed_values_lists.append(vlist)
 
-            for combo in itertools.product(*values_lists):
+            # Now perform cartesian product across processed_values_lists
+            for combo in itertools.product(*processed_values_lists):
                 # Deep copy base exp to avoid shared nested dict references across combos
                 new_exp = copy.deepcopy(exp)
                 if "sweep" in new_exp:
@@ -81,6 +103,7 @@ class ExperimentRunner:
                     self._set_by_path(new_exp, key_path, val)
                 concrete.append(new_exp)
 
+        self.logger.info("Total concrete runs generated: %d", len(concrete))
         return concrete
 
     @staticmethod
@@ -435,3 +458,64 @@ class ExperimentRunner:
             return template.format_map({k: (v if not isinstance(v, dict) else str(v)) for k, v in flat.items()})
         except Exception:
             return template
+
+    def _expand_nested_model_configs(self, model_configs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Expand a list of model configs by replacing nested list parameters with cartesian products.
+
+        For example, given a model config like:
+          {"type": "my_model", "params": {"layers": [64, 128], "activation": "relu"}}
+        which specifies a list of values for the 'layers' param, this would produce:
+          - {"type": "my_model", "params": {"layers": 64, "activation": "relu"}}
+          - {"type": "my_model", "params": {"layers": 128, "activation": "relu"}}
+
+        Assumes all nested lists in a model config should be expanded this way.
+        """
+        self.logger.info(f"Expanding {len(model_configs)} nested model configs")
+        expanded_configs = []
+        for model_cfg in model_configs:
+            # Collect all param paths that have list values
+            list_paths = []
+
+            def _find_list_paths(d: Dict[str, Any], base_path: str = ""):
+                for k, v in d.items():
+                    path = f"{base_path}{'.' if base_path else ''}{k}"
+                    if isinstance(v, dict):
+                        _find_list_paths(v, path)
+                    elif isinstance(v, list):
+                        list_paths.append(path)
+
+            _find_list_paths(model_cfg)
+
+            # Generate cartesian product of values across all list paths
+            all_combos = []
+            for path in list_paths:
+                # Resolve to actual list value in model_cfg
+                cur = model_cfg
+                for part in path.split("."):
+                    if isinstance(cur, dict):
+                        cur = cur.get(part)
+                    else:
+                        cur = None
+                if isinstance(cur, list):
+                    all_combos.append(cur)
+
+            # If there are no list-valued params, or just one, we can only clone the config
+            if len(all_combos) == 0:
+                expanded_configs.append(copy.deepcopy(model_cfg))
+            elif len(all_combos) == 1:
+                for val in all_combos[0]:
+                    # Simple case, just clone and replace the single list value
+                    new_cfg = copy.deepcopy(model_cfg)
+                    for path in list_paths:
+                        self._set_by_path(new_cfg, path, val)
+                    expanded_configs.append(new_cfg)
+            else:
+                # Complex case: multiple list-valued params, need cartesian product
+                for combo in itertools.product(*all_combos):
+                    new_cfg = copy.deepcopy(model_cfg)
+                    for path, val in zip(list_paths, combo):
+                        self._set_by_path(new_cfg, path, val)
+                    expanded_configs.append(new_cfg)
+
+        self.logger.info(f"Expanded into {len(expanded_configs)} total model configs")
+        return expanded_configs
