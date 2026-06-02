@@ -21,30 +21,6 @@ params:
       name: keybert
       params: {}
 save_path: "output/topic_modelling/minilm_k{model_params_nr_topics}_mts{model_params_min_topic_size}"
-sweep:
-#  params.model_params.nr_topics: [ 10 ]
-#  params.model_params.min_topic_size: [ 10 ]
-  params.model_params.vectorizer.params.ngram_range: [ [1, 1], [1, 2] , [1, 3] ]
-  params.model_params.vectorizer.params.include_procedural: [ true, false ]
-  params.model_params.vectorizer.params.include_default: [ true, false ]
-  params.model_params.vectorizer.params.stop_words: [ "english", null ]
-  params.model_params.vectorizer.params.min_df: [ 1, 5, 10 ]
-  params.model_params.clusterer.params.min_cluster_size: [ 5, 10, 20 ]
-  params.model_params.clusterer.params.min_samples: [ 1, 5, 10 ]
-  params.model_params.dimensionality_reduction_model.params.n_neighbors: [ 15, 30 ]
-  params.model_params.dimensionality_reduction_model.params.min_dist: [ 0.0, 0.1, 0.5 ]
-  #params.model_params.representation_model.params.name: [ keybert, mmr ]
-  params.model_params.representation_model:
-    - name: mmr
-      params:
-        diversity: [ 0.3]
-    - name: keybert
-      params:
-        top_n_words: [ 10 ]
-
-
-
-
 visualisations:
   - name: topic_distribution
     init:
@@ -53,3 +29,40 @@ visualisations:
     init:
       filename_prefix: bertopic_default_topic
       top_n_topics: 10
+  - name: intertopic_distance
+    init:
+      # output_dir can include templated save_path parts from the experiment config
+      #output_dir: "output/topic_modelling/minilm_k{model_params_nr_topics}_mts{model_params_min_topic_size}"
+      filename: intertopic_distance.html
+#    plot:
+#      # optional plot kwargs forwarded to BERTopic.visualize_topics()
+#      top_n_topics: 50
+
+sweep:
+##  params.model_params.nr_topics: [ 10 ]
+##  params.model_params.min_topic_size: [ 10 ]
+  params.model_params.vectorizer.params.ngram_range: [ [1, 1], [1, 2] , [1, 3] ]
+  params.model_params.vectorizer.params.include_procedural: [ true, false ]
+  params.model_params.vectorizer.params.include_default: [ true, false ]
+  params.model_params.vectorizer.params.stop_words: [ "english", null ]
+  params.model_params.vectorizer.params.min_df: [ 1, 5, 10 ]
+  params.model_params.clusterer.params.min_cluster_size: [ 5, 10, 20 ]
+  params.model_params.clusterer.params.min_samples: [ 1, 5, 10 ]
+  params.model_params.dimensionality_reduction_model:
+    - name: umap
+      params:
+         n_neighbors: [ 15, 30 ]
+         min_dist: [ 0.0, 0.1, 0.5 ]
+#    - name: pca
+#      params:
+#         n_components: [ 5, 10, 15 ]
+#  params.model_params.dimensionality_reduction_model.params.n_neighbors: [ 15, 30 ]
+#  params.model_params.dimensionality_reduction_model.params.min_dist: [ 0.0, 0.1, 0.5 ]
+#  #params.model_params.representation_model.params.name: [ keybert, mmr ]
+  params.model_params.representation_model:
+    - name: mmr
+      params:
+        diversity: [ 0.3]
+#    - name: keybert
+#      params:
+#        top_n_words: [ 10 ]
