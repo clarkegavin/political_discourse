@@ -22,7 +22,7 @@ class BERTopicModel(Model):
         model_init_kwargs = dict(self.params or {})
 
         # embedding_model should not be passed to BERTopic constructor (embeddings passed to fit/transform)
-        model_init_kwargs.pop("embedding_model", None)
+        #model_init_kwargs.pop("embedding_model", None)
 
         self.logger.info(f"Model Init Kwargs before mapping: {model_init_kwargs}")
 
@@ -37,6 +37,7 @@ class BERTopicModel(Model):
             model_init_kwargs["hdbscan_model"] = model_init_kwargs.pop("clusterer")
         else:
             self.logger.info("No 'clusterer' param found or 'hdbscan_model' already present; skipping clusterer mapping")
+            self.logger.info(f"Current model_init_kwargs: {model_init_kwargs['hdbscan_model']}")
 
         self.logger.info(f"Preparing to extract vectorizer params")
         if "vectorizer" in model_init_kwargs and "vectorizer_model" not in model_init_kwargs:

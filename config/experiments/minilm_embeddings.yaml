@@ -28,7 +28,7 @@ visualisations:
   - name: topic_wordclouds
     init:
       filename_prefix: bertopic_default_topic
-      top_n_topics: 10
+      top_n_topics: 100
   - name: intertopic_distance
     init:
       # output_dir can include templated save_path parts from the experiment config
@@ -63,6 +63,6 @@ sweep:
     - name: mmr
       params:
         diversity: [ 0.3]
-#    - name: keybert
-#      params:
-#        top_n_words: [ 10 ]
+    - name: keybert
+      params:
+        top_n_words: [ 10 ]
