@@ -277,6 +277,37 @@ class TopicModelingExperiment(Experiment):
         self.logger.info(f"Representation model '{name}' does not have an underlying model attribute; returning wrapper instance")
         return representation_wrapper
 
+    def _build_ctfidf_model(self):
+        """Build a Class-based TF-IDF model for BERTopic if specified in model_params.ctfidf."""
+        cfg = (self.model_params or {}).get("ctfidf")
+        if not cfg:
+            return None
+
+        if not isinstance(cfg, dict):
+            self.logger.warning(f"c-TF-IDF config should be a dict with 'name' and optional 'params'. Got: {cfg}")
+            return None
+
+        name = cfg.get("name")
+        params = cfg.get("params", {}) or {}
+
+        self.logger.info(f"Building c-TF-IDF model '{name}' with params: {params}")
+
+        ctfidf_wrapper = ModelFactory.get_model(name, **params)
+
+        if hasattr(ctfidf_wrapper, "build") and callable(ctfidf_wrapper.build):
+            self.logger.info(f"Building c-TF-IDF model '{name}' using its build() method")
+            ctfidf_wrapper = ctfidf_wrapper.build()
+            self.logger.info(f"Called .build() on c-TF-IDF model '{name}'")
+
+        self.logger.info(f"Built c-TF-IDF model '{name}' with params: {params}")
+        # If factory returned a wrapper exposing underlying model, unwrap it
+        if hasattr(ctfidf_wrapper, "model") and ctfidf_wrapper.model is not None:
+            self.logger.info(f"c-TF-IDF model '{name}' has underlying model: {ctfidf_wrapper.model}")
+            return ctfidf_wrapper.model
+
+        # If no underlying model attribute, return the wrapper itself (e.g., if it implements fit_transform directly)
+        self.logger.info(f"CTFIDF model '{name}' does not have an underlying model attribute; returning wrapper instance")
+        return ctfidf_wrapper
 
     def _collect_bertopic_kwargs(self):
         """Collect and return kwargs to pass into BERTopicModel via ModelFactory.
