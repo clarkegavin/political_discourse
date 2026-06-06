@@ -15,4 +15,7 @@ pipelines:
           include_procedural: false
           include_nltk: false
           include_default: true
+      - name: lowercase
+        params:
+          columns: [ QuestionText, AnswerText ]
 

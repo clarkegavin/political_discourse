@@ -7,6 +7,7 @@ from models.factory import ModelFactory
 from vectorizers.factory import VectorizerFactory
 from embedding_models.factory import EmbeddingModelFactory
 from reducers.factory import ReducerFactory
+from representation_models.factory import RepresentationModelFactory
 import pandas as pd
 import os
 from typing import Optional, Dict, Any
@@ -72,6 +73,8 @@ class TopicModelingExperiment(Experiment):
         # Placeholder: model will be created in run()
         self.model = None
         self.kwargs = kwargs
+        self.embedding_model_wrapper = None
+
 
 
 
@@ -126,14 +129,22 @@ class TopicModelingExperiment(Experiment):
     def _build_embedding_model(self):
         """Construct embedding model instance from model_params.embedding_model if present."""
         cfg = (self.model_params or {}).get("embedding_model")
+        self.logger.info(f"Building embedding model with config: {cfg}")
         if not cfg:
             return None
-        return EmbeddingModelFactory.get_embedding_model(
+        self.embedding_model_wrapper =  EmbeddingModelFactory.get_embedding_model(
             cfg.get("name"),
             column=cfg.get("column"),
             model_name=cfg.get("model_name"),
             params=cfg.get("params", {}),
         )
+
+        # if factory returns a wrapper exposing underlying model, unwrap it for potential use in BERTopic kwargs; otherwise return the wrapper itself (e.g., if it implements fit_transform directly)
+
+        if hasattr(self.embedding_model_wrapper, "model") and self.embedding_model_wrapper.model is not None:
+            embedding_model= self.embedding_model_wrapper.model
+        return self.embedding_model_wrapper, embedding_model
+
 
     def _build_vectorizer(self):
         """Construct a sklearn-style vectorizer for BERTopic or non-BERTopic usage.
@@ -233,6 +244,40 @@ class TopicModelingExperiment(Experiment):
         self.logger.info(f"Clusterer '{name}' does not have an underlying model attribute; returning wrapper instance")
         return clusterer_wrapper
 
+    def _build_representation_model(self):
+        """ Build representation """
+        cfg = (self.model_params or {}).get("representation_model")
+        if not cfg:
+            return None
+
+        if not isinstance(cfg, dict):
+            self.logger.warning(f"Representation model config should be a dict with 'name' and optional 'params'. Got: {cfg}")
+            return None
+
+        name = cfg.get("name")
+        params = cfg.get("params", {}) or {}
+        self.logger.info(f"Building representation model '{name}' with params: {params}")
+
+        representation_wrapper = RepresentationModelFactory.create_representation_model(name, **params)
+
+        if hasattr(representation_wrapper, "build") and callable(representation_wrapper.build):
+            self.logger.info(f"Building representation model '{name}' using its build() method")
+            representation_wrapper = representation_wrapper.build()
+            self.logger.info(f"Called .build() on representation model '{name}'")
+
+        self.logger.info(f"Built representation model '{name}' with params: {params}")
+        # If factory returned a wrapper exposing underlying model, unwrap it
+        if hasattr(representation_wrapper, "representation_model") and representation_wrapper.representation_model is not None:
+            self.logger.info(f"Representation model '{name}' has underlying model: {representation_wrapper.representation_model}")
+            model = representation_wrapper.representation_model
+            self.logger.info(f"Representation Model Attributes: {vars(model)}")
+            return model
+
+        # If no underlying model attribute, return the wrapper itself (e.g., if it implements fit_transform directly)
+        self.logger.info(f"Representation model '{name}' does not have an underlying model attribute; returning wrapper instance")
+        return representation_wrapper
+
+
     def _collect_bertopic_kwargs(self):
         """Collect and return kwargs to pass into BERTopicModel via ModelFactory.
 
@@ -267,8 +312,22 @@ class TopicModelingExperiment(Experiment):
         else:
             self.logger.warning("No clusterer built; BERTopic will use default HDBSCAN clusterer")
 
+        # Representation Model (e.g., KeyBERT/MMR) is not directly supported by BERTopic, but we can build it here for potential use in evaluation or visualisation. It will not be passed into BERTopicModel kwargs but can be included in metadata.
+        representation_model = self._build_representation_model()
+        if representation_model is not None:
+            model_kwargs.pop("representation_model", None)
+            model_kwargs["representation_model"] = representation_model
+
         # Remove embedding_model config because we compute embeddings in the experiment and pass them
-        if "embedding_model" in model_kwargs:
+        # if "embedding_model" in model_kwargs:
+        #     model_kwargs.pop("embedding_model", None)
+
+        # Retain the embedding model for topic representation model usage
+        self.embedding_model_wrapper, embedding_model = self._build_embedding_model()
+        if embedding_model is not None:
+            model_kwargs["embedding_model"] = embedding_model
+            self.logger.info(f"Kept embedding_model in constructor: {type(embedding_model).__name__}")
+        else:
             model_kwargs.pop("embedding_model", None)
 
         return model_kwargs
@@ -292,10 +351,10 @@ class TopicModelingExperiment(Experiment):
         self.logger.info(f"Collected BERTopic kwargs: {model_kwargs}")
 
         # Build embedding model and compute embeddings if present
-        embedding_model = self._build_embedding_model()
-        if embedding_model is not None:
-            self.logger.info(f"Using embedding model: {embedding_model}")
-            embeddings = embedding_model.transform(self.X)
+        # embedding_model_wrapper, embedding_model = self._build_embedding_model()
+        if self.embedding_model_wrapper is not None:
+            self.logger.info(f"Using embedding model: {self.embedding_model_wrapper}")
+            embeddings = self.embedding_model_wrapper.transform(self.X)
             self.logger.info(f"Embedding model produced embeddings with shape {embeddings.shape}")
         else:
             embeddings = None

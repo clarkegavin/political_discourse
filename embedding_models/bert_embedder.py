@@ -59,3 +59,8 @@ class BERTEmbeddingModel(EmbeddingModel):
         if self._dim is None:
             return []  # not fit yet
         return np.array([f"bert_dim_{i}" for i in range(self._dim)])
+
+    @property
+    def bertopic_model(self):
+        """Return a BERTopic-compatible embedding model wrapper."""
+        return self.model
