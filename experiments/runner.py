@@ -8,6 +8,8 @@ from experiments.factory import ExperimentFactory
 from evaluators.runner import EvaluationRunner
 from visualisations.runner import VisualisationRunner
 from config.config_loader import ConfigLoader
+import psutil
+import os
 
 logger = get_logger("ExperimentRunner")
 
@@ -57,7 +59,10 @@ class ExperimentRunner:
 
         for exp in experiments:
             sweep = exp.get("sweep")
+            process = psutil.Process(os.getpid())
+            self.logger.info(f"Current memory usage before expanding sweep: {process.memory_info().rss / (1024 **3):.2f} GB")
             self.logger.info(f"Processing experiment with sweep: {sweep}")
+
             if not sweep:
                 concrete.append(exp)
                 continue
@@ -94,6 +99,7 @@ class ExperimentRunner:
 
             # Now perform cartesian product across processed_values_lists
             for combo in itertools.product(*processed_values_lists):
+                self.logger.info(f"Memory usage before creating new experiment config for combo {combo}: {process.memory_info().rss / (1024 **3):.2f} GB")
                 # Deep copy base exp to avoid shared nested dict references across combos
                 new_exp = copy.deepcopy(exp)
                 if "sweep" in new_exp:

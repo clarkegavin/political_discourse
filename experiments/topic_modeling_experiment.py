@@ -131,18 +131,21 @@ class TopicModelingExperiment(Experiment):
         cfg = (self.model_params or {}).get("embedding_model")
         self.logger.info(f"Building embedding model with config: {cfg}")
         if not cfg:
-            return None
-        self.embedding_model_wrapper =  EmbeddingModelFactory.get_embedding_model(
+            # Always return a tuple for consistent unpacking by callers
+            return None, None
+        self.embedding_model_wrapper = EmbeddingModelFactory.get_embedding_model(
             cfg.get("name"),
             column=cfg.get("column"),
             model_name=cfg.get("model_name"),
             params=cfg.get("params", {}),
         )
 
+        # Ensure embedding_model variable always exists
+        embedding_model = None
         # if factory returns a wrapper exposing underlying model, unwrap it for potential use in BERTopic kwargs; otherwise return the wrapper itself (e.g., if it implements fit_transform directly)
-
         if hasattr(self.embedding_model_wrapper, "model") and self.embedding_model_wrapper.model is not None:
-            embedding_model= self.embedding_model_wrapper.model
+            embedding_model = self.embedding_model_wrapper.model
+
         return self.embedding_model_wrapper, embedding_model
 
 
@@ -279,6 +282,7 @@ class TopicModelingExperiment(Experiment):
 
     def _build_ctfidf_model(self):
         """Build a Class-based TF-IDF model for BERTopic if specified in model_params.ctfidf."""
+        # New implementation: use CTFIDFModelFactory if configured under model_params.ctfidf
         cfg = (self.model_params or {}).get("ctfidf")
         if not cfg:
             return None
@@ -287,26 +291,38 @@ class TopicModelingExperiment(Experiment):
             self.logger.warning(f"c-TF-IDF config should be a dict with 'name' and optional 'params'. Got: {cfg}")
             return None
 
-        name = cfg.get("name")
+        name = cfg.get("name") or "class_tfidf"
         params = cfg.get("params", {}) or {}
 
         self.logger.info(f"Building c-TF-IDF model '{name}' with params: {params}")
 
-        ctfidf_wrapper = ModelFactory.get_model(name, **params)
+        # Use the new CTFIDFModelFactory
+        try:
+            from ctfidf_models.factory import CTFIDFModelFactory
+            ctfidf_wrapper = CTFIDFModelFactory.get_ctfidf_model(name, **params)
+        except Exception as e:
+            self.logger.warning(f"Failed to build c-TF-IDF model via CTFIDFModelFactory: {e}")
+            return None
 
+        if ctfidf_wrapper is None:
+            self.logger.warning(f"c-TF-IDF factory returned None for name '{name}'")
+            return None
+
+        # If the factory returned a wrapper with .build(), call it to get the underlying transformer
         if hasattr(ctfidf_wrapper, "build") and callable(ctfidf_wrapper.build):
-            self.logger.info(f"Building c-TF-IDF model '{name}' using its build() method")
-            ctfidf_wrapper = ctfidf_wrapper.build()
-            self.logger.info(f"Called .build() on c-TF-IDF model '{name}'")
+            try:
+                model = ctfidf_wrapper.build()
+                self.logger.info(f"Called .build() on c-TF-IDF wrapper '{name}'")
+                return model
+            except Exception as e:
+                self.logger.warning(f"Error building c-TF-IDF model '{name}': {e}")
+                return None
 
-        self.logger.info(f"Built c-TF-IDF model '{name}' with params: {params}")
-        # If factory returned a wrapper exposing underlying model, unwrap it
+        # Otherwise, if the wrapper exposes .model, return that
         if hasattr(ctfidf_wrapper, "model") and ctfidf_wrapper.model is not None:
-            self.logger.info(f"c-TF-IDF model '{name}' has underlying model: {ctfidf_wrapper.model}")
             return ctfidf_wrapper.model
 
-        # If no underlying model attribute, return the wrapper itself (e.g., if it implements fit_transform directly)
-        self.logger.info(f"CTFIDF model '{name}' does not have an underlying model attribute; returning wrapper instance")
+        # Fallback: return the wrapper itself
         return ctfidf_wrapper
 
     def _collect_bertopic_kwargs(self):
@@ -360,6 +376,14 @@ class TopicModelingExperiment(Experiment):
             self.logger.info(f"Kept embedding_model in constructor: {type(embedding_model).__name__}")
         else:
             model_kwargs.pop("embedding_model", None)
+
+        ctfidf_model = self._build_ctfidf_model()
+        if ctfidf_model is not None:
+            model_kwargs["ctfidf_model"] = ctfidf_model
+            model_kwargs.pop("ctfidf", None)  # Remove original config to avoid confusion
+            self.logger.info(f"Added c-TF-IDF model to BERTopic kwargs: {type(ctfidf_model).__name__}")
+        else:
+            self.logger.warning("No c-TF-IDF model built; BERTopic will use default vectorizer behavior")
 
         return model_kwargs
 
