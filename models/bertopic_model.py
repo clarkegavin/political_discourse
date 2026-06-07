@@ -37,7 +37,7 @@ class BERTopicModel(Model):
             model_init_kwargs["hdbscan_model"] = model_init_kwargs.pop("clusterer")
         else:
             self.logger.info("No 'clusterer' param found or 'hdbscan_model' already present; skipping clusterer mapping")
-            self.logger.info(f"Current model_init_kwargs: {model_init_kwargs['hdbscan_model']}")
+            #self.logger.info(f"Current model_init_kwargs: {model_init_kwargs['hdbscan_model']}")
 
         self.logger.info(f"Preparing to extract vectorizer params")
         if "vectorizer" in model_init_kwargs and "vectorizer_model" not in model_init_kwargs:
@@ -50,6 +50,7 @@ class BERTopicModel(Model):
 
         # Store the prepared kwargs for later use when building the internal model
         self._model_init_kwargs = model_init_kwargs
+        self.logger.info(f"Prepared model init kwargs for BERTopic constructor: {self._model_init_kwargs}")
 
         # Attempt to construct the internal BERTopic instance immediately. If building fails (e.g.,
         # missing optional dependencies), log a warning and defer construction until fit/transform.
