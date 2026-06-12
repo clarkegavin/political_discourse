@@ -6,20 +6,52 @@ from sklearn.feature_extraction.text import CountVectorizer
 from typing import List
 from .base import Evaluator
 from gensim.corpora import Dictionary
+from collections import Counter
 
 
 class TopicModelingEvaluator(Evaluator):
     """Evaluator for topic models. Computes coherence, diversity and topic sizes."""
 
     def __init__(self, name: str = "topic_modeling", coherence_type: str = "c_v", top_n: int = 10, **kwargs):
-        self.name = name
+        # initialize base evaluator (sets base logger and stores kwargs)
+        super().__init__(name, **kwargs)
+        # class-specific settings
         self.coherence_type = coherence_type
         self.top_n = top_n
+        # override logger with class-specific name for clearer logs
         self.logger = get_logger(self.__class__.__name__)
         self.logger.info(f"Initialized TopicModelingEvaluator(coherence_type={coherence_type}, top_n={top_n})")
         self.combined_text_field_name = kwargs.get("combined_text_field_name", "__topic_input_text__")
 
+    def _compute_exclusivity(self, top_terms: List[List[str]]) -> float:
+        """Compute topic exclusivity as: 1 - (number of shared top words across topics / total number of top words).
+        - Each topic's top words are treated as a set to avoid double counting within the same topic.
+        - Returns 0.0 for empty inputs.
+        """
+        if not top_terms:
+            return 0.0
 
+        # Create per-topic sets and filter out empty topics
+        topic_sets = [set(t) for t in top_terms if t]
+        if not topic_sets:
+            return 0.0
+
+        # Total number of top words (counting each topic's unique words once per topic)
+        total_top_words = sum(len(s) for s in topic_sets)
+        if total_top_words == 0:
+            return 0.0
+
+        # Count in how many topics each word appears
+        word_counts = Counter()
+        for s in topic_sets:
+            word_counts.update(s)
+
+        # Number of unique words that appear in more than one topic
+        shared_unique_count = sum(1 for _, c in word_counts.items() if c > 1)
+
+        exclusivity = 1.0 - (shared_unique_count / float(total_top_words))
+        # Clamp to [0,1]
+        return float(max(0.0, min(1.0, exclusivity)))
 
     def _extract_top_terms(self, estimator, top_n):
 
@@ -103,8 +135,30 @@ class TopicModelingEvaluator(Evaluator):
                     coherence = cm.get_coherence()
                     self.logger.info(f"Computed coherence: {coherence}")
                     metrics["coherence"] = float(coherence)
+
+                    # Additionally compute NPMI coherence (c_npmi) and add as separate metric
+                    try:
+                        self.logger.info("Computing NPMI coherence (c_npmi) using gensim")
+                        cm_npmi = CoherenceModel(topics=topics_for_gensim, texts=tokenized, dictionary=dictionary, coherence="c_npmi", processes=1)
+                        coherence_npmi = cm_npmi.get_coherence()
+                        self.logger.info(f"Computed coherence (c_npmi): {coherence_npmi}")
+                        metrics["coherence_npmi"] = float(coherence_npmi)
+                    except Exception as e:
+                        self.logger.warning(f"Could not compute coherence (c_npmi): {e}")
             except Exception as e:
                 self.logger.warning(f"Could not compute coherence: {e}")
 
-        return metrics
+        # Compute topic exclusivity
+        exclusivity = self._compute_exclusivity(top_terms)
+        metrics["topic_exclusivity"] = exclusivity
+        self.logger.info(f"Computed topic exclusivity: {exclusivity}")
 
+        # Compute outlier ratio: proportion of documents assigned to the outlier topic (-1)
+        if len(topics) > 0:
+            outlier_ratio = (np.sum(np.array(topics) == -1) / len(topics))
+        else:
+            outlier_ratio = 0.0
+        metrics["outlier_ratio"] = outlier_ratio
+        self.logger.info(f"Computed outlier ratio: {outlier_ratio}")
+
+        return metrics
