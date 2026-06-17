@@ -22,6 +22,7 @@ class TopicModelingEvaluator(Evaluator):
         self.logger = get_logger(self.__class__.__name__)
         self.logger.info(f"Initialized TopicModelingEvaluator(coherence_type={coherence_type}, top_n={top_n})")
         self.combined_text_field_name = kwargs.get("combined_text_field_name", "__topic_input_text__")
+        self.logger.info(f"Top N terms for evaluation: {self.top_n}")
 
     def _compute_exclusivity(self, top_terms: List[List[str]]) -> float:
         """Compute topic exclusivity as: 1 - (number of shared top words across topics / total number of top words).
