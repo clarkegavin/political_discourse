@@ -347,8 +347,19 @@ class ExperimentRunner:
                         self.logger.info(f"Running evaluator for run '{run_name}' using config: {evaluator_cfg}")
 
                         eval_out = self.eval_runner.evaluate(run_result, evaluator_cfg if isinstance(evaluator_cfg, dict) else {"name": evaluator_cfg})
+
+                        evaluator_params = (
+                                params.get("evaluator_params")
+                                or run_result.get("metadata", {}).get("evaluator_params")
+                                or {}
+                        )
+                        self.logger.info(f"Evaluator params for run '{run_name}': {evaluator_params}")
+                        flat.update(self._flatten_dict(evaluator_params))
+
                         metrics = eval_out.get("metrics", {})
                         artifacts = eval_out.get("artifacts", [])
+
+
 
                         # Log metrics/artifacts to MLflow
                         if self.mlflow_enabled:

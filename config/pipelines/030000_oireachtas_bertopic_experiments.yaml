@@ -5,6 +5,8 @@ enabled: true
 params:
   model_name: bertopic
   evaluator_name: topic_modeling
+  evaluator_params:
+    top_n_topics: 100
   mlflow_experiment: topic_modeling
   default_text_field:
     - QuestionText
