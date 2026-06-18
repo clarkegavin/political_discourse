@@ -6,6 +6,8 @@ pipelines:
       save_path: output/eda
       steps:
       - name: describe_info
+        params:
+          filename_prefix: oireachtas
       - name: document_length
         params:
           columns:

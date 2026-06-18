@@ -64,5 +64,65 @@ class DescribeInfoEDA(EDAComponent):
         df_info = pd.DataFrame({"info": info_lines})
         df_info.to_csv(info_path, index=False, encoding='utf-8-sig')
 
-        self.logger.info(f"EDA outputs written to {describe_path} and {info_path}")
-        return [describe_path, info_path]
+        char_stats_df = self._text_length_stats(data)
+        char_stats_path = os.path.join(save_path, f"{prefix}text_char_length_stats.csv")
+        char_stats_df.to_csv(char_stats_path, encoding='utf-8-sig')
+
+        token_stats_df = self._text_token_stats(data)
+        token_stats_path = os.path.join(save_path, f"{prefix}text_token_length_stats.csv")
+        token_stats_df.to_csv(token_stats_path, encoding='utf-8-sig')
+
+        self.logger.info(f"EDA outputs written to - Describe: {describe_path} | Info: {info_path} | Char Stats: {char_stats_path} | Token Stats: {token_stats_path}")
+        return [describe_path, info_path, char_stats_path, token_stats_path]
+
+    def _text_token_stats(self, data: pd.DataFrame):
+        """
+        Computes token-based statistics for text columns.
+        More meaningful for NLP than character length.
+        """
+
+        import re
+
+        def simple_tokenise(text):
+            # lightweight tokenisation (no external dependency)
+            return re.findall(r"\b\w+\b", str(text))
+
+        token_stats = {}
+
+        text_columns = data.select_dtypes(include=["object", "string"]).columns
+
+        for col in text_columns:
+            series = data[col].dropna().astype(str)
+
+            if len(series) == 0:
+                continue
+
+            token_lengths = series.apply(lambda x: len(simple_tokenise(x)))
+
+            token_stats[col] = {
+                "min_tokens": token_lengths.min(),
+                "max_tokens": token_lengths.max(),
+                "avg_tokens": token_lengths.mean(),
+                "median_tokens": token_lengths.median()
+            }
+
+        return pd.DataFrame(token_stats).T  # transpose for better readability
+
+    def _text_length_stats(self, data: pd.DataFrame):
+        text_stats = {}
+
+        text_columns = data.select_dtypes(include=["object", "string"]).columns
+
+        for col in text_columns:
+            lengths = data[col].dropna().astype(str).str.len()
+
+            if len(lengths) == 0:
+                continue
+
+            text_stats[col] = {
+                "min_length": lengths.min(),
+                "max_length": lengths.max(),
+                "avg_length": lengths.mean(),
+            }
+
+        return pd.DataFrame(text_stats).T
