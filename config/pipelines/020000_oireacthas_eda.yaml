@@ -75,3 +75,13 @@ pipelines:
               filename: oireachtas_sentence_length_histogram.png
             - name: boxplot
               filename: oireachtas_sentence_length_boxplot.png
+      - name: sankey_flow
+        params:
+          columns:
+            - QuestionerConstituency
+            - QuestionerParty
+            - QuestionType
+            - QuestionCategory
+          viz_params:
+            - name: sankey
+              filename: oireachtas_sankey.html

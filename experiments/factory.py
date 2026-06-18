@@ -66,6 +66,7 @@ class ExperimentFactory:
 
         # Instantiate
         try:
+            cls.logger.debug(f"Instantiating experiment class '{key}' with params keys: {list(params.keys())} and sample values: { {k: params[k] for k in list(params.keys())[:5]} }")
             return experiment_cls(**params)
         except Exception as e:
             cls.logger.error(f"Failed to build experiment '{key}' from config: {e}")
