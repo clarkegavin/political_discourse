@@ -10,6 +10,7 @@ from data.models.oireachtas_member_membership import OireachtasMemberMembership
 from data.models.oireachtas_member_party_membership import OireachtasMemberPartyMembership
 from data.models.oireachtas_member_representation import OireachtasMemberRepresentation
 from data.models.boards_combined import BoardsConsolidated
+from data.models.oireachtas_question_conceptual_model import OireachtasQuestionConceptualModel
 
 MODEL_REGISTRY = {
     "BoardsComment": BoardsComment,
@@ -21,6 +22,7 @@ MODEL_REGISTRY = {
     "OireachtasMemberMembership": OireachtasMemberMembership,
     "OireachtasMemberPartyMembership": OireachtasMemberPartyMembership,
     "OireachtasMemberRepresentation": OireachtasMemberRepresentation,
+    "OireachtasQuestionConceptualModel": OireachtasQuestionConceptualModel,
     "RobloxGame": RobloxGame,
     "SteamGame": SteamGame,
 }

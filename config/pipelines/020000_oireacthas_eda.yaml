@@ -5,6 +5,7 @@ pipelines:
     params:
       save_path: output/eda
       steps:
+      - name: describe_info
       - name: document_length
         params:
           columns:
@@ -32,7 +33,7 @@ pipelines:
           viz_params:
           - name: histogram
             bins: 30
-            xlabel: Character length
+            xlabel: Word length
             ylabel: Number of documents
             xscale: log
             density: true
@@ -49,10 +50,26 @@ pipelines:
           viz_params:
           - name: histogram
             bins: 30
-            xlabel: Character length
+            xlabel: Sentence length
             ylabel: Number of documents
             xscale: log
             density: true
-            filename: oireachtas_sentence_length_histogram.png
+            filename: oireachtas_sentence_length_log_histogram.png
           - name: boxplot
-            filename: oireachtas_sentence_length_boxplot.png
+            filename: oireachtas_sentence_length_log_boxplot.png
+      - name: document_length
+        params:
+          columns:
+            - QuestionText
+            - AnswerText
+          unit: sentences
+          output_column: sentence_length
+          viz_params:
+            - name: histogram
+              bins: 30
+              xlabel: Sentence length
+              ylabel: Number of documents
+              density: true
+              filename: oireachtas_sentence_length_histogram.png
+            - name: boxplot
+              filename: oireachtas_sentence_length_boxplot.png

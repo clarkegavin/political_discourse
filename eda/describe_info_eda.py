@@ -50,18 +50,19 @@ class DescribeInfoEDA(EDAComponent):
 
         try:
             # to_csv handles DataFrame directly
-            desc.to_csv(describe_path)
+            desc.to_csv(describe_path, encoding='utf-8-sig')
         except Exception as e:
             self.logger.warning(f"Failed to write describe() directly to CSV: {e}. Attempting safe conversion.")
-            pd.DataFrame(desc).to_csv(describe_path)
+            pd.DataFrame(desc).to_csv(describe_path, encoding='utf-8-sig')
 
         # write info as lines into a CSV with single column 'info'
         buf = io.StringIO()
         data.info(buf=buf)
+
         info_str = buf.getvalue()
         info_lines = info_str.splitlines() if info_str else ["No info available"]
         df_info = pd.DataFrame({"info": info_lines})
-        df_info.to_csv(info_path, index=False)
+        df_info.to_csv(info_path, index=False, encoding='utf-8-sig')
 
         self.logger.info(f"EDA outputs written to {describe_path} and {info_path}")
         return [describe_path, info_path]

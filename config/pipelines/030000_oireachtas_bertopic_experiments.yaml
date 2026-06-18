@@ -17,4 +17,4 @@ params:
 #    - config/experiments/roberta_embeddings.yaml
 #    - config/experiments/rooseberta_embeddings.yaml
 #    - config/experiments/mpnet_embeddings.yaml
-    - config/experiments//minilm_embeddings_default.yaml
+#    - config/experiments//minilm_embeddings_default.yaml
