@@ -17,6 +17,7 @@ from .oireachtas_member import OireachtasMember
 from .oireachtas_member_membership import OireachtasMemberMembership
 from .oireachtas_member_party_membership import OireachtasMemberPartyMembership
 from .oireachtas_member_representation import OireachtasMemberRepresentation
+from .oireachtas_question_conceptual_model import OireachtasQuestionConceptualModel
 
 
 #register models for easy import
@@ -37,5 +38,6 @@ __all__ = [
     "OireachtasMemberMembership",
     "OireachtasMemberPartyMembership",
     "OireachtasMemberRepresentation",
+    "OireachtasQuestionConceptualModel",
 
 ]
