@@ -12,6 +12,7 @@ from .pair_scatter import PairScatter
 from .topic_wordclouds import TopicWordClouds
 from .topic_distribution import TopicDistribution
 from .intertopic_distance import IntertopicDistance
+from .sankey import Sankey
 
 # Register visualisations
 
@@ -27,6 +28,7 @@ VisualisationFactory.register_visualisation("pair_scatter", PairScatter)
 VisualisationFactory.register_visualisation("topic_wordclouds", TopicWordClouds)
 VisualisationFactory.register_visualisation("topic_distribution", TopicDistribution)
 VisualisationFactory.register_visualisation("intertopic_distance", IntertopicDistance)
+VisualisationFactory.register_visualisation("sankey", Sankey)
 
 
 __all__ = [
@@ -41,4 +43,5 @@ __all__ = [
     "BoxPlot",
     "PairScatter",
     "TopicWordClouds",
+    "Sankey",
 ]

@@ -75,3 +75,27 @@ pipelines:
               filename: oireachtas_sentence_length_histogram.png
             - name: boxplot
               filename: oireachtas_sentence_length_boxplot.png
+      - name: sankey_flow
+        params:
+          columns:
+            - QuestionerConstituency
+            - QuestionerParty
+            - QuestionType
+           # - QuestionCategory
+          viz_params:
+            - name: sankey
+              filename: oireachtas_sankey.html
+      - name: class_balance
+        params:
+          #target: null  # When target is null, ClassBalanceEDA will create subplots for all columns
+          exclude_columns:
+            - QuestionID
+            - QuestionNumber
+            - QuestionText
+            - AnswerText
+#          log_transform_columns:
+#            - numeric_score
+          # Can be an int (global bins) or a dict mapping column->bins
+          #hist_bins: 30
+          filename: oireachtas_class_balance_overview.png
+          #save_path: output/eda
