@@ -13,6 +13,8 @@ from .document_length_eda import DocumentLengthEDA
 from .consolidation_eda import ConsolidationEDA
 from .term_frequency_eda import TermFrequencyEDA
 from .sankey_flow_eda import SankeyFlowEDA
+from .missing_values_eda import MissingValuesEDA
+from .tokenize_text_eda import TokenizeTextEDA
 
 EDAFactory.register_eda("class_balance", ClassBalanceEDA)
 EDAFactory.register_eda("wordcloud_global", lambda: WordCloudEDA(per_class=False))
@@ -29,6 +31,8 @@ EDAFactory.register_eda("document_length", DocumentLengthEDA)
 EDAFactory.register_eda("consolidation", ConsolidationEDA)
 EDAFactory.register_eda("term_frequency", TermFrequencyEDA)
 EDAFactory.register_eda("sankey_flow", SankeyFlowEDA)
+EDAFactory.register_eda("missing_values", MissingValuesEDA)
+EDAFactory.register_eda("tokenize_text", TokenizeTextEDA)
 
 __all__ = [
     "EDAFactory",
@@ -45,4 +49,6 @@ __all__ = [
     "ConsolidationEDA",
     "TermFrequencyEDA",
     "SankeyFlowEDA",
+    "MissingValuesEDA",
+    "TokenizeTextEDA",
 ]
