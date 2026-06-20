@@ -115,15 +115,7 @@ class DocumentLengthEDA(EDAComponent):
         except Exception as e:
             self.logger.warning(f"Failed to compute summary stats for '{output_column}': {e}")
 
-        # handle visualisations
-        # viz_cfg = kwargs.get('viz_params') or {}
-        # visualisations = viz_cfg.get('visualisations') if isinstance(viz_cfg, dict) else None
-        # if visualisations is None:
-        #     # treat the viz_cfg itself as a single visualiser config if it contains a name
-        #     if isinstance(viz_cfg, dict) and ('name' in viz_cfg or viz_cfg):
-        #         visualisations = [viz_cfg]
-        #     else:
-        #         visualisations = []
+
         viz_cfg = kwargs.get('viz_params')
 
         # Normalize viz configs to a list of dicts
@@ -160,12 +152,6 @@ class DocumentLengthEDA(EDAComponent):
                 for k in ['name', 'type', 'filename', 'output_dir']:
                     vis_params.pop(k, None)
 
-                # vis_params.pop('name', None)
-                # vis_params.pop('type', None)
-                # vis_params.pop('filename', None)
-                # vis_params.pop('output_dir', None)
-                # ensure output_dir so certain visualisers can save interactives
-                #vis_params.setdefault('output_dir', save_path)
 
                 viz = VisualisationFactory.get_visualisation(vis_name, **vis_params)
                 if viz is None:

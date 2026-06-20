@@ -16,6 +16,8 @@ from .sankey_flow_eda import SankeyFlowEDA
 from .missing_values_eda import MissingValuesEDA
 from .tokenize_text_eda import TokenizeTextEDA
 
+
+
 EDAFactory.register_eda("class_balance", ClassBalanceEDA)
 EDAFactory.register_eda("wordcloud_global", lambda: WordCloudEDA(per_class=False))
 EDAFactory.register_eda("wordcloud_by_class", lambda: WordCloudEDA(per_class=True))
@@ -50,5 +52,5 @@ __all__ = [
     "TermFrequencyEDA",
     "SankeyFlowEDA",
     "MissingValuesEDA",
-    "TokenizeTextEDA",
+    "TokenizeTextEDA"
 ]

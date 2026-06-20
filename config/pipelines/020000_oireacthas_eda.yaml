@@ -20,8 +20,8 @@ pipelines:
             bins: 30
             xlabel: Character length
             ylabel: Number of documents
-            xscale: log
-            density: true
+            #xscale: log
+            density: false
             filename: oireachtas_character_length_histogram.png
           - name: boxplot
             filename: oireachtas_character_length_boxplot.png
@@ -37,8 +37,8 @@ pipelines:
             bins: 30
             xlabel: Word length
             ylabel: Number of documents
-            xscale: log
-            density: true
+            #xscale: log
+            density: false
             filename: oireachtas_words_length_histogram.png
           - name: boxplot
             filename: oireachtas_words_length_boxplot.png
@@ -51,11 +51,11 @@ pipelines:
           output_column: sentence_length
           viz_params:
           - name: histogram
-            bins: 30
+            #bins: 30
             xlabel: Sentence length
             ylabel: Number of documents
             xscale: log
-            density: true
+            density: false
             filename: oireachtas_sentence_length_log_histogram.png
           - name: boxplot
             filename: oireachtas_sentence_length_log_boxplot.png
@@ -71,7 +71,7 @@ pipelines:
               bins: 30
               xlabel: Sentence length
               ylabel: Number of documents
-              density: true
+              density: false
               filename: oireachtas_sentence_length_histogram.png
             - name: boxplot
               filename: oireachtas_sentence_length_boxplot.png
