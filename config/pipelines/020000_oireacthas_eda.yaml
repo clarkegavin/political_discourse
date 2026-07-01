@@ -8,6 +8,9 @@ pipelines:
       - name: describe_info
         params:
           filename_prefix: oireachtas
+        #==============================
+        # Oireachtas Document Length EDA - Q&A
+        #==============================
       - name: document_length
         params:
           columns:
@@ -20,11 +23,13 @@ pipelines:
             bins: 30
             xlabel: Character length
             ylabel: Number of documents
-            xscale: log
-            density: true
+            #xscale: log
+            density: false
             filename: oireachtas_character_length_histogram.png
           - name: boxplot
             filename: oireachtas_character_length_boxplot.png
+#          - name: bar_chart
+#            filename: oireachtas_question_character_length_barchart.png
       - name: document_length
         params:
           columns:
@@ -37,8 +42,8 @@ pipelines:
             bins: 30
             xlabel: Word length
             ylabel: Number of documents
-            xscale: log
-            density: true
+            #xscale: log
+            density: false
             filename: oireachtas_words_length_histogram.png
           - name: boxplot
             filename: oireachtas_words_length_boxplot.png
@@ -51,11 +56,11 @@ pipelines:
           output_column: sentence_length
           viz_params:
           - name: histogram
-            bins: 30
+            #bins: 30
             xlabel: Sentence length
             ylabel: Number of documents
             xscale: log
-            density: true
+            density: false
             filename: oireachtas_sentence_length_log_histogram.png
           - name: boxplot
             filename: oireachtas_sentence_length_log_boxplot.png
@@ -71,20 +76,59 @@ pipelines:
               bins: 30
               xlabel: Sentence length
               ylabel: Number of documents
-              density: true
+              density: false
               filename: oireachtas_sentence_length_histogram.png
             - name: boxplot
               filename: oireachtas_sentence_length_boxplot.png
-      - name: sankey_flow
+      # ===============================
+      # Oireachtas Question Text EDA - Q only
+      # ===============================
+      - name: document_length
         params:
           columns:
-            - QuestionerConstituency
-            - QuestionerParty
-            - QuestionType
-           # - QuestionCategory
+          - QuestionText
+          unit: characters
+          output_column: character_length
           viz_params:
-            - name: sankey
-              filename: oireachtas_sankey.html
+          - name: histogram
+            bins: 30
+            xlabel: Character length
+            ylabel: Number of documents
+            #xscale: log
+            density: false
+            filename: oireachtas_question_character_length_histogram.png
+          - name: boxplot
+            filename: oireachtas_question_character_length_boxplot.png
+
+      # ===============================
+      # Oireachtas Question Text EDA - Q only
+      # ===============================
+      - name: document_length
+        params:
+          columns:
+          - AnswerText
+          unit: characters
+          output_column: character_length
+          viz_params:
+          - name: histogram
+            bins: 30
+            xlabel: Character length
+            ylabel: Number of documents
+            #xscale: log
+            density: false
+            filename: oireachtas_answer_character_length_histogram.png
+          - name: boxplot
+            filename: oireachtas_answer_character_length_boxplot.png
+#      - name: sankey_flow
+#        params:
+#          columns:
+#            - QuestionerConstituency
+#            - QuestionerParty
+#            - QuestionType
+#           # - QuestionCategory
+#          viz_params:
+#            - name: sankey
+#              filename: oireachtas_sankey.html
       - name: class_balance
         params:
           #target: null  # When target is null, ClassBalanceEDA will create subplots for all columns
@@ -99,3 +143,50 @@ pipelines:
           #hist_bins: 30
           filename: oireachtas_class_balance_overview.png
           #save_path: output/eda
+      - name: missing_values
+        params:
+          columns:
+            - Questioner
+            - QuestionerParty
+            - QuestionerConstituency
+            - QuestionType
+            - AskedOfMinister
+          missing_values_column: AnswerText
+          consolidate: true
+          ncols: 3
+          viz_params:
+            name: box_plot
+            filename: oireachtas_missing_values_overview.png
+      - name: tokenize_text
+        params:
+          columns:
+            - QuestionText
+            - AnswerText
+          output_column: tokens
+          viz_params:
+            - name: boxplot
+              ncols: 3
+              filename: oireachtas_tokens_boxplot.png
+            - name: bar_chart
+              ncols: 3
+              filename: oireachtas_tokens_barchart.png
+
+      # ==========================================
+      # Term Frequency EDA - Q&A
+      # ==========================================
+      - name: term_frequency
+        params:
+          fields_to_combine: ["QuestionText", "AnswerText"]
+          combined_field_name: "CombinedQA"
+          target_field: "CombinedQA"
+          saver_name: sql_server
+          table_name: oireachtas_term_frequency
+          if_exists: replace
+          chunk_size: 1000
+          schema: dbo
+          connector_params: {}
+          viz_params:
+            - name: zipf_plot
+              log_scale: true
+              filename: oireachtas_term_frequency_zipf_plot.png
+

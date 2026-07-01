@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
 from data.savers.factory import DataSaverFactory
 from data.sqlalchemy_connector import SQLAlchemyConnector
+from visualisations.factory import VisualisationFactory
 
 class TermFrequencyEDA(EDAComponent):
     """
@@ -232,4 +233,26 @@ class TermFrequencyEDA(EDAComponent):
                 self.logger.error(f"Failed to save term-frequency DataFrame: {e}")
                 raise
 
+        tf_df["rank"] = tf_df.index + 1  # Add rank column for Zipf analysis
+
+        # Visualisation hook
+        viz_params = kwargs.get("viz_params", None)
+        if viz_params:
+            for viz in viz_params:
+                viz_name = viz["name"]
+                if viz_name == "zipf_plot":
+                    viz_instance = VisualisationFactory.get("zipf_plot")
+                    viz_instance.plot(
+                        data=tf_df,
+                        log_scale=viz.get("log_scale", True),
+                        filename=viz.get("filename")
+                    )
+                elif viz_name == "bar_chart":
+                    viz_instance = VisualisationFactory.get("bar_chart")
+                    viz_instance.plot(
+                        data=tf_df.head(viz.get("top_n", 30)),
+                        x="term",
+                        y="frequency",
+                        filename=viz.get("filename")
+                    )
         return tf_df
