@@ -15,7 +15,7 @@ from .term_frequency_eda import TermFrequencyEDA
 from .sankey_flow_eda import SankeyFlowEDA
 from .missing_values_eda import MissingValuesEDA
 from .tokenize_text_eda import TokenizeTextEDA
-
+from .shannon_entropy_eda import ShannonEntropyEDA
 
 
 EDAFactory.register_eda("class_balance", ClassBalanceEDA)
@@ -35,6 +35,7 @@ EDAFactory.register_eda("term_frequency", TermFrequencyEDA)
 EDAFactory.register_eda("sankey_flow", SankeyFlowEDA)
 EDAFactory.register_eda("missing_values", MissingValuesEDA)
 EDAFactory.register_eda("tokenize_text", TokenizeTextEDA)
+EDAFactory.register_eda("shannon_entropy", ShannonEntropyEDA)
 
 __all__ = [
     "EDAFactory",
@@ -52,5 +53,7 @@ __all__ = [
     "TermFrequencyEDA",
     "SankeyFlowEDA",
     "MissingValuesEDA",
-    "TokenizeTextEDA"
+    "TokenizeTextEDA",
+    "ShannonEntropyEDA"
+
 ]

@@ -4,6 +4,7 @@ from logs.logger import get_logger
 import matplotlib.pyplot as plt
 import pandas as pd
 import math
+import  numpy as np
 
 class PairScatter(Visualisation):
     """
@@ -43,10 +44,15 @@ class PairScatter(Visualisation):
         fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize)
 
         # normalize axes to 1D list for easy iteration
-        if total == 1:
-            axes_list = [axes]
-        else:
+        # if total == 1:
+        #     axes_list = [axes]
+        # else:
+        #     axes_list = axes.flatten()
+
+        if isinstance(axes, np.ndarray):
             axes_list = axes.flatten()
+        else:
+            axes_list = [axes]
 
         marker = kwargs.get('marker', self.params.get('marker', 'o'))
         alpha = kwargs.get('alpha', self.params.get('alpha', 0.7))

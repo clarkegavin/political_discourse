@@ -241,14 +241,14 @@ class TermFrequencyEDA(EDAComponent):
             for viz in viz_params:
                 viz_name = viz["name"]
                 if viz_name == "zipf_plot":
-                    viz_instance = VisualisationFactory.get("zipf_plot")
+                    viz_instance = VisualisationFactory.get_visualisation("zipf_plot")
                     viz_instance.plot(
                         data=tf_df,
                         log_scale=viz.get("log_scale", True),
                         filename=viz.get("filename")
                     )
                 elif viz_name == "bar_chart":
-                    viz_instance = VisualisationFactory.get("bar_chart")
+                    viz_instance = VisualisationFactory.get_visualisations("bar_chart")
                     viz_instance.plot(
                         data=tf_df.head(viz.get("top_n", 30)),
                         x="term",

@@ -13,6 +13,7 @@ from .topic_wordclouds import TopicWordClouds
 from .topic_distribution import TopicDistribution
 from .intertopic_distance import IntertopicDistance
 from .sankey import Sankey
+from .zipf_plot import ZipfPlot
 
 # Register visualisations
 
@@ -29,6 +30,7 @@ VisualisationFactory.register_visualisation("topic_wordclouds", TopicWordClouds)
 VisualisationFactory.register_visualisation("topic_distribution", TopicDistribution)
 VisualisationFactory.register_visualisation("intertopic_distance", IntertopicDistance)
 VisualisationFactory.register_visualisation("sankey", Sankey)
+VisualisationFactory.register_visualisation("zipf_plot", ZipfPlot)
 
 
 __all__ = [
@@ -44,4 +46,6 @@ __all__ = [
     "PairScatter",
     "TopicWordClouds",
     "Sankey",
+    "TopicDistribution",
+    "ZipfPlot"
 ]
