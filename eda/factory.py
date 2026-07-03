@@ -1,6 +1,4 @@
 # eda/factory.py
-from eda.class_balance_eda import ClassBalanceEDA
-from eda.wordcloud_eda import WordCloudEDA
 
 class EDAFactory:
     _registry={}
@@ -17,3 +15,5 @@ class EDAFactory:
         if eda_class is None:
             raise KeyError(f"EDA '{name}' is not registered. Available: {list(cls._registry.keys())}")
         return eda_class(**kwargs)
+
+

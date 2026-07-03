@@ -174,19 +174,41 @@ pipelines:
       # ==========================================
       # Term Frequency EDA - Q&A
       # ==========================================
-      - name: term_frequency
+#      - name: term_frequency
+#        params:
+#          fields_to_combine: ["QuestionText", "AnswerText"]
+#          combined_field_name: "CombinedQA"
+#          target_field: "CombinedQA"
+#          saver_name: sql_server
+#          table_name: oireachtas_term_frequency
+#          if_exists: replace
+#          chunk_size: 1000
+#          schema: dbo
+#          connector_params: {}
+#          viz_params:
+#            - name: zipf_plot
+#              log_scale: true
+#              filename: oireachtas_term_frequency_zipf_plot.png
+
+      - name: shannon_entropy
         params:
-          fields_to_combine: ["QuestionText", "AnswerText"]
-          combined_field_name: "CombinedQA"
-          target_field: "CombinedQA"
+          group_by_field: Questioner
+          category_field: QuestionCategory
+          normalise: true
           saver_name: sql_server
-          table_name: oireachtas_term_frequency
-          if_exists: replace
-          chunk_size: 1000
+          table_name: oireachtas_td_entropy
           schema: dbo
-          connector_params: {}
           viz_params:
-            - name: zipf_plot
-              log_scale: true
-              filename: oireachtas_term_frequency_zipf_plot.png
+            - name: histogram
+              column: NormalisedEntropy
+              bins: 20
+              title: Distribution of TD Category Diversity
+              filename: td_entropy_histogram.png
+            - name: pair_scatter
+              pairs:
+                - [TotalCount, NormalisedEntropy]
+              title: TD Question Volume vs Category Diversity
+              filename: td_entropy_scatter.png
+
+
 
