@@ -14,6 +14,9 @@ from .topic_distribution import TopicDistribution
 from .intertopic_distance import IntertopicDistance
 from .sankey import Sankey
 from .zipf_plot import ZipfPlot
+from .choropleth import ChoroplethVisualisation
+from .bubble_geo_map import BubbleGeoMapVisualisation
+from .bubble_geo_map_interactive import InteractiveBubbleGeoMap
 
 # Register visualisations
 
@@ -31,6 +34,9 @@ VisualisationFactory.register_visualisation("topic_distribution", TopicDistribut
 VisualisationFactory.register_visualisation("intertopic_distance", IntertopicDistance)
 VisualisationFactory.register_visualisation("sankey", Sankey)
 VisualisationFactory.register_visualisation("zipf_plot", ZipfPlot)
+VisualisationFactory.register_visualisation("choropleth", ChoroplethVisualisation)
+VisualisationFactory.register_visualisation("bubble_geo_map", BubbleGeoMapVisualisation)
+VisualisationFactory.register_visualisation("interactive_bubble_geo_map", InteractiveBubbleGeoMap)
 
 
 __all__ = [
@@ -47,5 +53,7 @@ __all__ = [
     "TopicWordClouds",
     "Sankey",
     "TopicDistribution",
-    "ZipfPlot"
+    "ZipfPlot",
+    "ChoroplethVisualisation",
+    "BubbleGeoMapVisualisation"
 ]

@@ -16,6 +16,7 @@ from .sankey_flow_eda import SankeyFlowEDA
 from .missing_values_eda import MissingValuesEDA
 from .tokenize_text_eda import TokenizeTextEDA
 from .shannon_entropy_eda import ShannonEntropyEDA
+from .geomap_eda import GeoMapEDA
 
 
 EDAFactory.register_eda("class_balance", ClassBalanceEDA)
@@ -36,6 +37,7 @@ EDAFactory.register_eda("sankey_flow", SankeyFlowEDA)
 EDAFactory.register_eda("missing_values", MissingValuesEDA)
 EDAFactory.register_eda("tokenize_text", TokenizeTextEDA)
 EDAFactory.register_eda("shannon_entropy", ShannonEntropyEDA)
+EDAFactory.register_eda("geomap", GeoMapEDA)
 
 __all__ = [
     "EDAFactory",
@@ -54,6 +56,6 @@ __all__ = [
     "SankeyFlowEDA",
     "MissingValuesEDA",
     "TokenizeTextEDA",
-    "ShannonEntropyEDA"
-
+    "ShannonEntropyEDA",
+    "GeoMapEDA"
 ]

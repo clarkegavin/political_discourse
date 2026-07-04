@@ -43,6 +43,9 @@ class PairScatter(Visualisation):
 
         fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize)
 
+
+
+
         # normalize axes to 1D list for easy iteration
         # if total == 1:
         #     axes_list = [axes]
@@ -54,6 +57,10 @@ class PairScatter(Visualisation):
         else:
             axes_list = [axes]
 
+        xlim = kwargs.get("xlim", self.params.get("xlim"))
+        ylim = kwargs.get("ylim", self.params.get("ylim"))
+
+
         marker = kwargs.get('marker', self.params.get('marker', 'o'))
         alpha = kwargs.get('alpha', self.params.get('alpha', 0.7))
         s = kwargs.get('s', self.params.get('s', 10))
@@ -61,6 +68,13 @@ class PairScatter(Visualisation):
 
         for i, (xcol, ycol) in enumerate(pairs):
             ax = axes_list[i]
+
+            if xlim is not None:
+                ax.set_xlim(xlim)
+
+            if ylim is not None:
+                ax.set_ylim(ylim)
+
             if xcol not in data.columns or ycol not in data.columns:
                 ax.text(0.5, 0.5, f"Missing cols: {xcol}, {ycol}", ha='center')
                 continue

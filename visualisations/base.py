@@ -20,12 +20,40 @@ class Visualisation(ABC):
         pass
 
 
-    def save(self, fig, filepath: str, dpi=300):
+    def save(self, obj, filepath: str, dpi=300):
         """
         Save the visualisation to a file.
         """
         # create directory if it doesn't exist
+        self.logger.info(f"Preparing to save visualisation to {filepath}")
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
         self.logger.info(f'Saving visualisation to {filepath}')
-        fig.savefig(filepath, dpi=dpi, bbox_inches='tight')
-        self.logger.info(f'Visualisation saved to {filepath}')
+        # fig.savefig(filepath, dpi=dpi, bbox_inches='tight')
+        # self.logger.info(f'Visualisation saved to {filepath}')
+        ext = os.path.splitext(filepath)[1].lower()
+        self.logger.info(f"File extension determined: {ext}")
+
+        # ---------------------------
+        # MATPLOTLIB SAVE
+        # ---------------------------
+        if hasattr(obj, "savefig"):
+            obj.savefig(filepath, dpi=dpi, bbox_inches="tight")
+            self.logger.info("Saved using matplotlib backend")
+            return
+
+        if ext == ".png":
+            self.logger.info("Saving using matplotlib PNG backend")
+            obj.savefig(filepath, dpi=dpi, bbox_inches="tight")
+            self.logger.info("Saved using matplotlib PNG backend")
+            return
+
+        # ---------------------------
+        # PLOTLY SAVE
+        # ---------------------------
+        if ext == ".html":
+            self.logger.info("Saving using plotly HTML backend")
+            obj.write_html(filepath)
+            self.logger.info("Saved using plotly HTML backend")
+            return
+
+        raise ValueError(f"Unsupported visualisation type or file format: {ext}")
