@@ -55,6 +55,9 @@ class Histogram(Visualisation):
         yscale = params.pop("yscale", self.yscale)
         xlabel  = params.pop("xlabel", self.xlabel)
         ylabel  = params.pop("ylabel", self.ylabel)
+        xlim = params.pop("xlim", None)
+        ylim = params.pop("ylim", None)
+
         density = params.pop("density", False)
         self.logger.info(f"Plotting histogram with bins={bins}, density={density}, xscale='{xscale}', yscale='{yscale}'")
 
@@ -71,6 +74,13 @@ class Histogram(Visualisation):
 
 
         ax.hist(values, bins=bins, density=density, **params)
+
+
+        if xlim is not None:
+            ax.set_xlim(xlim)
+
+        if ylim is not None:
+            ax.set_ylim(ylim)
 
         ax.set_title(title or self.title)
         if xlabel:
