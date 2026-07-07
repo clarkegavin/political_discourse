@@ -228,45 +228,86 @@ pipelines:
 #                - [TotalCount, NormalisedEntropy]
 #              title: Question Volume vs Normalised Shannon Entropy
 #              filename: asked_of_minister_entropy_scatter.png
-      - name: geomap
-        params:
-          shape_file: "data/geo_data/ConstituencyBoundariesUngeneralised_National_Electoral_Boundaries_2023_1943258459586490165.geojson"
-          constituency: ENG_NAME_VALUE
-          remove_trailing_numbers: true
-          group_by_field: QuestionerConstituency
-          value_field: QuestionId
-          aggregation_method: count
-          viz_params:
-            - name: choropleth
-              title: "Number of Questions by Constituency"
-              colour_map: Blues
-              missing_colour: lightgrey
-              filename: oireachtas_questions_by_constituency_map.png
-            - name: bubble_geo_map
-              title: "Number of Questions by Constituency"
-              filename: oireachtas_questions_by_constituency_bubble_map.png
-            - name: interactive_bubble_geo_map
-              title: "Number of Questions by Constituency"
-              filename: oireachtas_questions_by_constituency_bubble_map_interactive.html
-              name_field: QuestionerConstituency
       - name: shannon_entropy
         params:
-          group_by_field: QuestionerConstituency
+          group_by_field: QuestionerParty
           category_field: QuestionCategory
           normalise: true
           saver_name: sql_server
-          table_name: oireachtas_constituency_entropy
+          table_name: oireachtas_party_entropy
           schema: dbo
           viz_params:
             - name: histogram
               column: NormalisedEntropy
               bins: 20
-              title: Distribution of Constituency Category Diversity
-              filename: constituency_entropy_histogram.png
               xlim: [0, 1]
+              title: Distribution of Political Party Diversity
+              filename: party_entropy_histogram.png
             - name: pair_scatter
               pairs:
                 - [TotalCount, NormalisedEntropy]
               title: Question Volume vs Normalised Shannon Entropy
               ylim: [0, 1]
-              filename: constituency_entropy_scatter.png
+              filename: party_minister_entropy_scatter.png
+#      - name: geomap
+#        params:
+#          shape_file: "data/geo_data/ConstituencyBoundariesUngeneralised_National_Electoral_Boundaries_2023_1943258459586490165.geojson"
+#          constituency: ENG_NAME_VALUE
+#          remove_trailing_numbers: true
+#          group_by_field: QuestionerConstituency
+#          value_field: QuestionId
+#          aggregation_method: count
+#          viz_params:
+#            - name: choropleth
+#              title: "Number of Questions by Constituency"
+#              colour_map: Blues
+#              missing_colour: lightgrey
+#              filename: oireachtas_questions_by_constituency_map.png
+#            - name: bubble_geo_map
+#              title: "Number of Questions by Constituency"
+#              filename: oireachtas_questions_by_constituency_bubble_map.png
+#            - name: bubble_geo_map
+#              title: "Number of Questions by Constituency - Dublin"
+#              filename: oireachtas_questions_by_dublin_constituency_bubble_map.png
+#              xlim: [-6.5, -6.05]
+#              ylim: [53.15, 54.45]
+#              region: Dublin
+#            - name: interactive_bubble_geo_map
+#              title: "Number of Questions by Constituency"
+#              filename: oireachtas_questions_by_constituency_bubble_map_interactive.html
+#              name_field: QuestionerConstituency
+#      - name: shannon_entropy
+#        params:
+#          group_by_field: QuestionerConstituency
+#          category_field: QuestionCategory
+#          normalise: true
+#          saver_name: sql_server
+#          table_name: oireachtas_constituency_entropy
+#          schema: dbo
+#          viz_params:
+#            - name: histogram
+#              column: NormalisedEntropy
+#              bins: 20
+#              title: Distribution of Constituency Category Diversity
+#              filename: constituency_entropy_histogram.png
+#              xlim: [0, 1]
+#            - name: pair_scatter
+#              pairs:
+#                - [TotalCount, NormalisedEntropy]
+#              title: Question Volume vs Normalised Shannon Entropy
+#              ylim: [0, 1]
+#              filename: constituency_entropy_scatter.png
+#      - name: wordcloud
+#        params:
+#          columns:
+#            - QuestionText
+#            - AnswerText
+#          combine_columns: true
+#          viz_params:
+#            - name: eda_wordcloud
+#              max_words: 100
+#              stopwords: true
+#              collocations: false
+#              background_color: white
+#              colormap: viridis
+#              filename: oireachtas_wordcloud.png

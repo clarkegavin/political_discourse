@@ -1,50 +1,122 @@
-from .base import EDAComponent
+# eda/word_cloud_eda.py
+
+import os
 from logs.logger import get_logger
 from visualisations.factory import VisualisationFactory
-import os
+from wordcloud import STOPWORDS
 
-class WordCloudEDA(EDAComponent):
-    """
-    EDA component to generate and visualize a word cloud from text data.
-    """
 
-    def __init__(self, per_class=False):
-        self.per_class = per_class
-        self.logger = get_logger("WordCloudEDA")
-        self.logger.info("Initialized WordCloudEDA component")
+class WordCloudEDA:
 
-    def run(self, data, target, text_field, save_path, **kwargs):
+    def __init__(self):
+        self.logger = get_logger(self.__class__.__name__)
+
+    def _build_text(self, df, columns):
+        return (
+            df[columns]
+            .fillna("")
+            .astype(str)
+            .agg(" ".join, axis=1)
+            .str.cat(sep=" ")
+        )
+
+    def _resolve_stopwords(self, use_stopwords: bool):
         """
-        Generate and visualize a word cloud from the specified text field.
-
-        Parameters:
-        - data: The dataset containing the text data.
-        - target: Not used in this component.
-        - text_field: The name of the text field column to generate the word cloud from.
-        - kwargs: Additional parameters for word cloud generation.
-
-        Returns:
-        - fig: The generated word cloud plot.
+        Converts YAML boolean into WordCloud-compatible stopwords set.
         """
+        if use_stopwords is False:
+            return set()
+        return STOPWORDS
 
-        viz = VisualisationFactory.get_visualisation("word_cloud")
+    def run(self, data, target=None, text_field=None, save_path=None, **kwargs):
 
-        if not self.per_class:
-            # Global wordcloud
-            text = " ".join(data[text_field].astype(str).tolist())
-            filepath = os.path.join(save_path, "wordcloud_all.png")
-            viz.plot(text=text, save_path=filepath, title="All Classes")
-            return [filepath]
+        os.makedirs(save_path, exist_ok=True)
 
-        # Per-class wordclouds
-        filepaths = []
-        for label, subset in data.groupby(target):
-            text = " ".join(subset[text_field].astype(str).tolist())
-            filename = f"wordcloud_class_{label}.png"
-            filepath = os.path.join(save_path, filename)
-            viz.plot(text=text, save_path=filepath, title=f"Class {label}")
-            filepaths.append(filepath)
-
-        return filepaths
+        columns = kwargs.get("columns", [])
+        combine_columns = kwargs.get("combine_columns", False)
+        viz_params = kwargs.get("viz_params", [])
 
 
+        outputs = {}
+
+        for viz_param in viz_params:
+            viz_params = dict(viz_param)
+            viz_name = viz_params.pop("name")
+
+            # -----------------------------
+            # Resolve stopwords BEFORE passing to WordCloud
+            # -----------------------------
+            use_stopwords = viz_params.pop("stopwords", True)
+            stopwords = self._resolve_stopwords(use_stopwords)
+
+            visualisation = VisualisationFactory.get_visualisation(
+                viz_name,
+                **viz_params
+            )
+
+            if visualisation is None:
+                raise KeyError(f"Visualisation '{viz_name}' not registered")
+
+            try:
+
+                # =====================================================
+                # COMBINED WORD CLOUD
+                # =====================================================
+                if combine_columns:
+
+                    self.logger.info("Generating combined word cloud")
+
+                    text = self._build_text(data, columns)
+
+                    fig, ax = visualisation.plot(
+                        text=text,
+                        stopwords=stopwords,
+                        **viz_params
+                    )
+
+                    filename = viz_params.get(
+                        "filename",
+                        "wordcloud_combined.png"
+                    )
+
+                    outpath = os.path.join(save_path, filename)
+
+                    visualisation.save(fig, outpath)
+
+                    outputs[viz_name] = outpath
+
+                # =====================================================
+                # PER-COLUMN WORD CLOUDS
+                # =====================================================
+                else:
+
+                    self.logger.info("Generating per-column word clouds")
+
+                    column_outputs = {}
+
+                    for col in columns:
+                        text = self._build_text(data, [col])
+
+                        fig, ax = visualisation.plot(
+                            text=text,
+                            stopwords=stopwords,
+                            **viz_params
+                        )
+
+                        filename = viz_params.get(
+                            "filename",
+                            f"wordcloud_{col}.png"
+                        ).replace(" ", "_")
+
+                        outpath = os.path.join(save_path, filename)
+
+                        visualisation.save(fig, outpath)
+
+                        column_outputs[col] = outpath
+
+                    outputs[viz_name] = column_outputs
+
+            except Exception as e:
+                self.logger.warning(f"WordCloud failed: {e}")
+
+        return outputs

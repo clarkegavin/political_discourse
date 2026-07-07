@@ -17,6 +17,7 @@ from .zipf_plot import ZipfPlot
 from .choropleth import ChoroplethVisualisation
 from .bubble_geo_map import BubbleGeoMapVisualisation
 from .bubble_geo_map_interactive import InteractiveBubbleGeoMap
+from .word_cloud_eda_vis import WordCloudVisualisation
 
 # Register visualisations
 
@@ -37,6 +38,8 @@ VisualisationFactory.register_visualisation("zipf_plot", ZipfPlot)
 VisualisationFactory.register_visualisation("choropleth", ChoroplethVisualisation)
 VisualisationFactory.register_visualisation("bubble_geo_map", BubbleGeoMapVisualisation)
 VisualisationFactory.register_visualisation("interactive_bubble_geo_map", InteractiveBubbleGeoMap)
+VisualisationFactory.register_visualisation("word_cloud_eda", WordCloudVisualisation)
+VisualisationFactory.register_visualisation("eda_wordcloud", WordCloudVisualisation)  # alias
 
 
 __all__ = [
@@ -55,5 +58,7 @@ __all__ = [
     "TopicDistribution",
     "ZipfPlot",
     "ChoroplethVisualisation",
-    "BubbleGeoMapVisualisation"
+    "BubbleGeoMapVisualisation",
+    "InteractiveBubbleGeoMap",
+    "WordCloudVisualisation"
 ]

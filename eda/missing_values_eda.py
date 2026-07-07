@@ -5,7 +5,6 @@ from visualisations.factory import VisualisationFactory
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-import math
 
 
 class MissingValuesEDA(EDAComponent):
@@ -115,18 +114,10 @@ class MissingValuesEDA(EDAComponent):
 
         # Consolidated single figure
         if consolidate:
-            total = len(existing_cols)
-            # support ncols param for layout; default 1 to remain backwards compatible
-            try:
-                ncols = int(kwargs.get('ncols', 1))
-            except Exception:
-                ncols = 1
-            if ncols < 1:
-                ncols = 1
-            nrows = int(math.ceil(total / ncols)) if total > 0 else 1
-            fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(4 * ncols, 3.5 * nrows))
-            # normalize axes to a flat list for iteration
-            if not hasattr(axes, 'flatten'):
+            nrows = len(existing_cols)
+            ncols_layout = 1
+            fig, axes = plt.subplots(nrows=nrows, ncols=ncols_layout, figsize=(6 * ncols_layout, 3.5 * nrows))
+            if nrows == 1:
                 axes = [axes]
             else:
                 axes = axes.flatten()
@@ -179,13 +170,6 @@ class MissingValuesEDA(EDAComponent):
                 except Exception as e:
                     self.logger.warning(f"Failed to create missingness boxplot for '{col}': {e}")
                     ax.text(0.5, 0.5, f"Error {col}", ha='center')
-
-            # hide any unused axes
-            for j in range(total, len(axes)):
-                try:
-                    axes[j].set_visible(False)
-                except Exception:
-                    pass
 
             # overall title
             try:

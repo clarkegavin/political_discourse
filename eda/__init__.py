@@ -20,8 +20,7 @@ from .geomap_eda import GeoMapEDA
 
 
 EDAFactory.register_eda("class_balance", ClassBalanceEDA)
-EDAFactory.register_eda("wordcloud_global", lambda: WordCloudEDA(per_class=False))
-EDAFactory.register_eda("wordcloud_by_class", lambda: WordCloudEDA(per_class=True))
+EDAFactory.register_eda("wordcloud", WordCloudEDA)
 EDAFactory.register_eda("duplicate_check", DuplicateCheckEDA)
 EDAFactory.register_eda("describe_info", DescribeInfoEDA)
 EDAFactory.register_eda("info", InfoEDA)

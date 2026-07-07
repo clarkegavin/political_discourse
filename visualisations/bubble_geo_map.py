@@ -8,13 +8,16 @@ from logs.logger import get_logger
 
 class BubbleGeoMapVisualisation(Visualisation):
 
-    def __init__(self, title, filename, name_field=None, figsize=(10, 10)):
+    def __init__(self, title, filename, name_field=None, figsize=(10, 10), **params):
         super().__init__(title=title, figsize=figsize)
         self.logger = get_logger(self.__class__.__name__)
         self.title = title
         self.filename = filename
         self.name_field = name_field  # constituency column (from viz_params)
         self.figsize = figsize
+        self.params = params
+        self.region = params.pop("region", "Ireland")
+        self.logger.info(f"Initialized BubbleGeoMapVisualisation with title: {title}, filename: {filename}, name_field: {name_field}, figsize: {figsize}, region: {self.region}")
 
     def _prepare_data(self, geo_df, value_field, group_field):
         """
@@ -84,7 +87,24 @@ class BubbleGeoMapVisualisation(Visualisation):
         # -------------------------
         # 1. PREP DATA
         # -------------------------
+
+        dublin_constituencies = {
+            "Dublin Bay North",
+            "Dublin Bay South",
+            "Dublin Central",
+            "Dublin Fingal East",
+            "Dublin Fingal West",
+            "Dublin Mid-West",
+            "Dublin North-West",
+            "Dublin Rathdown",
+            "Dublin South-Central",
+            "Dublin South-West",
+            "Dublin West"
+        }
+
         df = self._prepare_data(geo_df, value_field, group_field)
+        if self.region.lower() == "dublin": # filter just by the dublin consitituencies
+            df = df[df[group_field].isin(dublin_constituencies)]
 
         centroids = df["centroid"]
         lons = centroids.x
@@ -96,12 +116,18 @@ class BubbleGeoMapVisualisation(Visualisation):
         values = df[value_field].fillna(0)
         sizes = self._scale_bubbles(values)
         self.logger.info(f"Bubble sizes scaled: min={sizes.min()}, max={sizes.max()}")
+        xlim = self.params.get("xlim")
+        ylim = self.params.get("ylim")
+        minx, miny, maxx, maxy = df.total_bounds
+
 
         # -------------------------
         # 2. FIGURE
         # -------------------------
         fig, ax = plt.subplots(1, 1, figsize=self.figsize)
         self.logger.info(f"Figure created with size: {self.figsize}")
+
+
         # -------------------------
         # 3. BASE MAP (cartographic green)
         # -------------------------
@@ -132,12 +158,27 @@ class BubbleGeoMapVisualisation(Visualisation):
         # 5. LABELS (white halo text)
         # -------------------------
 
+        # check if region is Ireland, if so, skip labeling the 11 Dublin constituencies
+
+
+
         for x, y, label in zip(lons, lats, df[group_field]):
-            self.logger.info(f"Adding label '{label}' at coordinates ({x}, {y})")
+            if self.region.lower() =="ireland":
+
+                if label in dublin_constituencies:
+                    self.logger.info(f"Skipping label for Dublin constituency '{label}' to avoid clutter")
+                    continue
+            # elif self.region.lower() == "dublin":
+            #     if label not in dublin_constituencies:
+            #         self.logger.info(f"Skipping label for non-Dublin constituency '{label}' in Dublin-focused map")
+            #         continue
+
+
+            #self.logger.info(f"Adding label '{label}' at coordinates ({x}, {y})")
             txt = ax.text(
                 x, y,
                 str(label),
-                fontsize=6,
+                fontsize=8,
                 ha="center",
                 va="center",
                 color="black",
@@ -149,14 +190,58 @@ class BubbleGeoMapVisualisation(Visualisation):
                 pe.Stroke(linewidth=3, foreground="white"),
                 pe.Normal()
             ])
+
+            # -------------------------
+            # 5. Zoom into Region
+            # -------------------------
+            # if xlim is not None:
+            #     ax.set_xlim(xlim)
+            #
+            # if ylim is not None:
+            #     ax.set_ylim(ylim)
+            if self.region.lower() == "dublin":
+                ax.set_xlim(minx - 0.01, maxx + 0.01)
+                ax.set_ylim(miny - 0.01, maxy + 0.01)
+            #ax.set_aspect('equal')
+            # -----------------------
+            # 5.1 Annotate Dublin constituencies (11) with arrow
+            # ----------------------
+
+            if self.region.lower() == "ireland":
+                ax.annotate(
+                    "11 Dublin\nconstituencies",
+                    xy=(-6.25, 53.35),  # point at Dublin
+                    xytext=(-5.55, 53.95),  # location of annotation
+                    fontsize=8,
+                    ha="left",
+                    va="center",
+                    bbox=dict(
+                        boxstyle="round,pad=0.3",
+                        fc="white",
+                        ec="grey"
+                    ),
+                    arrowprops=dict(
+                        arrowstyle="->",
+                        color="grey",
+                        lw=1.2
+                    )
+                )
+
         # -----------------------
-        # 5.5 LEGEND (optional)
+        # 5.5 LEGEND
         # ----------------------
         legend_values = [
             int(values.quantile(0.25)),
             int(values.quantile(0.50)),
             int(values.quantile(0.75)),
             int(values.max())
+        ]
+
+        legend_values = [
+            100,
+            1000,
+            3000,
+            5600
         ]
 
         legend_sizes = self._scale_bubbles(np.array(legend_values))
@@ -179,11 +264,12 @@ class BubbleGeoMapVisualisation(Visualisation):
             title="Questions",
             scatterpoints=1,
             loc="lower right",
+            bbox_to_anchor=(1.2, 0.02),
             frameon=True,
             fontsize=9,
             title_fontsize=10,
-            borderpad=0.8,
-            labelspacing=1.5
+            borderpad=1.2,
+            labelspacing=2.8
         )
 
         # -------------------------
