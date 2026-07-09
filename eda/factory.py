@@ -1,4 +1,5 @@
 # eda/factory.py
+from .temporal_analysis_eda import TemporalAnalysisEDA
 
 class EDAFactory:
     _registry={}

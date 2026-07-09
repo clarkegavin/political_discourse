@@ -17,6 +17,7 @@ from .missing_values_eda import MissingValuesEDA
 from .tokenize_text_eda import TokenizeTextEDA
 from .shannon_entropy_eda import ShannonEntropyEDA
 from .geomap_eda import GeoMapEDA
+from .temporal_analysis_eda import TemporalAnalysisEDA
 
 
 EDAFactory.register_eda("class_balance", ClassBalanceEDA)
@@ -37,6 +38,7 @@ EDAFactory.register_eda("missing_values", MissingValuesEDA)
 EDAFactory.register_eda("tokenize_text", TokenizeTextEDA)
 EDAFactory.register_eda("shannon_entropy", ShannonEntropyEDA)
 EDAFactory.register_eda("geomap", GeoMapEDA)
+EDAFactory.register_eda('temporal_analysis', TemporalAnalysisEDA)
 
 __all__ = [
     "EDAFactory",
