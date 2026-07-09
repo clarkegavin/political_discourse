@@ -1,6 +1,7 @@
 #visualisations/factory.py
 from logs.logger import get_logger
 
+
 class VisualisationFactory:
 
     _registry = {}
@@ -25,3 +26,5 @@ class VisualisationFactory:
 
         cls.logger.info(f"Instantiating visualisation '{name}'")
         return viz_cls(**kwargs)
+
+

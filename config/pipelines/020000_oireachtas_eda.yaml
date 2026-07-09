@@ -228,27 +228,27 @@ pipelines:
 #                - [TotalCount, NormalisedEntropy]
 #              title: Question Volume vs Normalised Shannon Entropy
 #              filename: asked_of_minister_entropy_scatter.png
-      - name: shannon_entropy
-        params:
-          group_by_field: QuestionerParty
-          category_field: QuestionCategory
-          normalise: true
-          saver_name: sql_server
-          table_name: oireachtas_party_entropy
-          schema: dbo
-          viz_params:
-            - name: histogram
-              column: NormalisedEntropy
-              bins: 20
-              xlim: [0, 1]
-              title: Distribution of Political Party Diversity
-              filename: party_entropy_histogram.png
-            - name: pair_scatter
-              pairs:
-                - [TotalCount, NormalisedEntropy]
-              title: Question Volume vs Normalised Shannon Entropy
-              ylim: [0, 1]
-              filename: party_minister_entropy_scatter.png
+#      - name: shannon_entropy
+#        params:
+#          group_by_field: QuestionerParty
+#          category_field: QuestionCategory
+#          normalise: true
+#          saver_name: sql_server
+#          table_name: oireachtas_party_entropy
+#          schema: dbo
+#          viz_params:
+#            - name: histogram
+#              column: NormalisedEntropy
+#              bins: 20
+#              xlim: [0, 1]
+#              title: Distribution of Political Party Diversity
+#              filename: party_entropy_histogram.png
+#            - name: pair_scatter
+#              pairs:
+#                - [TotalCount, NormalisedEntropy]
+#              title: Question Volume vs Normalised Shannon Entropy
+#              ylim: [0, 1]
+#              filename: party_minister_entropy_scatter.png
 #      - name: geomap
 #        params:
 #          shape_file: "data/geo_data/ConstituencyBoundariesUngeneralised_National_Electoral_Boundaries_2023_1943258459586490165.geojson"
@@ -311,3 +311,28 @@ pipelines:
 #              background_color: white
 #              colormap: viridis
 #              filename: oireachtas_wordcloud.png
+      - name: temporal_analysis
+        params:
+          date_field: QuestionDate
+          aggregate_by: month
+          saver_name: sql_server
+          table_name: oireachtas_temporal_analysis
+          schema: dbo
+          viz_params:
+            - name: line_plot
+              #title: Temporal Analysis of Questions Over Time
+              xlabel: Date
+              ylabel: Number of Questions
+              filename: oireachtas_temporal_analysis_line_plot.png
+              include_mean: true
+              mean_line_colour: red
+              x_axis_frequency: monthly
+            - name: area_plot
+              #title: Temporal Analysis of Questions Over Time
+              xlabel: Date
+              ylabel: Number of Questions
+              filename: oireachtas_temporal_analysis_area_plot.png
+              include_mean: true
+              mean_line_colour: red
+              area_alpha: 0.5
+              x_axis_frequency: monthly

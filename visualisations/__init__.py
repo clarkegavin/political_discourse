@@ -18,6 +18,8 @@ from .choropleth import ChoroplethVisualisation
 from .bubble_geo_map import BubbleGeoMapVisualisation
 from .bubble_geo_map_interactive import InteractiveBubbleGeoMap
 from .word_cloud_eda_vis import WordCloudVisualisation
+from .area_plot import AreaPlot
+from .line_plot import LinePlot
 
 # Register visualisations
 
@@ -40,7 +42,8 @@ VisualisationFactory.register_visualisation("bubble_geo_map", BubbleGeoMapVisual
 VisualisationFactory.register_visualisation("interactive_bubble_geo_map", InteractiveBubbleGeoMap)
 VisualisationFactory.register_visualisation("word_cloud_eda", WordCloudVisualisation)
 VisualisationFactory.register_visualisation("eda_wordcloud", WordCloudVisualisation)  # alias
-
+VisualisationFactory.register_visualisation('line_plot', LinePlot)
+VisualisationFactory.register_visualisation('area_plot', AreaPlot)
 
 __all__ = [
     "ConfusionMatrixChart",
@@ -60,5 +63,7 @@ __all__ = [
     "ChoroplethVisualisation",
     "BubbleGeoMapVisualisation",
     "InteractiveBubbleGeoMap",
-    "WordCloudVisualisation"
+    "WordCloudVisualisation",
+    "AreaPlot",
+    "LinePlot"
 ]
