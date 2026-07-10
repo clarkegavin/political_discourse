@@ -18,6 +18,7 @@ from .tokenize_text_eda import TokenizeTextEDA
 from .shannon_entropy_eda import ShannonEntropyEDA
 from .geomap_eda import GeoMapEDA
 from .temporal_analysis_eda import TemporalAnalysisEDA
+from .language_detection_eda import LanguageDetectionEDA
 
 
 EDAFactory.register_eda("class_balance", ClassBalanceEDA)
@@ -39,6 +40,10 @@ EDAFactory.register_eda("tokenize_text", TokenizeTextEDA)
 EDAFactory.register_eda("shannon_entropy", ShannonEntropyEDA)
 EDAFactory.register_eda("geomap", GeoMapEDA)
 EDAFactory.register_eda('temporal_analysis', TemporalAnalysisEDA)
+EDAFactory.register_eda(
+    "language_detection",
+    LanguageDetectionEDA
+)
 
 __all__ = [
     "EDAFactory",
@@ -58,5 +63,6 @@ __all__ = [
     "MissingValuesEDA",
     "TokenizeTextEDA",
     "ShannonEntropyEDA",
-    "GeoMapEDA"
+    "GeoMapEDA",
+    "LanguageDetectionEDA"
 ]

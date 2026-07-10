@@ -197,6 +197,7 @@ pipelines:
 #          normalise: true
 #          saver_name: sql_server
 #          table_name: oireachtas_td_entropy
+#          if_exists: replace
 #          schema: dbo
 #          viz_params:
 #            - name: histogram
@@ -216,6 +217,7 @@ pipelines:
 #          normalise: true
 #          saver_name: sql_server
 #          table_name: oireachtas_askedOfMinister_entropy
+#          if_exists: replace
 #          schema: dbo
 #          viz_params:
 #            - name: histogram
@@ -235,6 +237,7 @@ pipelines:
 #          normalise: true
 #          saver_name: sql_server
 #          table_name: oireachtas_party_entropy
+#          if_exists: replace
 #          schema: dbo
 #          viz_params:
 #            - name: histogram
@@ -283,6 +286,7 @@ pipelines:
 #          normalise: true
 #          saver_name: sql_server
 #          table_name: oireachtas_constituency_entropy
+#          if_exists: replace
 #          schema: dbo
 #          viz_params:
 #            - name: histogram
@@ -311,28 +315,48 @@ pipelines:
 #              background_color: white
 #              colormap: viridis
 #              filename: oireachtas_wordcloud.png
-      - name: temporal_analysis
+#      - name: temporal_analysis
+#        params:
+#          date_field: QuestionDate
+#          aggregate_by: month
+#          saver_name: sql_server
+#          table_name: oireachtas_temporal_analysis
+#          if_exists: replace
+#          schema: dbo
+#          viz_params:
+#            - name: line_plot
+#              #title: Temporal Analysis of Questions Over Time
+#              xlabel: Date
+#              ylabel: Number of Questions
+#              filename: oireachtas_temporal_analysis_line_plot.png
+#              include_mean: true
+#              mean_line_colour: red
+#              x_axis_frequency: monthly
+#            - name: area_plot
+#              #title: Temporal Analysis of Questions Over Time
+#              xlabel: Date
+#              ylabel: Number of Questions
+#              filename: oireachtas_temporal_analysis_area_plot.png
+#              include_mean: true
+#              mean_line_colour: red
+#              area_alpha: 0.5
+#              x_axis_frequency: monthly
+      - name: language_detection
         params:
-          date_field: QuestionDate
-          aggregate_by: month
+          columns:
+            - QuestionText
+            - AnswerText
+          detector: fasttext-langdetect
           saver_name: sql_server
-          table_name: oireachtas_temporal_analysis
+          table_name: oireachtas_language_detection
+          if_exists: replace
+          chunk_size: 1000
           schema: dbo
+          include_text_sample: true
+          sample_length: 150
+          confidence_threshold: 0.70
           viz_params:
-            - name: line_plot
-              #title: Temporal Analysis of Questions Over Time
-              xlabel: Date
-              ylabel: Number of Questions
-              filename: oireachtas_temporal_analysis_line_plot.png
-              include_mean: true
-              mean_line_colour: red
-              x_axis_frequency: monthly
-            - name: area_plot
-              #title: Temporal Analysis of Questions Over Time
-              xlabel: Date
-              ylabel: Number of Questions
-              filename: oireachtas_temporal_analysis_area_plot.png
-              include_mean: true
-              mean_line_colour: red
-              area_alpha: 0.5
-              x_axis_frequency: monthly
+            - name: language_distribution
+              filename: language_distribution.png
+            - name: language_by_column
+              filename: language_by_column.png
