@@ -8,7 +8,7 @@ from logs.logger import get_logger
 
 class BubbleGeoMapVisualisation(Visualisation):
 
-    def __init__(self, title, filename, name_field=None, figsize=(10, 10), **params):
+    def __init__(self, title=None, filename='BubbleGeoMap.png', name_field=None, figsize=(10, 10), **params):
         super().__init__(title=title, figsize=figsize)
         self.logger = get_logger(self.__class__.__name__)
         self.title = title

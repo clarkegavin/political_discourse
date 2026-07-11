@@ -7,7 +7,7 @@ class BarChart(Visualisation):
     Bar Chart Visualisation.
     """
 
-    def __init__(self, title: str, xlabel=None, ylabel=None, figsize=(10,6), **params):
+    def __init__(self, title=None, xlabel=None, ylabel=None, figsize=(10,6), **params):
         super().__init__(title=title, figsize=figsize)
         self.logger = get_logger(self.__class__.__name__)
         self.xlabel = xlabel
@@ -63,7 +63,7 @@ class BarChart(Visualisation):
         # If title matches an excluded column, skip plotting and place a placeholder in the axis
         # Determine effective plot title/name for exclusion checks
         #plot_title = title or getattr(data, 'name', None) or self.title
-        plot_title = title or self.title or getattr(data, 'name', None)
+        plot_title = title or self.title #or getattr(data, 'name', None)
 
         # Build a robust exclude set with multiple normalisations (raw, lower, stripped, alphanumeric-only)
         def _norms(x):

@@ -20,6 +20,8 @@ from .bubble_geo_map_interactive import InteractiveBubbleGeoMap
 from .word_cloud_eda_vis import WordCloudVisualisation
 from .area_plot import AreaPlot
 from .line_plot import LinePlot
+from .language_distribution import LanguageDistributionVisualisation
+from .language_by_column import LanguageByColumnVisualisation
 
 # Register visualisations
 
@@ -44,6 +46,14 @@ VisualisationFactory.register_visualisation("word_cloud_eda", WordCloudVisualisa
 VisualisationFactory.register_visualisation("eda_wordcloud", WordCloudVisualisation)  # alias
 VisualisationFactory.register_visualisation('line_plot', LinePlot)
 VisualisationFactory.register_visualisation('area_plot', AreaPlot)
+VisualisationFactory.register_visualisation(
+    "language_distribution",
+    LanguageDistributionVisualisation
+)
+VisualisationFactory.register_visualisation(
+    "language_by_column",
+    LanguageByColumnVisualisation
+)
 
 __all__ = [
     "ConfusionMatrixChart",
@@ -65,5 +75,7 @@ __all__ = [
     "InteractiveBubbleGeoMap",
     "WordCloudVisualisation",
     "AreaPlot",
-    "LinePlot"
+    "LinePlot",
+    "LanguageDistributionVisualisation",
+    "LanguageByColumnVisualisation"
 ]
