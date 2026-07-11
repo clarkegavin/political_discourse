@@ -1,0 +1,29 @@
+## once off task to extract data from boards and save to conceptual model table
+pipelines:
+  - name: boards_document_construction
+    type: pipelines.boards_document_pipeline.BoardsDocumentPipeline
+    enabled: true
+    extractor_type: table
+    params:
+      inactivity_threshold_days:  3
+
+      discussion_extractor_params:
+        model: BoardsDiscussion
+      comment_extractor_params:
+        model: BoardsComment
+
+
+  - name: save_extracted_table
+    type: pipelines.data_saver_pipeline.DataSaverPipeline
+    enabled: true
+    params:
+      saver_name: sql_server
+      table_name: boards_conceptual_model
+      if_exists: replace
+      chunk_size: 1000
+      schema: dbo
+      connector_params: {}
+
+
+
+

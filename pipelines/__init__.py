@@ -14,6 +14,7 @@ from .oireachtas_pipeline import OireachtasDataPipeline
 from .boards_discussion_pipeline import BoardsDataPipeline
 from .boards_comments_pipeline import BoardsCommentsPipeline
 from .topic_modeling_pipeline import TopicModelingPipeline
+from .boards_document_pipeline import BoardsDocumentPipeline
 
 
 __all__ = [
@@ -32,4 +33,5 @@ __all__ = [
     "BoardsDataPipeline",
     "BoardsCommentsPipeline",
     "TopicModelingPipeline",
+    "BoardsDocumentPipeline",
 ]
