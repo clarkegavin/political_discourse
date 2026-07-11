@@ -6,7 +6,7 @@ import numpy as np
 
 class InteractiveBubbleGeoMap(Visualisation):
 
-    def __init__(self, title, filename, name_field = None):
+    def __init__(self, title=None, filename='interactive_bubble_geo_map', name_field = None):
         self.logger = get_logger(self.__class__.__name__)
         self.title = title
         self.filename = filename

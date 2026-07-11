@@ -1,3 +1,5 @@
+from scipy.interpolate import insert
+
 from eda.base import EDAComponent
 from visualisations.factory import VisualisationFactory
 from data.savers.factory import DataSaverFactory
@@ -18,14 +20,13 @@ class LanguageDetectionEDA(EDAComponent):
         self.logger.info("Initialized LanguageDetectionEDA")
 
     def _detect_language(self, text: str):
-        if not text:
+        if not text.strip():
             return None, None
+
         try:
             result = detect(text)
-            return (
-                result.get('lang'),
-                result.get('score')
-            )
+            return result.get("lang"), result.get("score")
+
         except Exception as e:
             self.logger.error(f"Error detecting language: {e}")
             return None, None
@@ -50,21 +51,26 @@ class LanguageDetectionEDA(EDAComponent):
             if column not in data.columns:
                 self.logger.warning(f"Column {column} not found in data.")
                 continue
+            self.logger.info(f"Data language - Data Length: {len(data)} ")
 
-            for idx, text in data[column].dropna().items():
+            for idx, text in data[column].items():
                 question_id = data.loc[idx, 'QuestionId'] if 'QuestionId' in data.columns else None
+                text = "" if pd.isna(text) else str(text)
                 lang, score = self._detect_language(text)
-                if score and score >= confidence_threshold:
-                    results.append({
-                        'QuestionID':question_id,
-                        'RecordID': idx,
-                        'ColumnName': column,
-                        'Language': lang,
-                        'Confidence': score,
-                        'IsIrish': lang == 'ga',
-                        'TextLength': len(text),
-                        'TextSample': text[:150]
-                    })
+
+                text_length = len(text)
+
+                results.append({
+                    'QuestionID':question_id,
+                    'RecordID': idx,
+                    'ColumnName': column,
+                    'Language': lang,
+                    'Confidence': score,
+                    'AboveThreshold': score is not None and score >= confidence_threshold,
+                    'IsIrish': lang == 'ga' if lang else None,
+                    'TextLength': text_length,
+                    'TextSample': text[:150]
+                })
 
         result_df = pd.DataFrame(results)
 

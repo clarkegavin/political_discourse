@@ -114,13 +114,14 @@ class MissingValuesEDA(EDAComponent):
 
         # Consolidated single figure
         if consolidate:
-            nrows = len(existing_cols)
-            ncols_layout = 1
+            ncols_layout = kwargs.get('ncols', 3)
+            nrows = (len(existing_cols) + ncols_layout - 1) // ncols_layout
             fig, axes = plt.subplots(nrows=nrows, ncols=ncols_layout, figsize=(6 * ncols_layout, 3.5 * nrows))
-            if nrows == 1:
-                axes = [axes]
-            else:
-                axes = axes.flatten()
+            # if nrows == 1:
+            #     axes = [axes]
+            # else:
+            #     axes = axes.flatten()
+            axes = axes.flatten() if hasattr(axes, "flatten") else [axes]
 
             # Use the first visualisation config to instantiate the boxplot visualiser (we expect name=boxplot)
             cfg = visualisations[0] if visualisations else {}
@@ -171,11 +172,15 @@ class MissingValuesEDA(EDAComponent):
                     self.logger.warning(f"Failed to create missingness boxplot for '{col}': {e}")
                     ax.text(0.5, 0.5, f"Error {col}", ha='center')
 
+            #remove unsed axes
+            for j in range(len(existing_cols), len(axes)):
+                fig.delaxes(axes[j])
+
             # overall title
-            try:
-                fig.suptitle('Answer Rate Distribution by Dimension')
-            except Exception:
-                pass
+            # try:
+            #     fig.suptitle('Answer Rate Distribution by Dimension')
+            # except Exception:
+            #     pass
             fig.tight_layout(rect=(0, 0.03, 1, 0.95))
 
             outpath = os.path.join(save_path, viz_filename)

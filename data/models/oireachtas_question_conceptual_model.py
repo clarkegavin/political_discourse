@@ -20,6 +20,7 @@ class OireachtasQuestionConceptualModel(Base):
     QuestionerParty = Column(String(255), nullable=True)
     QuestionerConstituency = Column(String(255), nullable=True)
 
+    AnswerURI = Column(String(500), nullable=True)
     AnswerText = Column(UnicodeText, nullable=True)
     AnsweredBy = Column(String(255), nullable=True)
     AnswerRecordedTime = Column(DateTime, nullable=True)

@@ -100,7 +100,7 @@ class PairScatter(Visualisation):
             ax.scatter(x_plot, y_plot, c=None if cmap is None else cmap, marker=marker, alpha=alpha, s=s)
             ax.set_xlabel(xcol)
             ax.set_ylabel(ycol)
-            ax.set_title(title or f"{xcol} vs {ycol}")
+            ax.set_title(title or "")
 
         # hide unused axes
         for j in range(total, len(axes_list)):

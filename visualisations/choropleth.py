@@ -3,7 +3,7 @@ import geopandas as gpd
 from .base import Visualisation
 
 class ChoroplethVisualisation(Visualisation):
-    def __init__(self, title, colour_map, missing_colour, filename):
+    def __init__(self, title=None, colour_map='Blues', missing_colour='lightgrey', filename='choropleth.png' ):
         super().__init__(title=title, figsize=(10, 10))
         self.title = title
         self.colour_map = colour_map

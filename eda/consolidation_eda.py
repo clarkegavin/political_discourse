@@ -171,7 +171,7 @@ class ConsolidationEDA(EDAComponent):
 
         # If no viz_params provided, use the top-level kwargs as the visualiser config
         if not viz_kwargs:
-            viz_kwargs.setdefault("title", kwargs.pop("title", f"Consolidated vs Non-consolidated ({group_col or target})"))
+            viz_kwargs.setdefault("title", kwargs.pop("title", f""))
             viz_kwargs.setdefault("xlabel", kwargs.pop("xlabel", group_col or target))
             viz_kwargs.setdefault("ylabel", kwargs.pop("ylabel", ylabel))
             viz_kwargs.setdefault("figsizefigsize", kwargs.pop("figsize", (8, 5)))

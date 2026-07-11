@@ -11,7 +11,7 @@ class Histogram(Visualisation):
     If provided an Axes `ax`, the plot will be drawn there; otherwise a new figure is created.
     """
     def __init__(self, title: str=None, bins: int=10, xlabel=None, ylabel=None, figsize=(8, 4), **kwargs):
-        super().__init__(title=title or "Histogram", figsize=figsize)
+        super().__init__(title=title, figsize=figsize)
         self.logger = get_logger(self.__class__.__name__)
         self.bins = bins
         self.xlabel = xlabel
