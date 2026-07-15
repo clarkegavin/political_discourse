@@ -1,17 +1,31 @@
 ## once off task to extract data from boards and save to conceptual model table
+#pipelines:
+#  - name: boards_document_construction
+#    type: pipelines.boards_document_pipeline.BoardsDocumentPipeline
+#    enabled: true
+#    extractor_type: table
+#    params:
+#      inactivity_threshold_days:  3
+#
+#      discussion_extractor_params:
+#        model: BoardsDiscussion
+#      comment_extractor_params:
+#        model: BoardsComment
+
+
 pipelines:
-  - name: boards_document_construction
-    type: pipelines.boards_document_pipeline.BoardsDocumentPipeline
+  - name: preprocess_boards_data
+    type: pipelines.preprocessing_pipeline.PreprocessingPipeline
     enabled: true
-    extractor_type: table
     params:
-      inactivity_threshold_days:  3
-
-      discussion_extractor_params:
-        model: BoardsDiscussion
-      comment_extractor_params:
-        model: BoardsComment
-
+      preprocessors:
+        - name: reply_reference_extractor
+          params:
+            columns: [CommentBody]
+            output_column: "ReplyToIds"
+            extract_multiple: true
+        - name: reply_graph_builder
+          params: {}
 
   - name: save_extracted_table
     type: pipelines.data_saver_pipeline.DataSaverPipeline
@@ -23,7 +37,3 @@ pipelines:
       chunk_size: 1000
       schema: dbo
       connector_params: {}
-
-
-
-

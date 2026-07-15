@@ -26,7 +26,7 @@ class BoardsComment(Base):
     url = Column(String(1000))
     type = Column(String(50))
     format = Column(String(50))
-    attributes = Column(JSON)
+    #attributes = Column(JSON)
 
     def to_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}

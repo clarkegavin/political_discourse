@@ -1,11 +1,11 @@
-#pipelines:
-#- name: preprocess_boards_data
-#  type: pipelines.preprocessing_pipeline.PreprocessingPipeline
-#  enabled: false
-#  params:
-#    preprocessors:
-#      - name: combine_text
-#        params:
-#          fields_to_combine: [ "QuestionText", "AnswerText" ]
-#          combined_field_name: "CombinedOireachtasText"
-
+pipelines:
+- name: preprocess_boards_data
+  type: pipelines.preprocessing_pipeline.PreprocessingPipeline
+  enabled: true
+  params:
+    preprocessors:
+      - name: reply_reference_extractor
+        params:
+          columns: ["QuestionText", "AnswerText"]
+          output_column: "ReplyToIds"
+          extract_multiple: true

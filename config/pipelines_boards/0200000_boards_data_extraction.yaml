@@ -1,12 +1,12 @@
-pipelines:
-  - name: boards_document
-    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
-    enabled: true
-    extractor_type: table
-    params:
-      extractor_params:
-        model: BoardsConceptualModel
-#        filters:
-#          QuestionDate:
-#            from: "2025-01-01"
-#            to: "2025-12-31"
+#pipelines:
+#  - name: boards_document
+#    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+#    enabled: false
+#    extractor_type: table
+#    params:
+#      extractor_params:
+#        model: BoardsConceptualModel
+##        filters:
+##          QuestionDate:
+##            from: "2025-01-01"
+##            to: "2025-12-31"
