@@ -45,7 +45,7 @@ class SQLServerSaver:
                         # If reflection failed, fallback to raw DROP TABLE
                         self.logger.warning(f"Could not reflect table for drop, attempting raw DROP: {e}")
                         with engine.connect() as conn:
-                            conn.execute(f"DROP TABLE {table_name}"
+                            conn.execute(f"DROP TABLE {table_name}")
 
             # Use pandas to_sql with chunksize
 

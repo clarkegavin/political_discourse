@@ -28,28 +28,28 @@ class ReplyGraphBuilder(Preprocessor):
         """
         logger.info("Running ReplyGraphBuilder")
 
-        if 'CommentID' not in data.columns or 'ReplyToIds' not in data.columns:
-            self.logger.error(f"Input DataFrame must contain 'CommentID' and 'ReplyToIds' columns. Instead found {data.columns.tolist()}")
-            raise ValueError("Input DataFrame must contain 'CommentID' and 'ReplyToIds' columns.")
+        if 'CommentID' not in data.columns or 'ReplyToIDs' not in data.columns:
+            self.logger.error(f"Input DataFrame must contain 'CommentID' and 'ReplyToIDs' columns. Instead found {data.columns.tolist()}")
+            raise ValueError("Input DataFrame must contain 'CommentID' and 'ReplyToIDs' columns.")
 
         # Normalize ParentCommentIds
-        data['ParentCommentIds'] = data['ReplyToIds'].apply(lambda x: x if isinstance(x, list) else [])
+        data['ParentCommentIDs'] = data['ReplyToIDs'].apply(lambda x: x if isinstance(x, list) else [])
 
         # Build ChildCommentIDs using an efficient lookup
         child_map = defaultdict(list)
         for idx, row in data.iterrows():
-            for parent_id in row['ParentCommentIds']:
+            for parent_id in row['ParentCommentIDs']:
                 child_map[parent_id].append(row['CommentID'])
 
-        data['ChildCommentIds'] = data['CommentID'].apply(lambda cid: child_map.get(cid, []))
+        data['ChildCommentIDs'] = data['CommentID'].apply(lambda cid: child_map.get(cid, []))
         
         
         self.logger.info(f"ReplyGraphBuilder head {data.head()}")
         self.logger.info("ReplyGraphBuilder completed successfully")
 
         # count how many records are populated in ParentCommentIds and ChildCommentIds
-        parent_count = data['ParentCommentIds'].apply(lambda x: len(x) if isinstance(x, list) else 0).sum()
-        child_count = data['ChildCommentIds'].apply(lambda x: len(x) if isinstance(x, list) else 0).sum()
-        self.logger.info(f"Total ParentCommentIds populated: {parent_count}")
-        self.logger.info(f"Total ChildCommentIds populated: {child_count}")
+        parent_count = data['ParentCommentIDs'].apply(lambda x: len(x) if isinstance(x, list) else 0).sum()
+        child_count = data['ChildCommentIDs'].apply(lambda x: len(x) if isinstance(x, list) else 0).sum()
+        self.logger.info(f"Total ParentCommentIDs populated: {parent_count}")
+        self.logger.info(f"Total ChildCommentIDs populated: {child_count}")
         return data

@@ -19,13 +19,53 @@ pipelines:
     enabled: true
     params:
       preprocessors:
-        - name: reply_reference_extractor
+        - name: reply_reference_extractor # i should remove HTML after this step, and lowercase?
           params:
             columns: [CommentBody]
-            output_column: "ReplyToIds"
+            output_column: "ReplyToIDs"
             extract_multiple: true
+        - name: remove_html_tags
+          params:
+            columns:
+              - CommentBody
+              - DiscussionBody
+#        - name: lowercase # not required as SentenceTransformer will lowercase text, and we want to preserve original case for readability
+#          params:
+#            columns:
+#              - DiscussionTitle
+#              - DiscussionBody
+#              - CommentBody
+        - name: comment_statistics
+          params:
+            text_column: "CommentBody"
+            word_count_column: "CommentWordCount"
+            character_count_column: "CommentCharacterCount"
+            sentence_count_column: "CommentSentenceCount"
+            calculate_sentences: true
         - name: reply_graph_builder
           params: {}
+        - name: reply_chain
+          params: {}
+        - name: conversation_segment_builder
+          params:
+            strategy: "hybrid"
+        - name: conversation_segment_splitter
+          params:
+            max_comments: 50
+            max_words: 5000
+            max_days_inactive: 3
+        - name: analytical_document_assembler
+          params:
+            include_title: true
+            include_opening_post: true
+            include_comment_separators: true
+            separator: "\n\n"
+            document_text_column: "DocumentText"
+        - name: convert_lists_to_strings # converts lists to strings for storage in SQL Server
+          params: {}
+
+
+
 
   - name: save_extracted_table
     type: pipelines.data_saver_pipeline.DataSaverPipeline

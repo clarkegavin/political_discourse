@@ -6,7 +6,7 @@ from logs.logger import get_logger
 
 
 class ReplyReferenceExtractor(Preprocessor):
-    def __init__(self, columns: Optional[List[str]] = None, output_column: str = "ReplyToIds", extract_multiple: bool = True):
+    def __init__(self, columns: Optional[List[str]] = None, output_column: str = "ReplyToIDs", extract_multiple: bool = True):
         self.columns = columns
         self.output_column = output_column
         self.extract_multiple = extract_multiple
