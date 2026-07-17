@@ -79,10 +79,11 @@ class ConversationSegmentBuilder(Preprocessor):
         segments = []
 
         for discussion_id, group in data.groupby("DiscussionID"):
-            standalone_comments = group[group["ChainID"].isna()]
-            reply_chains = group[~group["ChainID"].isna()]
+            standalone_comments = group[~group["IsConversationChain"]]
+            reply_chains = group[group["IsConversationChain"]]
 
             if not standalone_comments.empty:
+                #self.logger.info("Creating standalone segment for DiscussionID=%s with %d comments", discussion_id, len(standalone_comments))
                 standalone_segment = self._create_segment(standalone_comments, "chronological")
                 segments.append(standalone_segment)
 
@@ -162,7 +163,8 @@ class ConversationSegmentBuilder(Preprocessor):
             "CommentCharacterCount": group["CommentCharacterCount"].sum(),
             "DurationHours": (group["DiscussionDateInserted"].max() - group["DiscussionDateInserted"].min()).total_seconds() / 3600,
             "InactivitySplits": False,  # Placeholder for future implementation
-            "CommentRecords": self._build_comment_records(group)  # New column for detailed comment-level data
+            "CommentRecords": self._build_comment_records(group), # New column for detailed comment-level data
+            "IsConversationChain": group["IsConversationChain"].iloc[0] if "IsConversationChain" in group.columns else None
         }
 
         # self.logger.info(

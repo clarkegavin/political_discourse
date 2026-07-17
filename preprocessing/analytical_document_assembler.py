@@ -1,5 +1,7 @@
 #preprocessing/analytical_document_assembler.py
 import pandas as pd
+from sqlalchemy.dialects.mssql.information_schema import columns
+
 from preprocessing.base import Preprocessor
 from typing import Optional, List
 from logs.logger import get_logger
@@ -57,11 +59,15 @@ class AnalyticalDocumentAssembler(Preprocessor):
         X[self.document_text_column] = X.apply(assemble_document, axis=1)
         X["DocumentWordCount"] = X[self.document_text_column].str.split().str.len()
         X["DocumentCharacterCount"] = X[self.document_text_column].str.len()
+        #rename documentid
+        X.rename(columns={"DocumentID": "DocumentDiscussionChainPart"}, inplace=True)
 
-        # Ensure CommentIDs is a comma-separated string
-        # X["CommentIDs"] = X["CommentIDs"].apply(
-        #     lambda ids: ",".join(map(str, ids)) if isinstance(ids, list) else ids
-        # )
+        # Create unique analytical document identifier
+        X.insert(
+            0,
+            "DocumentID",
+            range(1, len(X) + 1)
+        )
 
         self.logger.info("Analytical documents assembled with the following columns: %s", X.columns.tolist())
         self.logger.info("Analytical documents assembled successfully.")

@@ -6,13 +6,17 @@ from logs.logger import get_logger
 
 
 class ConversationSegmentSplitter(Preprocessor):
-    def __init__(self, max_comments: int, max_words: int, max_days_inactive: int):
+    def __init__(self, max_comments: int, max_words: int, max_days_inactive: int, split_conversation_chains: bool = True):
+
         self.max_comments = max_comments
         self.max_words = max_words
         self.max_days_inactive = max_days_inactive
+        self.split_conversation_chains = split_conversation_chains
+
         self.split_due_to_max_comments = 0
         self.split_due_to_max_words = 0
         self.split_due_to_max_days_inactive = 0
+
         self.logger = get_logger(self.__class__.__name__)
 
     def fit(self, data: pd.DataFrame, **kwargs):
@@ -30,6 +34,24 @@ class ConversationSegmentSplitter(Preprocessor):
 
         for _, row in data.iterrows():
             comments = row['CommentRecords']
+
+            is_conversation_chain = row.get(
+                "IsConversationChain",
+                False
+            )
+
+            apply_thresholds = (
+                    self.split_conversation_chains
+                    or not is_conversation_chain
+            )
+
+            # if not apply_thresholds:
+            #     document = row.to_dict()
+            #     document["SplitReason"] = None
+            #     document["SplitPart"] = 1
+            #     split_documents.append(document)
+            #     continue
+
             word_count = 0
             comment_count = 0
             segment_start_idx = 0
@@ -47,23 +69,19 @@ class ConversationSegmentSplitter(Preprocessor):
                     current_date = comment['CommentDateInserted']
                     days_inactive = (current_date - prev_date).days
 
+                    if apply_thresholds:
+                        if comment_count > self.max_comments:
+                            self.split_due_to_max_comments += 1
+                            split_reason = "max_comments"
+                        elif word_count > self.max_words:
+                            self.split_due_to_max_words += 1
+                            split_reason = "max_words"
+                        elif days_inactive > self.max_days_inactive:
+                            self.split_due_to_max_days_inactive += 1
+                            split_reason = "max_days_inactive"
 
-                    if comment_count > self.max_comments:
-                        self.split_due_to_max_comments += 1
-                        split_reason = "max_comments"
-                    elif word_count > self.max_words:
-                        self.split_due_to_max_words += 1
-                        split_reason = "max_words"
-                    elif days_inactive > self.max_days_inactive:
-                        self.split_due_to_max_days_inactive += 1
-                        split_reason = "max_days_inactive"
-
-                    # if (comment_count > self.max_comments or
-                    #     word_count > self.max_words or
-                    #     days_inactive > self.max_days_inactive):
-                    #
                     if split_reason:
-                        self.logger.info("Splitting document %s due to %s at comment index %d", row['DocumentID'], split_reason, idx)
+                        #self.logger.info("Splitting document %s due to %s at comment index %d", row['DocumentID'], split_reason, idx)
                         segments.append({
                             'DocumentID': f"{row['DocumentID']}_part{len(segments) + 1}",
                             'DiscussionID': row['DiscussionID'],
@@ -76,6 +94,7 @@ class ConversationSegmentSplitter(Preprocessor):
                             'DocumentStartDate': segment_start_date,
                             'DocumentEndDate': prev_date,
                             'ChainID': row['ChainID'],
+                            'IsConversationChain': row['IsConversationChain'],
                             'CommentRecords': comments[segment_start_idx:idx],
                             'CommentCount': comment_count - 1,
                             'CommentWordCount': word_count - comment['CommentWordCount'],
@@ -101,6 +120,7 @@ class ConversationSegmentSplitter(Preprocessor):
                 'DocumentStartDate': segment_start_date,
                 'DocumentEndDate': row['DocumentEndDate'],
                 'ChainID': row['ChainID'],
+                'IsConversationChain': row['IsConversationChain'],
                 'CommentRecords': comments[segment_start_idx:],
                 'CommentCount': len(comments) - segment_start_idx,
                 'CommentWordCount': word_count,

@@ -5,6 +5,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 from data.savers.factory import DataSaverFactory
 from data.sqlalchemy_connector import SQLAlchemyConnector
 from visualisations.factory import VisualisationFactory
+import os
+import matplotlib.pyplot as plt
 
 class TermFrequencyEDA(EDAComponent):
     """
@@ -240,19 +242,25 @@ class TermFrequencyEDA(EDAComponent):
         if viz_params:
             for viz in viz_params:
                 viz_name = viz["name"]
+                filename = viz["filename"] if "filename" in viz else "chart.png"
                 if viz_name == "zipf_plot":
                     viz_instance = VisualisationFactory.get_visualisation("zipf_plot")
-                    viz_instance.plot(
+                    fig, ax  = viz_instance.plot(
                         data=tf_df,
                         log_scale=viz.get("log_scale", True),
                         filename=viz.get("filename")
                     )
                 elif viz_name == "bar_chart":
                     viz_instance = VisualisationFactory.get_visualisations("bar_chart")
-                    viz_instance.plot(
+                    fig, ax = viz_instance.plot(
                         data=tf_df.head(viz.get("top_n", 30)),
                         x="term",
                         y="frequency",
                         filename=viz.get("filename")
                     )
+
+                if filename:
+                    fig.savefig(os.path.join(save_path, filename), bbox_inches="tight")
+
+                plt.close(fig)
         return tf_df

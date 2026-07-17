@@ -53,7 +53,8 @@ pipelines:
           params:
             max_comments: 50
             max_words: 5000
-            max_days_inactive: 3
+            max_days_inactive: 7
+            split_conversation_chains: false
         - name: analytical_document_assembler
           params:
             include_title: true
