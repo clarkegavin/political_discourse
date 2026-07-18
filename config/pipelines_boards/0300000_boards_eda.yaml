@@ -5,6 +5,12 @@ pipelines:
     params:
       save_path: output/eda/boards
       steps:
+      - name: reply_chain
+        params:
+          column: ReplyToIDs
+          viz_params:
+            - name: bar_chart
+              filename: boards_reply_chain_bar_chart.png
       - name: describe_info
         params:
           filename_prefix: boards

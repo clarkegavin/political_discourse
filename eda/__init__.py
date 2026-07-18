@@ -19,6 +19,7 @@ from .shannon_entropy_eda import ShannonEntropyEDA
 from .geomap_eda import GeoMapEDA
 from .temporal_analysis_eda import TemporalAnalysisEDA
 from .language_detection_eda import LanguageDetectionEDA
+from .reply_chain_eda import ReplyChainAnalysisEDA
 
 
 EDAFactory.register_eda("class_balance", ClassBalanceEDA)
@@ -44,6 +45,7 @@ EDAFactory.register_eda(
     "language_detection",
     LanguageDetectionEDA
 )
+EDAFactory.register_eda("reply_chain", ReplyChainAnalysisEDA)
 
 __all__ = [
     "EDAFactory",
@@ -64,5 +66,7 @@ __all__ = [
     "TokenizeTextEDA",
     "ShannonEntropyEDA",
     "GeoMapEDA",
-    "LanguageDetectionEDA"
+    "LanguageDetectionEDA",
+    "ReplyChainAnalysisEDA",
+    "TemporalAnalysisEDA"
 ]

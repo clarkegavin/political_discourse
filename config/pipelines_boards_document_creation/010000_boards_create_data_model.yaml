@@ -1,17 +1,4 @@
 ## once off task to extract data from boards and save to conceptual model table
-#pipelines:
-#  - name: boards_document_construction
-#    type: pipelines.boards_document_pipeline.BoardsDocumentPipeline
-#    enabled: true
-#    extractor_type: table
-#    params:
-#      inactivity_threshold_days:  3
-#
-#      discussion_extractor_params:
-#        model: BoardsDiscussion
-#      comment_extractor_params:
-#        model: BoardsComment
-
 
 pipelines:
   - name: preprocess_boards_data
