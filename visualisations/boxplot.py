@@ -14,6 +14,7 @@ class BoxPlot(Visualisation):
         self.figsize = figsize
         self.params = params
         self.ylabel = ylabel
+        self.yscale = params.get("yscale", None)
 
     def plot(self, data, ax=None, title=None, **kwargs):
         """
@@ -46,4 +47,11 @@ class BoxPlot(Visualisation):
         ax.set_title(title or self.title)
         if self.ylabel:
             ax.set_ylabel(self.ylabel)
+
+
+
+        self.logger.info(f"Setting yscale to {self.yscale}")
+        if self.yscale:
+            ax.set_yscale(self.yscale)
+
         return created_fig, ax

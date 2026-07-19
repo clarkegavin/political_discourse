@@ -1,18 +1,18 @@
-#pipelines:
-#  - name: eda
-#    type: pipelines.eda_pipeline.EDAPipeline
-#    enabled: true
-#    params:
-#      save_path: output/eda/boards
-#      steps:
-#        - name: reply_chain
-#          params:
-#            column: ReplyToIDs
-#            viz_params:
-#              - name: bar_chart
-#                filename: boards_reply_chain_bar_chart.png
-#                xlabel: Number of Referenced Replies
-#                ylabel: Number of Comments
-#                xticks_rotation: 45
-#                label_max_chars: 30
-#                show_values: true
+pipelines:
+  - name: eda
+    type: pipelines.eda_pipeline.EDAPipeline
+    enabled: true
+    params:
+      save_path: output/eda/boards
+      steps:
+        - name: reply_chain
+          params:
+            column: ReplyToIDs
+            viz_params:
+              - name: bar_chart
+                filename: boards_reply_chain_bar_chart.png
+                xlabel: Number of Referenced Replies
+                ylabel: Number of Comments
+                xticks_rotation: 45
+                label_max_chars: 30
+                show_values: true

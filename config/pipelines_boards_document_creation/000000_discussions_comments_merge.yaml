@@ -45,4 +45,4 @@ pipelines:
       scoreChildComments: CommentScoreChildComments
       countChildComments: CommentCountChildComments
       url: CommentUrl
-    how: inner
+    how: left

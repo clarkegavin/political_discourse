@@ -20,7 +20,7 @@ from .geomap_eda import GeoMapEDA
 from .temporal_analysis_eda import TemporalAnalysisEDA
 from .language_detection_eda import LanguageDetectionEDA
 from .reply_chain_eda import ReplyChainAnalysisEDA
-
+from .group_count_eda import GroupCountDistributionEDA
 
 EDAFactory.register_eda("class_balance", ClassBalanceEDA)
 EDAFactory.register_eda("wordcloud", WordCloudEDA)
@@ -46,6 +46,7 @@ EDAFactory.register_eda(
     LanguageDetectionEDA
 )
 EDAFactory.register_eda("reply_chain", ReplyChainAnalysisEDA)
+EDAFactory.register_eda("group_count_distribution", GroupCountDistributionEDA)
 
 __all__ = [
     "EDAFactory",
@@ -68,5 +69,6 @@ __all__ = [
     "GeoMapEDA",
     "LanguageDetectionEDA",
     "ReplyChainAnalysisEDA",
-    "TemporalAnalysisEDA"
+    "TemporalAnalysisEDA",
+    "GroupCountDistributionEDA"
 ]

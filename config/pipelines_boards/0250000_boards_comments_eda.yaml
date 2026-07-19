@@ -1,0 +1,56 @@
+pipelines:
+  - name: eda
+    type: pipelines.eda_pipeline.EDAPipeline
+    enabled: true
+    params:
+      save_path: output/eda/boards
+      steps:
+            - name: group_count_distribution
+              params:
+                value_column: commentID
+                group_by_column: discussionID
+
+                viz_params:
+                  - name: histogram
+                    filename: boards_comments_per_discussion_histogram.png
+                    #title: Distribution of Comments per Discussion
+                    xlabel: Number of Comments per Discussion
+                    ylabel: Number of Discussions
+                    bins: 30
+                    xscale: log
+
+                  - name: boxplot
+                    filename: boards_comments_per_discussion_boxplot.png
+                    #title: Distribution of Comments per Discussion
+                    #xlabel: Number of Comments per Discussion
+                    yscale: log
+                    ylabel: Number of Comments per Discussion (log scale)
+            - name: class_balance
+              params:
+                #target: null  # When target is null, ClassBalanceEDA will create subplots for all columns
+                exclude_columns:
+                  - ID
+                  - commentID
+                  - discussionID
+                  - parentRecordType
+                  - parentRecordID
+                  - name
+                  - body
+                  - dateInserted
+                  - dateUpdated
+                  - updateUserID
+                  - score
+                  - depth
+                  - scoreChildComments
+                  - countChildComments
+                  - url
+                  - type
+                  - format
+      #          log_transform_columns:
+      #            - numeric_score
+                # Can be an int (global bins) or a dict mapping column->bins
+                #hist_bins: 30
+                filename: boards_category_class_balance.png
+                #save_path: output/eda
+
+

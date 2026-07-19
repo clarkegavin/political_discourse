@@ -27,6 +27,7 @@ class BoardsCommentsExtractor:
                         body=r.get("body"),
                         dateInserted=self._dt(r.get("dateInserted")),
                         dateUpdated=self._dt(r.get("dateUpdated")),
+                        #insertUserID=r.get("insertUserID"),
                         updateUserID=r.get("updateUserID"),
                         score=r.get("score"),
                         depth=r.get("depth"),
