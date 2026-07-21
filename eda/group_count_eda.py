@@ -18,15 +18,15 @@ class GroupCountDistributionEDA(EDAComponent):
     --------
     Comments per discussion:
         value_column="CommentID"
-        group_by_column="DiscussionID"
+        group_by_columns=["DiscussionID"]
 
     Conversation segments per discussion:
         value_column="ConversationSegmentID"
-        group_by_column="DiscussionID"
+        group_by_columns=["DiscussionID"]
 
     Comments per user:
         value_column="CommentID"
-        group_by_column="UserID"
+        group_by_columns=["UserID"]
     """
 
     def __init__(
@@ -38,7 +38,7 @@ class GroupCountDistributionEDA(EDAComponent):
         self.logger = get_logger(self.__class__.__name__)
         self.visualisation_factory = VisualisationFactory()
         self.value_column = None
-        self.group_by_column = None
+        self.group_by_columns = None
 
 
     def run(
@@ -51,7 +51,14 @@ class GroupCountDistributionEDA(EDAComponent):
     ):
 
         self.value_column = kwargs.get("value_column")
-        self.group_by_column = kwargs.get("group_by_column")
+        self.group_by_columns = kwargs.get("group_by_columns")
+
+        if isinstance(self.group_by_columns, str):
+            self.group_by_columns = [self.group_by_columns]
+
+        summary_group_columns = kwargs.get(
+            "summary_group_columns"
+        )
 
         self.logger.info(
             "Starting GroupCountDistributionEDA"
@@ -62,9 +69,8 @@ class GroupCountDistributionEDA(EDAComponent):
         # ---------------------------------------------------------
 
         required_columns = [
-            self.value_column,
-            self.group_by_column
-        ]
+            self.value_column
+        ] + self.group_by_columns
 
         missing_columns = [
             col
@@ -82,13 +88,13 @@ class GroupCountDistributionEDA(EDAComponent):
         # ---------------------------------------------------------
 
         self.logger.info(
-            f"Grouping by '{self.group_by_column}' "
+            f"Grouping by '{self.group_by_columns}' "
             f"and counting '{self.value_column}'"
         )
 
         aggregated_data = (
             data
-            .groupby(self.group_by_column)[self.value_column]
+            .groupby(self.group_by_columns)[self.value_column]
             .count()
             .reset_index(name="Count")
         )
@@ -101,6 +107,28 @@ class GroupCountDistributionEDA(EDAComponent):
         # ---------------------------------------------------------
         # Summary statistics
         # ---------------------------------------------------------
+
+        if summary_group_columns:
+            group_stats = (
+                aggregated_data
+                .groupby("categoryID")["Count"]
+                .agg(
+                    discussions="count",
+                    mean="mean",
+                    median="median",
+                    std="std",
+                    minimum="min",
+                    q1=lambda x: x.quantile(0.25),
+                    q3=lambda x: x.quantile(0.75),
+                    maximum="max"
+                )
+            )
+
+            self.logger.info(
+                "Distribution summary by %s:\n%s",
+                summary_group_columns,
+                group_stats.to_string()
+            )
 
         stats = aggregated_data["Count"].describe()
 
@@ -143,7 +171,8 @@ class GroupCountDistributionEDA(EDAComponent):
             )
 
             fig, ax = visualisation.plot(
-                aggregated_data["Count"]
+                #aggregated_data["Count"]
+                aggregated_data
             )
 
             if filename and save_path:

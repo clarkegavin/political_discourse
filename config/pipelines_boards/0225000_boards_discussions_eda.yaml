@@ -1,0 +1,78 @@
+#pipelines:
+#  - name: eda
+#    type: pipelines.eda_pipeline.EDAPipeline
+#    enabled: true
+#    params:
+#      save_path: output/eda/boards
+#      steps:
+##            - name: group_count_distribution
+##              params:
+##                value_column: DiscussionId
+##                group_by_columns: CategoryId
+##
+##                viz_params:
+##                  - name: histogram
+##                    filename: boards_discussions_per_forum_histogram.png
+##                    #title: Distribution of Comments per Discussion
+##                    xlabel: Number of Discussions per Subforum
+##                    ylabel: Number of Subforums
+##                    #bins: 30
+##                    #xscale: log
+##
+##                  - name: boxplot
+##                    filename: boards_discussions_per_forum__boxplot.png
+##                    #title: Distribution of Comments per Discussion
+##                    #xlabel: Number of Comments per Discussion
+##                    #yscale: log
+##                    ylabel: Number of Discussions per Subforum
+##            - name: class_balance
+##              params:
+##                #target: null  # When target is null, ClassBalanceEDA will create subplots for all columns
+##                exclude_columns:
+##                  - ID
+##                  - DiscussionId
+##                  - Type
+##                  - Title
+##                  - Body
+##                  - DateInserted
+##                  - DateUpdated
+##                  - DateLastComment
+##                  - insertUserId
+##                  - UpdateUserId
+##                  - LastUserId
+##                  - Closed
+##                  - countComments
+##                  - CanonicalURL
+##
+##      #          log_transform_columns:
+##      #            - numeric_score
+##                # Can be an int (global bins) or a dict mapping column->bins
+##                #hist_bins: 30
+##                filename: boards_discussion_category_class_balance.png
+##                #save_path: output/eda
+#            - name: temporal_analysis
+#              params:
+#                date_field: DateInserted
+#                aggregate_by: month
+##                saver_name: sql_server
+##                table_name: boards_temporal_analysis
+##                if_exists: replace
+##                schema: dbo
+#                viz_params:
+#                  - name: line_plot
+#                    #title: Temporal Analysis of Questions Over Time
+#                    xlabel: Date
+#                    ylabel: Number of Discussions
+#                    filename: boards_temporal_discussions_line_plot.png
+#                    include_mean: true
+#                    mean_line_colour: red
+#                    x_axis_frequency: monthly
+#                  - name: area_plot
+#                    #title: Temporal Analysis of Questions Over Time
+#                    xlabel: Date
+#                    ylabel: Number of Discussions
+#                    filename: boards_temporal_discussions_area_plot.png
+#                    include_mean: true
+#                    mean_line_colour: red
+#                    area_alpha: 0.5
+#                    x_axis_frequency: monthly
