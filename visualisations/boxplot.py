@@ -12,12 +12,13 @@ class BoxPlot(Visualisation):
                  x_column: str = None,
                  y_column: str = None,
                  **params):
-        super().__init__(title=title or "Box Plot", figsize=figsize)
+        super().__init__(title=title, figsize=figsize)
         self.logger = get_logger(self.__class__.__name__)
         self.figsize = figsize
         self.params = params
         self.ylabel = ylabel
         self.yscale = params.get("yscale", None)
+        self.xscale = params.get("xscale", None)
         self.x_column = x_column
         self.y_column = y_column
 
@@ -65,6 +66,10 @@ class BoxPlot(Visualisation):
         self.logger.info(f"Setting yscale to {self.yscale}")
         if self.yscale:
             ax.set_yscale(self.yscale)
+
+        self.logger.info(f"Setting xscale to {self.xscale}")
+        if self.xscale:
+            ax.set_xscale(self.xscale)
 
         return created_fig, ax
 

@@ -96,10 +96,10 @@ class TokenizeTextEDA(EDAComponent):
                 vis_name = 'bar_chart'
 
             # collect safe init kwargs
-            init_kwargs = {}
-            for k in ('title', 'figsize', 'xlabel', 'ylabel', 'xticks_rotation'):
-                if k in vc and not isinstance(vc[k], (list, dict)):
-                    init_kwargs[k] = vc[k]
+            init_kwargs = {
+                k: v for k, v in vc.items()
+                if k not in ('name', 'filename', 'ncols')
+            }
 
             filename = vc.get('filename') or kwargs.get('filename') or f"token_stats_{vis_name}.png"
 
@@ -165,7 +165,18 @@ class TokenizeTextEDA(EDAComponent):
                 else:
                     axes = axes.flatten()
 
-                box_viz = VisualisationFactory.get_visualisation('boxplot', title=None, ylabel='Token count')
+                #box_viz = VisualisationFactory.get_visualisation('boxplot', title=None, ylabel='Token count')
+
+                box_kwargs = dict(init_kwargs)
+
+                if "ylabel" not in box_kwargs:
+                    box_kwargs["ylabel"] = "Token count"
+
+                box_viz = VisualisationFactory.get_visualisation(
+                    "boxplot",
+                    **box_kwargs
+                )
+
                 for i, col in enumerate(cols):
                     ax = axes[i]
                     try:

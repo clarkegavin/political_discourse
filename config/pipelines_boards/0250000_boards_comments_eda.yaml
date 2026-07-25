@@ -1,10 +1,10 @@
-pipelines:
-  - name: eda
-    type: pipelines.eda_pipeline.EDAPipeline
-    enabled: true
-    params:
-      save_path: output/eda/boards
-      steps:
+#pipelines:
+#  - name: eda
+#    type: pipelines.eda_pipeline.EDAPipeline
+#    enabled: true
+#    params:
+#      save_path: output/eda/boards
+#      steps:
 #            - name: group_count_distribution
 #              params:
 #                value_column: commentID
@@ -72,31 +72,31 @@ pipelines:
 #                #hist_bins: 30
 #                filename: boards_category_class_balance.png
 #                #save_path: output/eda
-
-            - name: temporal_analysis
-              params:
-                date_field: dateInserted
-                aggregate_by: month
-#                saver_name: sql_server
-#                table_name: boards_temporal_analysis
-#                if_exists: replace
-#                schema: dbo
-                viz_params:
-                  - name: line_plot
-                    #title: Temporal Analysis of Questions Over Time
-                    xlabel: Date
-                    ylabel: Number of Comments
-                    filename: boards_temporal_comments_line_plot.png
-                    include_mean: true
-                    mean_line_colour: red
-                    x_axis_frequency: monthly
-                  - name: area_plot
-                    #title: Temporal Analysis of Questions Over Time
-                    xlabel: Date
-                    ylabel: Number of Comments
-                    filename: boards_temporal_comments_area_plot.png
-                    include_mean: true
-                    mean_line_colour: red
-                    area_alpha: 0.5
-                    x_axis_frequency: monthly
+#
+#            - name: temporal_analysis
+#              params:
+#                date_field: dateInserted
+#                aggregate_by: month
+##                saver_name: sql_server
+##                table_name: boards_temporal_analysis
+##                if_exists: replace
+##                schema: dbo
+#                viz_params:
+#                  - name: line_plot
+#                    #title: Temporal Analysis of Questions Over Time
+#                    xlabel: Date
+#                    ylabel: Number of Comments
+#                    filename: boards_temporal_comments_line_plot.png
+#                    include_mean: true
+#                    mean_line_colour: red
+#                    x_axis_frequency: monthly
+#                  - name: area_plot
+#                    #title: Temporal Analysis of Questions Over Time
+#                    xlabel: Date
+#                    ylabel: Number of Comments
+#                    filename: boards_temporal_comments_area_plot.png
+#                    include_mean: true
+#                    mean_line_colour: red
+#                    area_alpha: 0.5
+#                    x_axis_frequency: monthly
 

@@ -38,8 +38,9 @@ pipelines:
             strategy: "hybrid"
         - name: conversation_segment_splitter
           params:
+
             max_comments: 50
-            max_words: 5000
+            max_words: 300000 # (only impacted 4 conversations in 2025-01-01 to 2025-12-31 dataset, as  a result it was removed)
             max_days_inactive: 7
             split_conversation_chains: false
         - name: analytical_document_assembler

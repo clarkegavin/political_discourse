@@ -13,7 +13,7 @@ def main():
     # Prefer directory-based config, fall back to legacy single-file YAML
     dir_path = Path("config/pipelines_boards")
     file_path = Path("config/pipelines.yaml")
-    os.environ["LOGNAME"]  = "Gavin"  # Set LOGNAME for consistent logger naming
+    os.environ["LOGNAME"]  = "Gavin"  # Set LOGNAME for consistent logger naming (mlflow)
 
     logger = get_logger("Main")
 
