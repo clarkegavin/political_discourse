@@ -1,24 +1,24 @@
-pipelines:
-- name: preprocess_boards_data
-  type: pipelines.preprocessing_pipeline.PreprocessingPipeline
-  enabled: false
-  params:
-    preprocessors:
-      - name: remove_urls
-        params:
-          columns: [ QuestionText, AnswerText ]
-      - name: stopword_remover
-        params:
-          language: "english"
-          lower: true
-          columns: [ QuestionText, AnswerText ]
-          include_procedural: false
-          include_nltk: false
-          include_default: true
-      - name: lowercase
-        params:
-          columns: [ QuestionText, AnswerText ]
-          # remove procedural language
-          # remove numeric data at beginning and end of text
-          
+#pipelines:
+#- name: preprocess_boards_data
+#  type: pipelines.preprocessing_pipeline.PreprocessingPipeline
+#  enabled: false
+#  params:
+#    preprocessors:
+#      - name: remove_urls
+#        params:
+#          columns: [ QuestionText, AnswerText ]
+#      - name: stopword_remover
+#        params:
+#          language: "english"
+#          lower: true
+#          columns: [ QuestionText, AnswerText ]
+#          include_procedural: false
+#          include_nltk: false
+#          include_default: true
+#      - name: lowercase
+#        params:
+#          columns: [ QuestionText, AnswerText ]
+#          # remove procedural language
+#          # remove numeric data at beginning and end of text
+#
 

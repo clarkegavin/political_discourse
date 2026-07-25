@@ -85,45 +85,45 @@ pipelines:
 ##          viz_params:
 ##            name: box_plot
 ##            filename: boards_missing_values_overview.png
-      - name: tokenize_text
-        params:
-          columns:
-            - DocumentText
-          output_column: tokens
-          viz_params:
-            - name: boxplot
-              #ncols: 3
-              filename: boards_tokens_boxplot.png
-            - name: boxplot
-              #ncols: 3
-              yscale: log
-              filename: boards_tokens_boxplot_log.png
-            - name: bar_chart
-              ncols: 3
-              filename: boards_tokens_barchart.png
-
-##       ==========================================
-##       Term Frequency EDA - Q&A
-##       ==========================================
-#      - name: term_frequency
+#      - name: tokenize_text
 #        params:
-##          fields_to_combine: ["DocumentText"]
-##          combined_field_name: "CombinedQA"
-#          target_field: "DocumentText"
-#          saver_name: sql_server
-#          table_name: boards_term_frequency
-#          if_exists: replace
-#          chunk_size: 1000
-#          schema: dbo
-#          connector_params: {}
+#          columns:
+#            - DocumentText
+#          output_column: tokens
 #          viz_params:
-#            - name: zipf_plot
-#              log_scale: true
-#              filename: boards_term_frequency_zipf_plot_log.png
-#            - name: zipf_plot
-#              log_scale: false
-#              filename: boards_term_frequency_zipf_plot.png
-#
+#            - name: boxplot
+#              #ncols: 3
+#              filename: boards_tokens_boxplot.png
+#            - name: boxplot
+#              #ncols: 3
+#              yscale: log
+#              filename: boards_tokens_boxplot_log.png
+#            - name: bar_chart
+#              ncols: 3
+#              filename: boards_tokens_barchart.png
+
+#       ==========================================
+#       Term Frequency EDA - Q&A
+#       ==========================================
+      - name: term_frequency
+        params:
+#          fields_to_combine: ["DocumentText"]
+#          combined_field_name: "CombinedQA"
+          target_field: "DocumentText"
+          saver_name: sql_server
+          table_name: boards_term_frequency
+          if_exists: replace
+          chunk_size: 1000
+          schema: dbo
+          connector_params: {}
+          viz_params:
+            - name: zipf_plot
+              log_scale: true
+              filename: boards_term_frequency_zipf_plot_log.png
+            - name: zipf_plot
+              log_scale: false
+              filename: boards_term_frequency_zipf_plot.png
+
 #
 #      - name: wordcloud
 #        params:

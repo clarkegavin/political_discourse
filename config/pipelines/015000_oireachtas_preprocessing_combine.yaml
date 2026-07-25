@@ -1,11 +1,9 @@
-pipelines:
-- name: preprocess_boards_data
-  type: pipelines.preprocessing_pipeline.PreprocessingPipeline
-  enabled: true
-  params:
-    preprocessors:
-      - name: reply_reference_extractor
-        params:
-          columns: ["QuestionText", "AnswerText"]
-          output_column: "ReplyToIds"
-          extract_multiple: true
+#pipelines:
+#- name: preprocess_data
+#  type: pipelines.preprocessing_pipeline.PreprocessingPipeline
+#  enabled: true
+#  params:
+#    preprocessors:
+#      - name: stopword_remover
+#        params:
+#          columns: [ QuestionText, AnswerText ]
