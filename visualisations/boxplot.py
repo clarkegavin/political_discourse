@@ -21,6 +21,8 @@ class BoxPlot(Visualisation):
         self.xscale = params.get("xscale", None)
         self.x_column = x_column
         self.y_column = y_column
+        self.xtick_rotation = params.get("xtick_rotation", 0)
+        self.xtick_ha = params.get("xtick_ha", "center")
 
     def plot(self, data, ax=None, title=None, **kwargs):
         """
@@ -32,6 +34,8 @@ class BoxPlot(Visualisation):
             created_fig, ax = plt.subplots(figsize=self.figsize)
         else:
             created_fig = ax.figure
+
+
 
         if isinstance(data, pd.DataFrame) and self.x_column and self.y_column:
             return self._plot_grouped_boxplot(
@@ -61,7 +65,12 @@ class BoxPlot(Visualisation):
         if self.ylabel:
             ax.set_ylabel(self.ylabel)
 
-
+        if self.xtick_rotation:
+            plt.setp(
+                ax.get_xticklabels(),
+                rotation=self.xtick_rotation,
+                ha=self.xtick_ha
+            )
 
         self.logger.info(f"Setting yscale to {self.yscale}")
         if self.yscale:
@@ -127,6 +136,13 @@ class BoxPlot(Visualisation):
             patch_artist=True
         )
 
+        if self.xtick_rotation:
+            plt.setp(
+                ax.get_xticklabels(),
+                rotation=self.xtick_rotation,
+                ha=self.xtick_ha
+            )
+
         ax.set_title(title or self.title)
 
         if self.ylabel:
@@ -134,5 +150,7 @@ class BoxPlot(Visualisation):
 
         if self.yscale:
             ax.set_yscale(self.yscale)
+
+
 
         return ax.figure, ax

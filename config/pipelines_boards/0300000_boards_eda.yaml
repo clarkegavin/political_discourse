@@ -177,24 +177,46 @@ pipelines:
 ##              mean_line_colour: red
 ##              area_alpha: 0.5
 ##              x_axis_frequency: monthly
-      - name: language_detection
+#      - name: language_detection
+#        params:
+#          columns:
+#            - DocumentText
+#          detector: fasttext-langdetect
+#          saver_name: sql_server
+#          table_name: boards_language_detection
+#          if_exists: replace
+#          chunk_size: 1000
+#          schema: dbo
+#          include_text_sample: true
+#          sample_length: 150
+#          confidence_threshold: 0.70
+#          viz_params:
+#            - name: language_distribution
+#              filename: boards_language_distribution.png
+#            - name: language_by_column
+#              filename: boards_language_by_column.png
+
+      - name: tokenize_text
         params:
           columns:
             - DocumentText
-          detector: fasttext-langdetect
-          saver_name: sql_server
-          table_name: boards_language_detection
-          if_exists: replace
-          chunk_size: 1000
-          schema: dbo
-          include_text_sample: true
-          sample_length: 150
-          confidence_threshold: 0.70
+
+          embedding_models:
+            - sentence-transformers/all-MiniLM-L6-v2
+            - sentence-transformers/all-roberta-large-v1
+            - ddore14/RooseBERT-scr-cased
+
+          model_labels:
+            sentence-transformers/all-MiniLM-L6-v2: MiniLM-L6
+            sentence-transformers/all-roberta-large-v1: RoBERTa-large
+            ddore14/RooseBERT-scr-cased: RooseBERT
+
           viz_params:
-            - name: language_distribution
-              filename: boards_language_distribution.png
-            - name: language_by_column
-              filename: boards_language_by_column.png
+            - name: boxplot
+              filename: boards_tokens_boxplot_embedding_models.png
+              xtick_rotation: 45
+              xtick_ha: right
+              yscale: log
 #
 ##            - name: sankey_flow
 ##              params:

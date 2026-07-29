@@ -181,9 +181,16 @@ pipelines:
             - sentence-transformers/all-roberta-large-v1
             - ddore14/RooseBERT-scr-cased
 
+          model_labels:
+            sentence-transformers/all-MiniLM-L6-v2: MiniLM-L6
+            sentence-transformers/all-roberta-large-v1: RoBERTa-large
+            ddore14/RooseBERT-scr-cased: RooseBERT
+
           viz_params:
             - name: boxplot
-              filename: boards_tokens_boxplot_embedding_models.png
+              filename: oireachtas_tokens_boxplot_embedding_models.png
+              xtick_rotation: 45
+              xtick_ha: right
 
       - name: tokenize_text
         params:
@@ -194,7 +201,7 @@ pipelines:
 
           viz_params:
             - name: boxplot
-              filename: boards_tokens_boxplot_lightweight.png
+              filename: oireacthas_tokens_boxplot_lightweight.png
 #      # ==========================================
 #       #T erm Frequency EDA - Q&A
 #       # ==========================================

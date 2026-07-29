@@ -9,7 +9,6 @@ import math
 import matplotlib.pyplot as plt
 from transformers import AutoTokenizer
 
-
 def simple_tokenise(text):
     return re.findall(r"\b\w+\b", str(text))
 
@@ -133,10 +132,10 @@ class TokenizeTextEDA(EDAComponent):
             "embedding_models",
             []
         )
+        embedding_token_series = []
+
 
         if embedding_models:
-
-            from transformers import AutoTokenizer
 
             for model_name in embedding_models:
 
@@ -161,6 +160,7 @@ class TokenizeTextEDA(EDAComponent):
                     )
 
                 if model_max_length is None or model_max_length > 100000:
+                    self.logger.info(f"TokenizeTextEDA - {model_name} has no defined max length, defaulting to 512")
                     model_max_length = 512
 
                 model_results = {}
@@ -172,6 +172,13 @@ class TokenizeTextEDA(EDAComponent):
                         col,
                         tokenizer_type="huggingface",
                         tokenizer=tokenizer
+                    )
+
+                    embedding_token_series.append(
+                        pd.DataFrame({
+                            "EmbeddingModel": model_name,
+                            "TokenCount": hf_lengths
+                        })
                     )
 
                     result = {
@@ -195,17 +202,6 @@ class TokenizeTextEDA(EDAComponent):
                             exceeding.mean() * 100
                         )
 
-                        # result.update(
-                        #     {
-                        #         "context_window": model_max_length,
-                        #         "documents_exceeding": int(
-                        #             exceeding.sum()
-                        #         ),
-                        #         "percentage_exceeding": float(
-                        #             exceeding.mean() * 100
-                        #         )
-                        #     }
-                        # )
 
                     model_results[col] = result
 
@@ -218,6 +214,29 @@ class TokenizeTextEDA(EDAComponent):
                     save_path
                 )
 
+            if embedding_token_series:
+                embedding_boxplot_df = pd.concat(
+                    embedding_token_series,
+                    ignore_index=True
+                )
+
+                embedding_model_labels = kwargs.get(
+                    "model_labels",
+                    {}
+                )
+
+                self.logger.info(f"Embedding model labels: {embedding_model_labels}")
+                if embedding_model_labels:
+                    embedding_boxplot_df["EmbeddingModelLabel"] = (
+                        embedding_boxplot_df["EmbeddingModel"]
+                        .map(embedding_model_labels)
+                        .fillna(embedding_boxplot_df["EmbeddingModel"])
+                    )
+                else:
+                    self.logger.info("Embedding model labels not provided, using model names as labels")
+                    embedding_boxplot_df["EmbeddingModelLabel"] = (
+                        embedding_boxplot_df["EmbeddingModel"]
+                    )
 
         #
         # ---------------------------------------------------------
@@ -308,7 +327,7 @@ class TokenizeTextEDA(EDAComponent):
             if vis_name == "boxplot":
 
                 fig, ax = plt.subplots(
-                    figsize=(6, 4)
+                    figsize=(8, 5)
                 )
 
                 box_viz = VisualisationFactory.get_visualisation(
@@ -317,12 +336,31 @@ class TokenizeTextEDA(EDAComponent):
                     **init_kwargs
                 )
 
-                for col in cols:
-                    box_viz.plot(
-                        data=token_series[col],
-                        ax=ax,
-                        title=col
+                if embedding_models:
+                    box_viz = VisualisationFactory.get_visualisation(
+                        "boxplot",
+                        ylabel="Token count",
+                        x_column="EmbeddingModelLabel",
+                        y_column="TokenCount",
+                        **init_kwargs
                     )
+                    self.logger.info(f"Embedding boxplot Value counts: {embedding_boxplot_df["EmbeddingModel"].value_counts()}")
+                    self.logger.info(f"Embedding boxplot DataFrame head:\n{embedding_boxplot_df.head()}")
+                    self.logger.info(f"Embedding boxplot Unique Models: {embedding_boxplot_df["EmbeddingModelLabel"].unique()}")
+
+
+                    box_viz.plot(
+                        data=embedding_boxplot_df,
+                        ax=ax,
+                        #title="Embedding Model Token Distributions"
+                    )
+                else:
+                    for col in cols:
+                        box_viz.plot(
+                            data=token_series[col],
+                            ax=ax,
+                            #title=col
+                        )
 
                 fig.tight_layout()
 
