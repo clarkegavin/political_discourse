@@ -102,27 +102,27 @@ pipelines:
 #              ncols: 3
 #              filename: boards_tokens_barchart.png
 
-#       ==========================================
-#       Term Frequency EDA - Q&A
-#       ==========================================
-      - name: term_frequency
-        params:
-#          fields_to_combine: ["DocumentText"]
-#          combined_field_name: "CombinedQA"
-          target_field: "DocumentText"
-          saver_name: sql_server
-          table_name: boards_term_frequency
-          if_exists: replace
-          chunk_size: 1000
-          schema: dbo
-          connector_params: {}
-          viz_params:
-            - name: zipf_plot
-              log_scale: true
-              filename: boards_term_frequency_zipf_plot_log.png
-            - name: zipf_plot
-              log_scale: false
-              filename: boards_term_frequency_zipf_plot.png
+##       ==========================================
+##       Term Frequency EDA - Q&A
+##       ==========================================
+#      - name: term_frequency
+#        params:
+##          fields_to_combine: ["DocumentText"]
+##          combined_field_name: "CombinedQA"
+#          target_field: "DocumentText"
+#          saver_name: sql_server
+#          table_name: boards_term_frequency
+#          if_exists: replace
+#          chunk_size: 1000
+#          schema: dbo
+#          connector_params: {}
+#          viz_params:
+#            - name: zipf_plot
+#              log_scale: true
+#              filename: boards_term_frequency_zipf_plot_log.png
+#            - name: zipf_plot
+#              log_scale: false
+#              filename: boards_term_frequency_zipf_plot.png
 
 #
 #      - name: wordcloud
@@ -177,24 +177,24 @@ pipelines:
 ##              mean_line_colour: red
 ##              area_alpha: 0.5
 ##              x_axis_frequency: monthly
-##      - name: language_detection
-##        params:
-##          columns:
-##            - DocumentText
-##          detector: fasttext-langdetect
-##          saver_name: sql_server
-##          table_name: boards_language_detection
-##          if_exists: replace
-##          chunk_size: 1000
-##          schema: dbo
-##          include_text_sample: true
-##          sample_length: 150
-##          confidence_threshold: 0.70
-##          viz_params:
-##            - name: language_distribution
-##              filename: boards_language_distribution.png
-##            - name: language_by_column
-##              filename: boards_language_by_column.png
+      - name: language_detection
+        params:
+          columns:
+            - DocumentText
+          detector: fasttext-langdetect
+          saver_name: sql_server
+          table_name: boards_language_detection
+          if_exists: replace
+          chunk_size: 1000
+          schema: dbo
+          include_text_sample: true
+          sample_length: 150
+          confidence_threshold: 0.70
+          viz_params:
+            - name: language_distribution
+              filename: boards_language_distribution.png
+            - name: language_by_column
+              filename: boards_language_by_column.png
 #
 ##            - name: sankey_flow
 ##              params:

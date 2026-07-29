@@ -1,12 +1,12 @@
-pipelines:
-- name: preprocess_data
-  type: pipelines.preprocessing_pipeline.PreprocessingPipeline
-  enabled: true
-  params:
-    preprocessors:
-      - name: stopword_remover
-        params:
-          columns: [ DocumentText ]
-          include_procedural: false
-          include_nltk: true
-          include_default: true
+#pipelines:
+#- name: preprocess_data
+#  type: pipelines.preprocessing_pipeline.PreprocessingPipeline
+#  enabled: true
+#  params:
+#    preprocessors:
+#      - name: stopword_remover
+#        params:
+#          columns: [ DocumentText ]
+#          include_procedural: false
+#          include_nltk: true
+#          include_default: true

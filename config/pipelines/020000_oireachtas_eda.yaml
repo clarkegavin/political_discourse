@@ -171,24 +171,48 @@ pipelines:
 #              ncols: 3
 #              filename: oireachtas_tokens_barchart.png
 #
-#      # ==========================================
-       #T erm Frequency EDA - Q&A
-       # ==========================================
-      - name: term_frequency
+      - name: tokenize_text
         params:
-          fields_to_combine: ["QuestionText", "AnswerText"]
-          combined_field_name: "CombinedQA"
-          target_field: "CombinedQA"
-          saver_name: sql_server
-          table_name: oireachtas_term_frequency
-          if_exists: replace
-          chunk_size: 1000
-          schema: dbo
-          connector_params: {}
+          columns:
+            - DocumentText
+
+          embedding_models:
+            - sentence-transformers/all-MiniLM-L6-v2
+            - sentence-transformers/all-roberta-large-v1
+            - ddore14/RooseBERT-scr-cased
+
           viz_params:
-            - name: zipf_plot
-              log_scale: true
-              filename: oireachtas_term_frequency_zipf_plot_log.png
+            - name: boxplot
+              filename: boards_tokens_boxplot_embedding_models.png
+
+      - name: tokenize_text
+        params:
+          columns:
+            - DocumentText
+
+          tokenizer_type: lightweight
+
+          viz_params:
+            - name: boxplot
+              filename: boards_tokens_boxplot_lightweight.png
+#      # ==========================================
+#       #T erm Frequency EDA - Q&A
+#       # ==========================================
+#      - name: term_frequency
+#        params:
+#          fields_to_combine: ["QuestionText", "AnswerText"]
+#          combined_field_name: "CombinedQA"
+#          target_field: "CombinedQA"
+#          saver_name: sql_server
+#          table_name: oireachtas_term_frequency
+#          if_exists: replace
+#          chunk_size: 1000
+#          schema: dbo
+#          connector_params: {}
+#          viz_params:
+#            - name: zipf_plot
+#              log_scale: true
+#              filename: oireachtas_term_frequency_zipf_plot_log.png
 #
 #      - name: shannon_entropy
 #        params:
