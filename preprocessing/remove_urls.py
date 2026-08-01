@@ -22,7 +22,8 @@ class RemoveURLs(Preprocessor):
         self.replace_with = replace_with
 
         # Improved regex: catches normal URLs + long query strings
-        self.pattern = r'https?://\S+'
+        #self.pattern = r'https?://\S+'
+        self.pattern = r'(?i)\b(?:https?://|www\.)[^\s<>"\']+'
 
         self._compiled = re.compile(self.pattern, flags=re.IGNORECASE)
 

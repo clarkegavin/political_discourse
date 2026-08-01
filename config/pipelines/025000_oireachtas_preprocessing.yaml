@@ -1,12 +1,12 @@
-#pipelines:
-#- name: preprocess_boards_data
-#  type: pipelines.preprocessing_pipeline.PreprocessingPipeline
-#  enabled: false
-#  params:
-#    preprocessors:
-#      - name: remove_urls
-#        params:
-#          columns: [ QuestionText, AnswerText ]
+pipelines:
+- name: preprocess_boards_data
+  type: pipelines.preprocessing_pipeline.PreprocessingPipeline
+  enabled: true
+  params:
+    preprocessors:
+      - name: remove_urls
+        params:
+          columns: [ DocumentText ]
 #      - name: stopword_remover
 #        params:
 #          language: "english"
@@ -18,7 +18,7 @@
 #      - name: lowercase
 #        params:
 #          columns: [ QuestionText, AnswerText ]
-#          # remove procedural language
-#          # remove numeric data at beginning and end of text
+          # remove procedural language
+          # remove numeric data at beginning and end of text
 #
 
