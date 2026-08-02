@@ -1,0 +1,10 @@
+pipelines:
+- name: preprocess_data
+  type: pipelines.preprocessing_pipeline.PreprocessingPipeline
+  enabled: true
+  params:
+    preprocessors:
+      - name: remove_urls
+        params:
+          columns:
+            - DocumentText
