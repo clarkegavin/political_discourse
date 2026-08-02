@@ -34,6 +34,7 @@ from .conversation_segment_splitter import ConversationSegmentSplitter
 from .analytical_document_assembler import AnalyticalDocumentAssembler
 from .comment_statistics import CommentStatistics
 from .convert_lists_to_strings import ConvertListsToStrings
+from .remove_leading_reference_number import RemoveLeadingReferenceNumber
 import nltk
 
 # Register built-in preprocessors
@@ -104,6 +105,7 @@ PreprocessorFactory.register("comment_statistics", CommentStatistics)
 PreprocessorFactory.register("comment_stats", CommentStatistics)
 PreprocessorFactory.register("comment_statistics_calculator", CommentStatistics)
 PreprocessorFactory.register("convert_lists_to_strings", ConvertListsToStrings)
+PreprocessorFactory.register("remove_leading_reference_number", RemoveLeadingReferenceNumber)
 
 # List of required resources
 REQUIRED_NLTK_RESOURCES = ["punkt", "stopwords"]
@@ -123,4 +125,4 @@ __all__ = ["Preprocessor", "PreprocessorFactory", "Stemmer", "Lemmatizer",
            "LogTransform", "TemporalFeatures", "CatalogCount", "NormaliseFeature", "CyclicEncode",
            "ReplyReferenceExtractor", "ReplyGraphBuilder", "ReplyChainIdentifier",
            "ConversationSegmentBuilder", "ConversationSegmentSplitter", "AnalyticalDocumentAssembler",
-           "CommentStatistics"]
+           "CommentStatistics", "ConvertListsToStrings", "RemoveLeadingReferenceNumber"]

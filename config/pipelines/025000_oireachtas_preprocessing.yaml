@@ -6,7 +6,12 @@ pipelines:
     preprocessors:
       - name: remove_urls
         params:
-          columns: [ DocumentText ]
+          columns:
+            - DocumentText
+      - name: remove_leading_reference_number
+        params:
+          columns:
+            - DocumentText
 #      - name: stopword_remover
 #        params:
 #          language: "english"

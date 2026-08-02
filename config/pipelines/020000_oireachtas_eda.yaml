@@ -202,40 +202,40 @@ pipelines:
 #          viz_params:
 #            - name: boxplot
 #              filename: oireacthas_tokens_boxplot_lightweight.png
-
-      - name: identify_urls
-        params:
-          columns:
-            - DocumentText
-          viz_params:
-            - name: barchart
-              filename: oireachtas_urls.png
-              show_values: true
-              label_max_chars: 20
-              xlabel: "URL Presence"
-              ylabel: "Documents"
-      - name: identify_urls
-        params:
-          columns:
-            - QuestionText
-          viz_params:
-            - name: barchart
-              filename: oireachtas_question_urls.png
-              show_values: true
-              label_max_chars: 20
-              xlabel: "URL Presence"
-              ylabel: "Documents"
-      - name: identify_urls
-        params:
-          columns:
-            - AnswerText
-          viz_params:
-            - name: barchart
-              filename: oireachtas_answer_urls.png
-              show_values: true
-              label_max_chars: 20
-              xlabel: "URL Presence"
-              ylabel: "Documents"
+#
+#      - name: identify_urls
+#        params:
+#          columns:
+#            - DocumentText
+#          viz_params:
+#            - name: barchart
+#              filename: oireachtas_urls.png
+#              show_values: true
+#              label_max_chars: 20
+#              xlabel: "URL Presence"
+#              ylabel: "Documents"
+#      - name: identify_urls
+#        params:
+#          columns:
+#            - QuestionText
+#          viz_params:
+#            - name: barchart
+#              filename: oireachtas_question_urls.png
+#              show_values: true
+#              label_max_chars: 20
+#              xlabel: "URL Presence"
+#              ylabel: "Documents"
+#      - name: identify_urls
+#        params:
+#          columns:
+#            - AnswerText
+#          viz_params:
+#            - name: barchart
+#              filename: oireachtas_answer_urls.png
+#              show_values: true
+#              label_max_chars: 20
+#              xlabel: "URL Presence"
+#              ylabel: "Documents"
 #      # ==========================================
 #       #T erm Frequency EDA - Q&A
 #       # ==========================================
