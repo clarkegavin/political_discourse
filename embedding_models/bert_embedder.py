@@ -13,9 +13,15 @@ class BERTEmbeddingModel(EmbeddingModel):
         self.logger = get_logger(self.__class__.__name__)
         self._dim = None  # to be set after fitting
         self.params = params
+        self._extract_chunking_params()
 
         try:
             self.model = SentenceTransformer(model_name)
+            self.tokenizer = self.model.tokenizer
+
+            self.logger.info(
+                f"Loaded BERT model '{model_name}' successfully."
+            )
             self.logger.info(f"Loaded BERT model '{model_name}' successfully.")
         except Exception as e:
             self.logger.warning(f"Failed to load SentenceTransformer model '{model_name}'. Falling back to Transformer + Pooling. Error: {e}")
@@ -29,7 +35,9 @@ class BERTEmbeddingModel(EmbeddingModel):
                 pooling_mode_max_tokens=(pooling_strategy == "max"),
             )
             self.model = SentenceTransformer(modules=[word_embedding_model, pooling_model])
+            self.tokenizer = self.model.tokenizer
             self.logger.info(f"Initialized fallback BERT embedding model with pooling strategy '{pooling_strategy}'.")
+
 
 
 
@@ -45,9 +53,17 @@ class BERTEmbeddingModel(EmbeddingModel):
         if prefix:
             texts = [f"{prefix}: {t}" for t in texts]
 
-        embeddings = self.model.encode(texts,
-                                       batch_size = self.params.get("batch_size", 32),
-                                       show_progress_bar=False)
+        if self.chunking_enabled:
+            self.logger.info(f"Chunking enabled: chunk_size={self.chunk_size}, overlap={self.chunk_overlap}, pooling={self.chunk_pooling}")
+            embeddings = self.encode_documents(texts)
+
+        else:
+            self.logger.info(f"Chunking disabled. Encoding full documents.")
+            embeddings = self.model.encode(
+                texts,
+                batch_size=self.params.get("batch_size", 32),
+                show_progress_bar=False
+            )
 
         self._dim = embeddings.shape[1]
 
@@ -64,3 +80,123 @@ class BERTEmbeddingModel(EmbeddingModel):
     def bertopic_model(self):
         """Return a BERTopic-compatible embedding model wrapper."""
         return self.model
+
+    def _extract_chunking_params(self):
+        """Extract chunking parameters from self.params."""
+        self.chunking_config = self.params.get("chunking", {})
+
+        self.chunking_enabled = self.chunking_config.get(
+            "enabled",
+            False
+        )
+
+        self.chunk_size = self.chunking_config.get(
+            "chunk_size",
+            480
+        )
+
+        self.chunk_overlap = self.chunking_config.get(
+            "overlap",
+            32
+        )
+
+        if self.chunk_overlap >= self.chunk_size:
+            raise ValueError(
+                "Chunk overlap must be smaller than chunk size"
+            )
+
+        self.chunk_pooling = self.chunking_config.get(
+            "pooling",
+            "mean"
+        )
+
+    def encode_documents(self, texts):
+
+        normal_docs = []
+        chunk_docs = []
+
+        for idx, text in enumerate(texts):
+
+            token_count = len(
+                self.tokenizer.encode(
+                    text,
+                    add_special_tokens=False
+                )
+            )
+
+            if token_count <= self.chunk_size:
+                normal_docs.append((idx, text))
+
+            else:
+                chunk_docs.append((idx, text))
+
+        self.logger.info(
+            f"Documents requiring chunking: {len(chunk_docs)} / {len(texts)}"
+        )
+
+        embeddings = [None] * len(texts)
+
+        # Normal documents - batch encoding
+        if normal_docs:
+
+            normal_embeddings = self.model.encode(
+                [text for _, text in normal_docs],
+                batch_size=self.params.get("batch_size", 32),
+                show_progress_bar=False
+            )
+
+            for (idx, _), embedding in zip(
+                    normal_docs,
+                    normal_embeddings
+            ):
+                embeddings[idx] = embedding
+
+        # Oversized documents - chunk + pool
+        for idx, text in chunk_docs:
+            embeddings[idx] = self.encode_chunked(text)
+
+        return np.vstack(embeddings)
+
+    def encode_chunked(self, text):
+
+        tokens = self.tokenizer.encode(
+            text,
+            add_special_tokens=False
+        )
+
+        chunks = []
+
+        step = self.chunk_size - self.chunk_overlap
+
+        for start in range(0, len(tokens), step):
+            chunk_tokens = tokens[start:start + self.chunk_size]
+
+            chunk_text = self.tokenizer.decode(
+                chunk_tokens
+            )
+
+            chunks.append(chunk_text)
+
+        chunk_embeddings = self.model.encode(
+            chunks,
+            batch_size=self.params.get("batch_size", 32),
+            show_progress_bar=False
+        )
+
+        if self.chunk_pooling == "mean":
+            return np.mean(
+                chunk_embeddings,
+                axis=0
+            )
+
+        elif self.chunk_pooling == "max":
+            return np.max(
+                chunk_embeddings,
+                axis=0
+            )
+
+        else:
+            raise ValueError(
+                f"Unsupported pooling method: {self.chunk_pooling}"
+            )
+

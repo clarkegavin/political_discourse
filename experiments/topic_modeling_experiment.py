@@ -133,11 +133,23 @@ class TopicModelingExperiment(Experiment):
         if not cfg:
             # Always return a tuple for consistent unpacking by callers
             return None, None
+
+        embedding_params = cfg.get("params", {}).copy()
+
+        embedding_params.update(
+            {
+                k: v
+                for k, v in cfg.items()
+                if k not in ["name", "column", "model_name", "params"]
+            }
+        )
+
         self.embedding_model_wrapper = EmbeddingModelFactory.get_embedding_model(
             cfg.get("name"),
             column=cfg.get("column"),
             model_name=cfg.get("model_name"),
-            params=cfg.get("params", {}),
+            #params=cfg.get("params", {}),
+            **embedding_params
         )
 
         # Ensure embedding_model variable always exists

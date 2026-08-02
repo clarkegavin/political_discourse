@@ -1,12 +1,17 @@
 # file: `config/experiments/bertopic_default.yaml`
-run_name: "default_minilm"
+run_name: "baseline_minilm"
 params:
   model_params:
     embedding_model: # optional custom embedding model config
       name: bert
       column: "CombinedText"
-      model_name: "all-MiniLM-L6-v2"
-save_path: "output/topic_modelling/default_minilm"
+      model_name: "sentence-transformers/all-MiniLM-L6-v2"
+      chunking:
+        enabled: true
+        chunk_size: 480
+        overlap: 32
+        pooling: mean
+save_path: "output/topic_modelling/baseline_minilm"
 visualisations:
   - name: topic_distribution
     init:
