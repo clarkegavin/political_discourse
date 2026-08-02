@@ -26,6 +26,14 @@ from .cyclic_encode import CyclicEncode
 from .combine_aggregate_text import CombineOrAggregateText
 from .numeric_normalizer import NumericNormalizer
 from .normalize_dates import DateNormalizer
+from .reply_reference_extractor import ReplyReferenceExtractor
+from .reply_graph_builder import ReplyGraphBuilder
+from .reply_chain_identifier import ReplyChainIdentifier
+from .conversation_segment_builder import ConversationSegmentBuilder
+from .conversation_segment_splitter import ConversationSegmentSplitter
+from .analytical_document_assembler import AnalyticalDocumentAssembler
+from .comment_statistics import CommentStatistics
+from .convert_lists_to_strings import ConvertListsToStrings
 import nltk
 
 # Register built-in preprocessors
@@ -78,6 +86,24 @@ PreprocessorFactory.register("numeric_normalizer", NumericNormalizer)
 PreprocessorFactory.register("numeric_normaliser", NumericNormalizer)
 PreprocessorFactory.register("date_normalizer", DateNormalizer)
 PreprocessorFactory.register("date_normaliser", DateNormalizer)
+PreprocessorFactory.register("reply_reference_extractor", ReplyReferenceExtractor)
+PreprocessorFactory.register("reply_references", ReplyReferenceExtractor)
+PreprocessorFactory.register("reply_reference", ReplyReferenceExtractor)
+PreprocessorFactory.register("reply_graph_builder", ReplyGraphBuilder)
+PreprocessorFactory.register("reply_graph", ReplyGraphBuilder)
+PreprocessorFactory.register("reply_chain_identifier", ReplyChainIdentifier)
+PreprocessorFactory.register("reply_chain", ReplyChainIdentifier)
+PreprocessorFactory.register("conversation_segment_builder", ConversationSegmentBuilder)
+PreprocessorFactory.register("conversation_builder", ConversationSegmentBuilder)
+PreprocessorFactory.register("conversation_segment_splitter", ConversationSegmentSplitter)
+PreprocessorFactory.register("conversation_splitter", ConversationSegmentSplitter)
+PreprocessorFactory.register("analytical_document_assembler", AnalyticalDocumentAssembler)
+PreprocessorFactory.register("document_assembler", AnalyticalDocumentAssembler)
+PreprocessorFactory.register("assembler", AnalyticalDocumentAssembler)
+PreprocessorFactory.register("comment_statistics", CommentStatistics)
+PreprocessorFactory.register("comment_stats", CommentStatistics)
+PreprocessorFactory.register("comment_statistics_calculator", CommentStatistics)
+PreprocessorFactory.register("convert_lists_to_strings", ConvertListsToStrings)
 
 # List of required resources
 REQUIRED_NLTK_RESOURCES = ["punkt", "stopwords"]
@@ -94,4 +120,7 @@ __all__ = ["Preprocessor", "PreprocessorFactory", "Stemmer", "Lemmatizer",
            "Lowercase", "StopwordRemover", "EmojiRemover", "FilterRows", "MaskGenreWords",
            "RemoveDuplicates", "RemoveURLs", "RemoveRepeatedCharacters", "RemovePunctuationNoise",
            "RemoveWhitespace", "MergeFeatures", "CountFeatures", "ExplodeColumns", "RemoveHTMLTags",
-           "LogTransform", "TemporalFeatures", "CatalogCount", "NormaliseFeature", "CyclicEncode"]
+           "LogTransform", "TemporalFeatures", "CatalogCount", "NormaliseFeature", "CyclicEncode",
+           "ReplyReferenceExtractor", "ReplyGraphBuilder", "ReplyChainIdentifier",
+           "ConversationSegmentBuilder", "ConversationSegmentSplitter", "AnalyticalDocumentAssembler",
+           "CommentStatistics"]

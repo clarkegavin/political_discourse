@@ -1,0 +1,68 @@
+## once off task to extract data from boards and save to conceptual model table
+
+pipelines:
+  - name: preprocess_boards_data
+    type: pipelines.preprocessing_pipeline.PreprocessingPipeline
+    enabled: true
+    params:
+      preprocessors:
+        - name: reply_reference_extractor # i should remove HTML after this step, and lowercase?
+          params:
+            columns: [CommentBody]
+            output_column: "ReplyToIDs"
+            extract_multiple: true
+        - name: remove_html_tags
+          params:
+            columns:
+              - CommentBody
+              - DiscussionBody
+#        - name: lowercase # not required as SentenceTransformer will lowercase text, and we want to preserve original case for readability
+#          params:
+#            columns:
+#              - DiscussionTitle
+#              - DiscussionBody
+#              - CommentBody
+        - name: comment_statistics
+          params:
+            text_column: "CommentBody"
+            word_count_column: "CommentWordCount"
+            character_count_column: "CommentCharacterCount"
+            sentence_count_column: "CommentSentenceCount"
+            calculate_sentences: true
+        - name: reply_graph_builder
+          params: {}
+        - name: reply_chain
+          params: {}
+        - name: conversation_segment_builder
+          params:
+            strategy: "hybrid"
+        - name: conversation_segment_splitter
+          params:
+
+            max_comments: 50
+            max_words: 300000 # (only impacted 4 conversations in 2025-01-01 to 2025-12-31 dataset, as  a result it was removed)
+            max_days_inactive: 7
+            split_conversation_chains: false
+        - name: analytical_document_assembler
+          params:
+            include_title: true
+            include_opening_post: true
+            include_comment_separators: true
+            separator: "\n\n"
+            document_text_column: "DocumentText"
+        - name: convert_lists_to_strings # converts lists to strings for storage in SQL Server
+          params: {}
+
+
+
+
+  - name: save_extracted_table
+    type: pipelines.data_saver_pipeline.DataSaverPipeline
+    enabled: true
+    params:
+      saver_name: sql_server
+      table_name: boards_conceptual_model
+      if_exists: replace
+      chunk_size: 1000
+      schema: dbo
+      connector_params: {}

@@ -27,6 +27,7 @@ from .language_by_column import LanguageByColumnVisualisation
 
 VisualisationFactory.register_visualisation("confusion_matrix", ConfusionMatrixChart)
 VisualisationFactory.register_visualisation("bar_chart", BarChart)
+VisualisationFactory.register_visualisation("barchart", BarChart)
 VisualisationFactory.register_visualisation("word_cloud", WordCloudChart)
 VisualisationFactory.register_visualisation("cluster_plot", ClusterPlotter)
 VisualisationFactory.register_visualisation("correlation_matrix", CorrelationMatrix)

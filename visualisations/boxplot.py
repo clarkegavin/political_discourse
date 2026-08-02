@@ -8,12 +8,21 @@ class BoxPlot(Visualisation):
     """
     Simple BoxPlot visualisation for a numeric pandas Series.
     """
-    def __init__(self, title: str = None, figsize=(6,4), ylabel: str = None, **params):
-        super().__init__(title=title or "Box Plot", figsize=figsize)
+    def __init__(self, title: str = None, figsize=(6,4), ylabel: str = None,
+                 x_column: str = None,
+                 y_column: str = None,
+                 **params):
+        super().__init__(title=title, figsize=figsize)
         self.logger = get_logger(self.__class__.__name__)
         self.figsize = figsize
         self.params = params
         self.ylabel = ylabel
+        self.yscale = params.get("yscale", None)
+        self.xscale = params.get("xscale", None)
+        self.x_column = x_column
+        self.y_column = y_column
+        self.xtick_rotation = params.get("xtick_rotation", 0)
+        self.xtick_ha = params.get("xtick_ha", "center")
 
     def plot(self, data, ax=None, title=None, **kwargs):
         """
@@ -25,6 +34,15 @@ class BoxPlot(Visualisation):
             created_fig, ax = plt.subplots(figsize=self.figsize)
         else:
             created_fig = ax.figure
+
+
+
+        if isinstance(data, pd.DataFrame) and self.x_column and self.y_column:
+            return self._plot_grouped_boxplot(
+                data,
+                ax,
+                title
+            )
 
         # Accept Series or list-like
         try:
@@ -46,4 +64,93 @@ class BoxPlot(Visualisation):
         ax.set_title(title or self.title)
         if self.ylabel:
             ax.set_ylabel(self.ylabel)
+
+        if self.xtick_rotation:
+            plt.setp(
+                ax.get_xticklabels(),
+                rotation=self.xtick_rotation,
+                ha=self.xtick_ha
+            )
+
+        self.logger.info(f"Setting yscale to {self.yscale}")
+        if self.yscale:
+            ax.set_yscale(self.yscale)
+
+        self.logger.info(f"Setting xscale to {self.xscale}")
+        if self.xscale:
+            ax.set_xscale(self.xscale)
+
         return created_fig, ax
+
+    def _plot_grouped_boxplot(self, data, ax, title):
+        """
+        Plot grouped boxplots from dataframe columns.
+        """
+
+        required = [
+            self.x_column,
+            self.y_column
+        ]
+
+        missing = [
+            c for c in required
+            if c not in data.columns
+        ]
+
+        if missing:
+            raise ValueError(
+                f"Missing columns for grouped boxplot: {missing}"
+            )
+
+        grouped_data = []
+
+        labels = []
+
+        for category, group in data.groupby(self.x_column):
+
+            values = (
+                pd.to_numeric(
+                    group[self.y_column],
+                    errors="coerce"
+                )
+                .dropna()
+            )
+
+            if len(values) > 0:
+                grouped_data.append(values)
+                labels.append(category)
+
+        if not grouped_data:
+            ax.text(
+                0.5,
+                0.5,
+                "No numeric data",
+                ha="center"
+            )
+            return ax.figure, ax
+
+        ax.boxplot(
+            grouped_data,
+            labels=labels,
+            vert=True,
+            patch_artist=True
+        )
+
+        if self.xtick_rotation:
+            plt.setp(
+                ax.get_xticklabels(),
+                rotation=self.xtick_rotation,
+                ha=self.xtick_ha
+            )
+
+        ax.set_title(title or self.title)
+
+        if self.ylabel:
+            ax.set_ylabel(self.ylabel)
+
+        if self.yscale:
+            ax.set_yscale(self.yscale)
+
+
+
+        return ax.figure, ax

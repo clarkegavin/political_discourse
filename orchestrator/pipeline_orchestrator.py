@@ -4,7 +4,7 @@ from logs.logger import get_logger
 import pandas as pd
 
 from pipelines import TargetFeaturePipeline, DataSplitterPipeline, FeatureEncoderPipeline, FilterPipeline, \
-    ExperimentPipeline, DataExtractorPipeline, OireachtasDataPipeline, TopicModelingPipeline
+    ExperimentPipeline, DataExtractorPipeline, OireachtasDataPipeline, TopicModelingPipeline, MergeTablesPipeline
 
 
 
@@ -131,8 +131,8 @@ class PipelineOrchestrator:
                 self.logger.info(f"Running general pipeline: {pipeline.__class__.__name__}")
 
                 if current_data is None:
-                    # This can happen if the first pipeline is a DataExtractorPipeline or the OireachtasDataPipelin
-                    if pipeline.__class__ != DataExtractorPipeline and pipeline.__class__ != OireachtasDataPipeline :
+                    # This can happen if the first pipeline is a DataExtractorPipeline or the OireachtasDataPipeline or MergeTablesPipeline and it returns None due to no data being available
+                    if pipeline.__class__ != DataExtractorPipeline and pipeline.__class__ != OireachtasDataPipeline and pipeline.__class__ != MergeTablesPipeline:
                         self.logger.error(f"No data available for pipeline {pipeline.__class__.__name__}")
                 else:
                     self.logger.info(f" Data Type: {type(current_data)}")

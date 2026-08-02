@@ -1,0 +1,48 @@
+pipelines:
+- name: discussions_comments_merge
+  type: pipelines.merge_pipeline.MergeTablesPipeline
+  enabled: false
+  params:
+    left:
+      extractor_type: table
+      extractor_params:
+        model: BoardsDiscussion
+    right:
+      extractor_type: table
+      extractor_params:
+        model: BoardsComment
+    left_on:
+    - DiscussionID
+    right_on:
+    - CommentDiscussionID
+    left_fields:
+      DiscussionId: DiscussionID
+      Type: DiscussionType
+      Title: DiscussionTitle
+      Body: DiscussionBody
+      CategoryId: DiscussionCategoryID
+      DateInserted: DiscussionDateInserted
+      DateUpdated: DiscussionDateUpdated
+      DateLastComment: DiscussionDateLastComment
+      insertUserId: DiscussionInsertUserID
+      UpdateUserId: DiscussionUpdateUserID
+      LastUserId: DiscussionLastUserID
+      Closed: DiscussionClosed
+      countComments: DiscussionCountComments
+      CanonicalURL: DiscussionCanonicalUrl
+    right_fields:
+      Id: Id
+      commentID: CommentID
+      discussionID: CommentDiscussionID
+      name: CommentName
+      categoryID: CommentCategoryID
+      body: CommentBody
+      dateInserted: CommentDateInserted
+      dateUpdated: CommentDateUpdated
+      updateUserID: CommentUpdateUserID
+      score: CommentScore
+      depth: CommentDepth
+      scoreChildComments: CommentScoreChildComments
+      countChildComments: CommentCountChildComments
+      url: CommentUrl
+    how: inner

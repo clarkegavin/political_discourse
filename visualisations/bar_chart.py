@@ -107,7 +107,8 @@ class BarChart(Visualisation):
             values = None
 
             # Dict-like input: treat as mapping label->value; if too many categories, take top by value
-            if hasattr(data, "items") and not hasattr(data, "values"):
+            #if hasattr(data, "items") and not hasattr(data, "values"):
+            if isinstance(data, dict):
                 items = list(data.items())
                 # ensure values are numeric-ish for sorting; if not, convert to counts of keys
                 try:
@@ -196,7 +197,7 @@ class BarChart(Visualisation):
                     except Exception:
                         values_arr = list(values)
 
-                ax.bar(truncated_labels, values_arr, **kwargs)
+                #ax.bar(truncated_labels, values_arr, **kwargs)
                 bars = ax.bar(truncated_labels, values_arr, color=self.params.get("color", None), **kwargs)
                 # ensure tick positions match labels and set rotated labels if requested
 

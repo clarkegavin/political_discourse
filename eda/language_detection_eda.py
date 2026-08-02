@@ -55,6 +55,7 @@ class LanguageDetectionEDA(EDAComponent):
 
             for idx, text in data[column].items():
                 question_id = data.loc[idx, 'QuestionId'] if 'QuestionId' in data.columns else None
+                document_id = data.loc[idx, 'DocumentId'] if 'DocumentId' in data.columns else None
                 text = "" if pd.isna(text) else str(text)
                 lang, score = self._detect_language(text)
 
@@ -62,6 +63,7 @@ class LanguageDetectionEDA(EDAComponent):
 
                 results.append({
                     'QuestionID':question_id,
+                    'DocumentID':document_id,
                     'RecordID': idx,
                     'ColumnName': column,
                     'Language': lang,

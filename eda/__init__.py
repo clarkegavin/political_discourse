@@ -19,7 +19,9 @@ from .shannon_entropy_eda import ShannonEntropyEDA
 from .geomap_eda import GeoMapEDA
 from .temporal_analysis_eda import TemporalAnalysisEDA
 from .language_detection_eda import LanguageDetectionEDA
-
+from .reply_chain_eda import ReplyChainAnalysisEDA
+from .group_count_eda import GroupCountDistributionEDA
+from .identify_urls_eda import IdentifyURLsEDA
 
 EDAFactory.register_eda("class_balance", ClassBalanceEDA)
 EDAFactory.register_eda("wordcloud", WordCloudEDA)
@@ -44,6 +46,9 @@ EDAFactory.register_eda(
     "language_detection",
     LanguageDetectionEDA
 )
+EDAFactory.register_eda("reply_chain", ReplyChainAnalysisEDA)
+EDAFactory.register_eda("group_count_distribution", GroupCountDistributionEDA)
+EDAFactory.register_eda("identify_urls", IdentifyURLsEDA)
 
 __all__ = [
     "EDAFactory",
@@ -64,5 +69,8 @@ __all__ = [
     "TokenizeTextEDA",
     "ShannonEntropyEDA",
     "GeoMapEDA",
-    "LanguageDetectionEDA"
+    "LanguageDetectionEDA",
+    "ReplyChainAnalysisEDA",
+    "TemporalAnalysisEDA",
+    "GroupCountDistributionEDA"
 ]

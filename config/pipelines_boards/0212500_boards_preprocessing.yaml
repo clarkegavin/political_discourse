@@ -6,4 +6,7 @@
 #    preprocessors:
 #      - name: stopword_remover
 #        params:
-#          columns: [ QuestionText, AnswerText ]
+#          columns: [ DocumentText ]
+#          include_procedural: false
+#          include_nltk: true
+#          include_default: true
