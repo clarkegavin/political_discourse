@@ -13,6 +13,8 @@ import os
 from typing import Optional, Dict, Any
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
+from pathlib import Path
+import json
 
 TOPIC_ID = "_topic_id"
 TOPIC_PROB = "topic_probability"
@@ -74,6 +76,7 @@ class TopicModelingExperiment(Experiment):
         self.model = None
         self.kwargs = kwargs
         self.embedding_model_wrapper = None
+        self._extract_embedding_cache_params()
 
 
 
@@ -421,7 +424,8 @@ class TopicModelingExperiment(Experiment):
         # embedding_model_wrapper, embedding_model = self._build_embedding_model()
         if self.embedding_model_wrapper is not None:
             self.logger.info(f"Using embedding model: {self.embedding_model_wrapper}")
-            embeddings = self.embedding_model_wrapper.transform(self.X)
+            #embeddings = self.embedding_model_wrapper.transform(self.X)
+            embeddings = self._get_embeddings()
             self.logger.info(f"Embedding model produced embeddings with shape {embeddings.shape}")
         else:
             embeddings = None
@@ -472,6 +476,158 @@ class TopicModelingExperiment(Experiment):
         }
 
         return {"df": result_df, "metadata": metadata, "artifacts": artifacts}
+
+    def _extract_embedding_cache_params(self):
+
+        cfg = (
+            self.model_params
+            .get("embedding_model", {})
+            .get("cache", {})
+        )
+
+        self.cache_enabled = cfg.get(
+            "enabled",
+            False
+        )
+
+        self.cache_overwrite = cfg.get(
+            "overwrite",
+            False
+        )
+
+        self.cache_path = Path(
+            cfg.get(
+                "cache_dir",
+                "output/embeddings"
+            )
+        )
+
+        self.embedding_id_column = cfg.get(
+            "id_column",
+            None
+        )
+
+    def _get_embedding_cache_base(self):
+
+        cfg = self.model_params["embedding_model"]
+
+        model_name = (
+            cfg["model_name"]
+            .replace("/", "_")
+        )
+
+        chunking = cfg.get("chunking", {})
+
+        if chunking.get("enabled", False):
+
+            suffix = (
+                f"_chunk{chunking.get('chunk_size')}"
+                f"_overlap{chunking.get('overlap')}"
+                f"_{chunking.get('pooling')}"
+            )
+
+        else:
+            suffix = "_nochunk"
+
+        return (
+                self.cache_path /
+                f"{model_name}{suffix}"
+        )
+
+    def _get_embeddings(self):
+
+        cache_base = self._get_embedding_cache_base()
+
+        embedding_file = cache_base.with_suffix(".npy")
+        metadata_file = cache_base.with_suffix(".json")
+        ids_file = cache_base.with_suffix(".csv")
+
+        self.logger.info(f"Embedding File Cache Path: {embedding_file}")
+        self.logger.info(f"Cache enabled: {self.cache_enabled}, overwrite: {self.cache_overwrite}")
+
+        if (
+                self.cache_enabled
+                and embedding_file.exists()
+                and not self.cache_overwrite
+        ):
+            self.logger.info(
+                f"Loading embeddings from cache: {embedding_file}"
+            )
+
+            return np.load(embedding_file)
+
+        self.logger.info(
+            "Generating embeddings..."
+        )
+
+        embeddings = (
+            self.embedding_model_wrapper
+            .transform(self.X)
+        )
+
+        if self.cache_enabled:
+            cache_base.parent.mkdir(
+                parents=True,
+                exist_ok=True
+            )
+
+            # 1. Save embeddings
+            np.save(
+                embedding_file,
+                embeddings
+            )
+
+            # 2. Save document identifiers
+
+            if not self.embedding_id_column:
+                raise ValueError(
+                    "embedding_model.id_column must be configured when embedding caching is enabled"
+                )
+
+            if self.embedding_id_column:
+
+                document_ids = pd.DataFrame({
+                    "row_index": range(len(self.X)),
+                    "document_id": self.X[self.embedding_id_column]
+                })
+
+            else:
+
+                document_ids = pd.DataFrame({
+                    "row_index": range(len(self.X))
+                })
+
+            document_ids.to_csv(
+                ids_file,
+                index=False
+            )
+
+            # 3. Save metadata
+            cfg = self.model_params["embedding_model"]
+
+            metadata = {
+                "model_name": cfg.get("model_name"),
+                "documents": len(self.X),
+                "embedding_dimensions": int(embeddings.shape[1]),
+                "id_column": self.embedding_id_column,
+                "chunking": cfg.get("chunking", {})
+            }
+
+            with open(
+                    metadata_file,
+                    "w"
+            ) as f:
+                json.dump(
+                    metadata,
+                    f,
+                    indent=4
+                )
+
+            self.logger.info(
+                f"Saved embedding cache: {embedding_file}"
+            )
+
+        return embeddings
 
     def _log_params(self):
         # Deprecated: experiments should not log directly to MLflow. Use collect_params() instead.
