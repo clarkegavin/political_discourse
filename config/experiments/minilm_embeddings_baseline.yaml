@@ -1,4 +1,4 @@
-# file: `config/experiments/bertopic_default.yaml`
+# file: `config/experiments/minilm_embeddings_baseline.yaml`
 run_name: "baseline_minilm"
 params:
   model_params:
@@ -8,9 +8,15 @@ params:
       model_name: "sentence-transformers/all-MiniLM-L6-v2"
       chunking:
         enabled: true
-        chunk_size: 480
+        chunk_size: 224
         overlap: 32
         pooling: mean
+      cache:
+        enabled: true
+        id_column: "QuestionId"
+        cache_dir: "output/embeddings_cache"
+        overwrite: true
+        # only overwrite if the model parameter change
 save_path: "output/topic_modelling/baseline_minilm"
 visualisations:
   - name: topic_distribution

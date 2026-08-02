@@ -13,7 +13,7 @@ class BERTEmbeddingModel(EmbeddingModel):
         self.logger = get_logger(self.__class__.__name__)
         self._dim = None  # to be set after fitting
         self.params = params
-        self._extract_chunking_params()
+
 
         try:
             self.model = SentenceTransformer(model_name)
@@ -37,7 +37,7 @@ class BERTEmbeddingModel(EmbeddingModel):
             self.model = SentenceTransformer(modules=[word_embedding_model, pooling_model])
             self.tokenizer = self.model.tokenizer
             self.logger.info(f"Initialized fallback BERT embedding model with pooling strategy '{pooling_strategy}'.")
-
+        self._extract_chunking_params()
 
 
 
@@ -90,15 +90,20 @@ class BERTEmbeddingModel(EmbeddingModel):
             False
         )
 
-        self.chunk_size = self.chunking_config.get(
-            "chunk_size",
-            480
-        )
 
         self.chunk_overlap = self.chunking_config.get(
             "overlap",
             32
         )
+
+        self.logger.info(f"Chunking enabled: {self.chunking_enabled}, overlap: {self.chunk_overlap}")
+        self.logger.info(f"Model {self.model_name} max sequence length: {self.model.max_seq_length}")
+        self.chunk_size = self.chunking_config.get(
+            "chunk_size",
+            self.model.max_seq_length - self.chunk_overlap
+        )
+
+        self.logger.info(f"Chunk size set to: {self.chunk_size}")
 
         if self.chunk_overlap >= self.chunk_size:
             raise ValueError(

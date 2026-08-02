@@ -7,6 +7,16 @@ params:
       name: bert
       column: "CombinedText"
       model_name: "all-MiniLM-L6-v2"
+      chunking:
+        enabled: true
+        chunk_size: 224
+        overlap: 32
+        pooling: mean
+      cache:
+        enabled: true
+        id_column: "QuestionId"
+        cache_dir: "output/embeddings_cache"
+        overwrite: true
       # max_seq_length: 512
     vectorizer:
       name: CountVectorizer
