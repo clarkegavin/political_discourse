@@ -8,10 +8,25 @@ pipelines:
         params:
           columns:
             - DocumentText
-      - name: remove_leading_reference_number
+      - name: regex_replace # Remove leading question number, parliamentary reference, and consolidated question boilerplate
         params:
           columns:
             - DocumentText
+
+          replacements:
+            # Remove leading question number
+            - pattern: '^\s*\d+\.\s+'
+              replacement: ''
+
+            # Remove parliamentary reference
+            - pattern: '\[\d+/\d+\]'
+              replacement: ''
+
+            # Remove consolidated question boilerplate
+            - pattern: '\s*I propose to take Questions Nos?\..*?together\.\s*'
+              replacement: ' '
+              ignore_case: true
+              dotall: true
 #      - name: stopword_remover
 #        params:
 #          language: "english"
