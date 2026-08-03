@@ -4,6 +4,7 @@ type: pipelines.topic_modeling_pipeline.TopicModelingPipeline
 enabled: true
 params:
   model_name: bertopic
+  dataset_name: parliamentary_questions
   evaluator_name: topic_modeling
   evaluator_params:
     top_n_topics: 100
