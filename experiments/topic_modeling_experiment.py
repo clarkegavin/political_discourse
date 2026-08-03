@@ -32,6 +32,7 @@ class TopicModelingExperiment(Experiment):
         model_name: str,
         evaluator_name: str,
         X: pd.DataFrame,
+        dataset_name: Optional[str] = None,
         model_params: Optional[Dict[str, Any]] = None,
         evaluator_params: Optional[Dict[str, Any]] = None,
         mlflow_tracking: bool = True,
@@ -48,6 +49,7 @@ class TopicModelingExperiment(Experiment):
         self.logger = get_logger(self.__class__.__name__)
         self.name = name
         self.model_name = model_name
+        self.dataset_name = dataset_name
         self.model_params = model_params or {}
         self.evaluator_name = evaluator_name
         self.evaluator_params = evaluator_params or {}
@@ -636,6 +638,7 @@ class TopicModelingExperiment(Experiment):
     def collect_params(self) -> dict:
         """Expose experiment params for external logging by ExperimentRunner."""
         return {
+            "dataset": self.dataset_name,
             "model_name": self.model_name,
             **(self.model_params or {}),
             "evaluator_name": self.evaluator_name,

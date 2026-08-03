@@ -23,6 +23,7 @@ class TopicModelingPipeline(Pipeline):
         self,
         model_name: str,
         evaluator_name: str,
+        dataset_name: Optional[str] = None,
         experiments: Optional[List[Dict[str, Any]]] = None,
         experiment_refs: Optional[List[str]] = None,
         mlflow_experiment: Optional[str] = None,
@@ -34,6 +35,7 @@ class TopicModelingPipeline(Pipeline):
     ) -> None:
         super().__init__(name=name or "TopicModelingPipeline")
         self.model_name = model_name
+        self.dataset_name = dataset_name
         self.evaluator_name = evaluator_name
         self.experiments = experiments or [{}]
         # experiment_refs: list of YAML file paths to load experiment configs from
@@ -44,6 +46,7 @@ class TopicModelingPipeline(Pipeline):
         self.default_text_field = default_text_field
         self.combined_text_field_name = combined_text_field_name
         self._cfg_loader = ConfigLoader()
+        self.logger.info(f"Initialized TopicModelingPipeline with model '{self.model_name}', evaluator '{self.evaluator_name}', dataset '{self.dataset_name}'")
 
     @classmethod
     def from_config(cls, entry: Dict[str, Any], global_config=None) -> "TopicModelingPipeline":
@@ -124,6 +127,7 @@ class TopicModelingPipeline(Pipeline):
 
             X_exp[self.combined_text_field_name] = combined
 
+            self.logger.info(f"Combined text fields into '{self.combined_text_field_name}' for experiment {run_name}")
             # Prepare a run-style experiment config expected by ExperimentRunner
             runner_exp = {
                 "run_name": run_name,
@@ -137,6 +141,7 @@ class TopicModelingPipeline(Pipeline):
                     "mlflow_experiment": self.mlflow_experiment,
                     "preprocessing_metadata": {"experiment_preprocessing": preprocessing_steps},
                     "X": X_exp,
+                    "dataset_name": self.dataset_name,
                     "visualisations": exp_cfg.get("visualisations", []),
                     "combined_text_field_name": self.combined_text_field_name,
                 },
