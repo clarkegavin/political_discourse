@@ -13,7 +13,7 @@ params:
     - AnswerText
   combined_text_field_name: CombinedText
   experiment_refs:
-    - config/experiments/minilm_embeddings_baseline.yaml
+#    - config/experiments/minilm_embeddings_baseline.yaml
 #    - config/experiments/roberta_embeddings_default.yaml
 #    - config/experiments/rooseberta_embeddings_default.yaml
 
