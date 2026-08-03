@@ -10,6 +10,8 @@ from visualisations.runner import VisualisationRunner
 from config.config_loader import ConfigLoader
 import psutil
 import os
+import hashlib
+import json
 
 logger = get_logger("ExperimentRunner")
 
@@ -471,10 +473,32 @@ class ExperimentRunner:
         """Format run_name template using flattened params; on failure fallback to template as-is."""
         try:
             flat = self._flatten_dict(params)
-            # Use safe format by replacing braces with format_map
-            return template.format_map({k: (v if not isinstance(v, dict) else str(v)) for k, v in flat.items()})
+
+            base_name = template.format_map(
+                {
+                    k: str(v)
+                    for k, v in flat.items()
+                }
+            )
         except Exception:
-            return template
+            base_name = template
+
+        config_hash = self._generate_config_hash(params)
+        return f"{base_name}_{config_hash}"
+
+    def _generate_config_hash(self, params: Dict[str, Any], length: int = 8) -> str:
+        """
+        Generate deterministic hash from experiment parameters.
+        """
+        canonical = json.dumps(
+            params,
+            sort_keys=True,
+            default=str
+        )
+
+        return hashlib.sha256(
+            canonical.encode("utf-8")
+        ).hexdigest()[:length]
 
     def _expand_nested_model_configs(self, model_configs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Expand a list of model configs by replacing nested list parameters with cartesian products.
