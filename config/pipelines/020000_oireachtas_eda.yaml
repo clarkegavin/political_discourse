@@ -171,26 +171,26 @@ pipelines:
 #              ncols: 3
 #              filename: oireachtas_tokens_barchart.png
 #
-#      - name: tokenize_text
-#        params:
-#          columns:
-#            - DocumentText
-#
-#          embedding_models:
-#            - sentence-transformers/all-MiniLM-L6-v2
-#            - sentence-transformers/all-roberta-large-v1
-#            - ddore14/RooseBERT-scr-cased
-#
-#          model_labels:
-#            sentence-transformers/all-MiniLM-L6-v2: MiniLM-L6
-#            sentence-transformers/all-roberta-large-v1: RoBERTa-large
-#            ddore14/RooseBERT-scr-cased: RooseBERT
-#
-#          viz_params:
-#            - name: boxplot
-#              filename: oireachtas_tokens_boxplot_embedding_models.png
-#              xtick_rotation: 45
-#              xtick_ha: right
+      - name: tokenize_text
+        params:
+          columns:
+            - DocumentText
+
+          embedding_models:
+            - sentence-transformers/all-MiniLM-L6-v2
+            - sentence-transformers/all-roberta-large-v1
+            - ddore14/RooseBERT-scr-cased
+
+          model_labels:
+            sentence-transformers/all-MiniLM-L6-v2: MiniLM-L6
+            sentence-transformers/all-roberta-large-v1: RoBERTa-large
+            ddore14/RooseBERT-scr-cased: RooseBERT
+
+          viz_params:
+            - name: boxplot
+              filename: oireachtas_tokens_boxplot_embedding_models.png
+              xtick_rotation: 45
+              xtick_ha: right
 #
 #      - name: tokenize_text
 #        params:

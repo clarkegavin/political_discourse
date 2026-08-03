@@ -8,6 +8,7 @@ import re
 import math
 import matplotlib.pyplot as plt
 from transformers import AutoTokenizer
+from sentence_transformers import SentenceTransformer
 
 def simple_tokenise(text):
     return re.findall(r"\b\w+\b", str(text))
@@ -120,11 +121,9 @@ class TokenizeTextEDA(EDAComponent):
                 save_path
             )
 
-        #
         # ---------------------------------------------------------
-        # 2. Transformer tokenizer analysis
+        # 2. Embedding model token analysis
         # ---------------------------------------------------------
-        #
 
         embedding_stats = {}
 
@@ -143,25 +142,18 @@ class TokenizeTextEDA(EDAComponent):
                     f"Analysing tokenizer limits for {model_name}"
                 )
 
-                tokenizer = AutoTokenizer.from_pretrained(
-                    model_name
-                )
+                # Load embedding model
+                embedding_model = SentenceTransformer(model_name)
 
-                model_max_length = tokenizer.model_max_length
+                # Use the embedding model's tokenizer
+                tokenizer = embedding_model.tokenizer
+
+                # Effective context window used during encoding
+                model_max_length = embedding_model.max_seq_length
 
                 self.logger.info(
-                    f"{model_name} max length: {tokenizer.model_max_length}"
+                    f"{model_name} effective context window: {model_max_length}"
                 )
-
-                # Handle HuggingFace "unlimited" placeholder
-                if model_max_length > 100000:
-                    model_max_length = tokenizer.init_kwargs.get(
-                        "model_max_length"
-                    )
-
-                if model_max_length is None or model_max_length > 100000:
-                    self.logger.info(f"TokenizeTextEDA - {model_name} has no defined max length, defaulting to 512")
-                    model_max_length = 512
 
                 model_results = {}
 
