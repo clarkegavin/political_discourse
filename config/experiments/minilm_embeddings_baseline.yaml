@@ -1,5 +1,5 @@
 # file: `config/experiments/minilm_embeddings_baseline.yaml`
-run_name: "baseline_minilm"
+run_name: "MiniLM_baseline"
 params:
   model_params:
     embedding_model: # optional custom embedding model config
