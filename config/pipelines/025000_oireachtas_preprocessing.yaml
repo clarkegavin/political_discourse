@@ -45,7 +45,8 @@ pipelines:
 #      - name: lemmatizer
 #        params:
 #          columns: [ RepresentationDocument ]
-          # remove procedural language
-          # remove numeric data at beginning and end of text
+#          model: "en_core_web_sm"
+#          # remove procedural language
+#          # remove numeric data at beginning and end of text
 #
 

@@ -18,11 +18,13 @@ class Lemmatizer(Preprocessor):
     and behave as identity transform when spaCy or models are missing.
     """
 
-    def __init__(self, model: str = "en_core_web_sm"):
+    def __init__(self, model: str = "en_core_web_sm", columns: List[str] = None):
+        super().__init__(columns)
         self.logger = get_logger(self.__class__.__name__)
         self.logger.info(f"Initializing Lemmatizer with model='{model}'")
         self.model = model
         self.nlp = None
+
         if spacy is None:
             self.logger.warning("spaCy not available; Lemmatizer will be a no-op")
         else:
@@ -35,23 +37,51 @@ class Lemmatizer(Preprocessor):
     def fit(self, X: Iterable[str]):
         return self
 
-    def transform(self, X: Iterable[str]) -> List[str]:
-        self.logger.info("Starting Lemmatizer transformation")
+    def transform(self, X):
 
-        #log sample before transformation
-        # sample_before = list(X)[:2]
-        # self.logger.info(f"Sample before lemmatization: {sample_before}")
+        if self.columns is None:
+            columns = X.columns
+        else:
+            columns = self.columns
+
+        X = X.copy()
+
+        for column in columns:
+
+            self.logger.info(
+                f"Lemmatizing column '{column}'"
+            )
+
+            X[column] = self._lemmatize_series(
+                X[column]
+            )
+
+        return X
+
+    def _lemmatize_series(self, series):
 
         if self.nlp is None:
-            return list(X)
-        out = []
-        for doc in self.nlp.pipe(X, disable=["ner", "parser"]):
-            out.append(" ".join(tok.lemma_ for tok in doc))
-        self.logger.info("Completed Lemmatizer transformation")
+            return series
 
-        # sample_after = out[:2]
-        # self.logger.info(f"Sample after lemmatization: {sample_after}")
-        return out
+        texts = series.fillna("").tolist()
+
+        output = []
+
+        with self.nlp.select_pipes(
+                disable=["ner", "parser"]
+        ):
+            for doc in self.nlp.pipe(
+                    texts,
+                    batch_size=50
+            ):
+                output.append(
+                    " ".join(
+                        token.lemma_
+                        for token in doc
+                    )
+                )
+
+        return output
 
     def get_params(self) -> dict:
         return {"model": self.model}

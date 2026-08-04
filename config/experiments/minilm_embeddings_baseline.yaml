@@ -12,7 +12,7 @@ params:
         overlap: 32
         pooling: mean
       cache:
-        enabled: true
+        enabled: false # if true, then cached embeddings will be used if available, otherwise embeddings will be generated and cached
         id_column: "QuestionId"
         cache_dir: "output/embeddings_cache"
         overwrite: true

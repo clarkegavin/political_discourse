@@ -11,6 +11,8 @@ class Preprocessor(ABC):
     - transform: apply transformation
     - fit_transform: convenience
     """
+    def __init__(self, columns: List[str] = None):
+        self.columns = columns
 
     @abstractmethod
     def fit(self, X: Iterable[str]):
@@ -23,4 +25,10 @@ class Preprocessor(ABC):
     def fit_transform(self, X: Iterable[str]) -> List[str]:
         self.fit(X)
         return self.transform(X)
+
+    def get_params(self):
+        """Return parameters of the preprocessor as a dict. Override in subclasses if needed."""
+        return {
+            "columns": self.columns
+        }
 
