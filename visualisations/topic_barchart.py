@@ -1,25 +1,26 @@
-# visualisations/intertopic_distance.py
+# visualisations/topic_barchart.py
+
 from .bertopic_visualisation import BERTopicVisualisation
 
 
-class IntertopicDistance(BERTopicVisualisation):
+class TopicBarChart(BERTopicVisualisation):
     """
-    BERTopic intertopic distance map visualisation.
+    BERTopic topic word barchart visualisation.
     """
 
     def __init__(
         self,
         output_dir=".",
-        filename="intertopic_distance.html",
+        filename="topic_barchart.html",
         **params
     ):
 
         super().__init__(
-            name="intertopic_distance",
-            title="Intertopic Distance Map",
+            name="topic_barchart",
+            title="Topic Barchart",
             output_dir=output_dir,
             filename=filename,
-            method="visualize_topics",
+            method="visualize_barchart",
             **params
         )
 

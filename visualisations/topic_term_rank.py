@@ -1,25 +1,24 @@
-# visualisations/intertopic_distance.py
 from .bertopic_visualisation import BERTopicVisualisation
 
 
-class IntertopicDistance(BERTopicVisualisation):
+class TopicTermRank(BERTopicVisualisation):
     """
-    BERTopic intertopic distance map visualisation.
+    BERTopic term rank visualisation.
     """
 
     def __init__(
         self,
         output_dir=".",
-        filename="intertopic_distance.html",
+        filename="topic_term_rank.html",
         **params
     ):
 
         super().__init__(
-            name="intertopic_distance",
-            title="Intertopic Distance Map",
+            name="topic_term_rank",
+            title="Topic Term Rank",
             output_dir=output_dir,
             filename=filename,
-            method="visualize_topics",
+            method="visualize_term_rank",
             **params
         )
 
@@ -27,8 +26,8 @@ class IntertopicDistance(BERTopicVisualisation):
     def plot(
         self,
         data,
-        metadata=None,
         model=None,
+        metadata=None,
         save_path=None,
         filename=None,
         **plot_kwargs
