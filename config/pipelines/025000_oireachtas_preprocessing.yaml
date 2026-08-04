@@ -27,17 +27,24 @@ pipelines:
               replacement: ' '
               ignore_case: true
               dotall: true
-#      - name: stopword_remover
+      - name: duplicate_column
+        params:
+          source_column: DocumentText
+          target_column: RepresentationDocument
+      - name: stopword_remover
+        params:
+          language: "english"
+          lower: true
+          columns: [ RepresentationDocument ]
+          include_procedural: false
+          include_nltk: false
+          include_default: true
+      - name: lowercase
+        params:
+          columns: [ RepresentationDocument ]
+#      - name: lemmatizer
 #        params:
-#          language: "english"
-#          lower: true
-#          columns: [ QuestionText, AnswerText ]
-#          include_procedural: false
-#          include_nltk: false
-#          include_default: true
-#      - name: lowercase
-#        params:
-#          columns: [ QuestionText, AnswerText ]
+#          columns: [ RepresentationDocument ]
           # remove procedural language
           # remove numeric data at beginning and end of text
 #
