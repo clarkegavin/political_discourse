@@ -40,7 +40,8 @@ class TopicModelingExperiment(Experiment):
         visualisations: Optional[list] = None,
         save_path: Optional[str] = None,
         preprocessing_metadata: Optional[Dict] = None,
-        combined_text_field_name: str = "__topic_input_text__",
+        #combined_text_field_name: str = "__topic_input_text__",
+        representation_text_field: Optional[str] = None,
         **kwargs,
     ):
 
@@ -66,12 +67,14 @@ class TopicModelingExperiment(Experiment):
         self.save_path = save_path
         self.preprocessing_metadata = preprocessing_metadata or {}
         self.logger.info(f"Initialized TopicModelingExperiment with model '{self.model_name}' '")
-        self.combined_text_field_name = combined_text_field_name
-        self.logger.info(f"Combined text field for topic input: '{self.combined_text_field_name}'")
+        #self.combined_text_field_name = combined_text_field_name
+        self.representation_text_field = representation_text_field
+        #self.logger.info(f"Combined text field for topic input: '{self.combined_text_field_name}'")
 
         # Instantiate evaluator
         #add combined_text_field_name to evaluator params for potential use in evaluation
-        self.evaluator_params["combined_text_field_name"] = combined_text_field_name
+        #self.evaluator_params["combined_text_field_name"] = combined_text_field_name
+        self.evaluator_params["evaluation_field_name"] = self.representation_text_field
         self.evaluator = EvaluatorFactory.get_evaluator(self.evaluator_name, **self.evaluator_params)
 
         # Placeholder: model will be created in run()
@@ -406,8 +409,16 @@ class TopicModelingExperiment(Experiment):
 
     def run(self):
         self.logger.info(f"Running topic modelling experiment '{self.name}' with model {self.model_name}")
-        docs = self.X[self.combined_text_field_name].fillna("").tolist()
-        self.logger.info(f"Extracted {len(docs)} documents for topic modeling from combined text field '{self.combined_text_field_name}'")
+        #docs = self.X[self.combined_text_field_name].fillna("").tolist()
+
+        representation_docs = (
+            self.X[self.representation_text_field]
+            .fillna("")
+            .tolist()
+        )
+
+        self.logger.info(f"Extracted {len(representation_docs)} documents for representation from field '{self.representation_text_field}'")
+        #self.logger.info(f"Extracted {len(docs)} documents for topic modeling from combined text field '{self.combined_text_field_name}'")
         topic_info = None
 
         # Only support BERTopic models here. Log and return if another model is requested.
@@ -440,10 +451,10 @@ class TopicModelingExperiment(Experiment):
         # Fit/transform using docs and optional embeddings
         if embeddings is not None:
             self.logger.info("Fitting BERTopicModel with embeddings")
-            topics, probs = self.model.fit_transform(docs, embeddings)
+            topics, probs = self.model.fit_transform(representation_docs, embeddings)
         else:
-            self.logger.info("Fitting BERTopicModel without embeddings")
-            topics, probs = self.model.fit_transform(docs)
+            self.logger.info(f"Fitting BERTopicModel without embeddings - embeddings are generated using {self.representation_text_field} ")
+            topics, probs = self.model.fit_transform(representation_docs)
 
         # get topic info
         try:
@@ -471,7 +482,9 @@ class TopicModelingExperiment(Experiment):
             "evaluator_name": self.evaluator_name,
             "evaluator_params": self.evaluator_params,
             "preprocessing_metadata": self.preprocessing_metadata,
-            "combined_text_field_name": self.combined_text_field_name,
+            #"combined_text_field_name": self.combined_text_field_name,
+            "embedding_text_field": self.model_params["embedding_model"]["column"],
+            "representation_text_field": self.representation_text_field,
             "visualisations": self.visualisations,
             "topics": topics,
             "model": self.model,

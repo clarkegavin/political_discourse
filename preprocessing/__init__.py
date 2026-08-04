@@ -36,6 +36,7 @@ from .comment_statistics import CommentStatistics
 from .convert_lists_to_strings import ConvertListsToStrings
 from .remove_leading_reference_number import RemoveLeadingReferenceNumber
 from .regex_replace import RegexReplace
+from .duplicate_columns import DuplicateColumn
 import nltk
 
 # Register built-in preprocessors
@@ -109,6 +110,8 @@ PreprocessorFactory.register("convert_lists_to_strings", ConvertListsToStrings)
 PreprocessorFactory.register("remove_leading_reference_number", RemoveLeadingReferenceNumber)
 PreprocessorFactory.register("regex_replace", RegexReplace)
 PreprocessorFactory.register("regex_replacer", RegexReplace)
+PreprocessorFactory.register("duplicate_column", DuplicateColumn)
+PreprocessorFactory.register("duplicate", DuplicateColumn)
 
 # List of required resources
 REQUIRED_NLTK_RESOURCES = ["punkt", "stopwords"]
@@ -128,4 +131,4 @@ __all__ = ["Preprocessor", "PreprocessorFactory", "Stemmer", "Lemmatizer",
            "LogTransform", "TemporalFeatures", "CatalogCount", "NormaliseFeature", "CyclicEncode",
            "ReplyReferenceExtractor", "ReplyGraphBuilder", "ReplyChainIdentifier",
            "ConversationSegmentBuilder", "ConversationSegmentSplitter", "AnalyticalDocumentAssembler",
-           "CommentStatistics", "ConvertListsToStrings", "RemoveLeadingReferenceNumber", "RegexReplace"]
+           "CommentStatistics", "ConvertListsToStrings", "RemoveLeadingReferenceNumber", "RegexReplace", "DuplicateColumn"]

@@ -21,7 +21,9 @@ class TopicModelingEvaluator(Evaluator):
         # override logger with class-specific name for clearer logs
         self.logger = get_logger(self.__class__.__name__)
         self.logger.info(f"Initialized TopicModelingEvaluator(coherence_type={coherence_type}, top_n={top_n})")
-        self.combined_text_field_name = kwargs.get("combined_text_field_name", "__topic_input_text__")
+        #self.combined_text_field_name = kwargs.get("combined_text_field_name", "__topic_input_text__")
+        self.evaluation_field_name = kwargs.get("evaluation_field_name", "")
+        self.logger.info(f"Evaluation field name for coherence/diversity: '{self.evaluation_field_name}'")
         self.logger.info(f"Top N terms for evaluation: {self.top_n}")
 
     def _compute_exclusivity(self, top_terms: List[List[str]]) -> float:
@@ -92,7 +94,16 @@ class TopicModelingEvaluator(Evaluator):
         else:
             estimator = getattr(model, "estimator", model)
 
-        docs = X[self.combined_text_field_name].fillna("").tolist()
+        # check if self.evaluation_field_name is set and exists in X
+        self.logger.info(f"Evaluation field name: '{self.evaluation_field_name}'")
+        if not self.evaluation_field_name:
+            self.logger.error("evaluation_field_name is not set; cannot evaluate coherence or diversity")
+            return {}
+        if self.evaluation_field_name not in X.columns:
+            self.logger.error(f"evaluation_field_name '{self.evaluation_field_name}' not found in DataFrame columns; cannot evaluate coherence or diversity")
+            return {}
+
+        docs = X[self.evaluation_field_name].fillna("").tolist()
         metrics = {}
 
         self.logger.info(f"Number of documents: {len(docs)}, Number of topic assignments: {len(topics)}")

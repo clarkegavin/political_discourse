@@ -4,7 +4,7 @@ params:
   model_params:
     embedding_model: # optional custom embedding model config
       name: bert
-      column: "CombinedText"
+      column: "DocumentText" #embeddings are created from this column
       model_name: "sentence-transformers/all-MiniLM-L6-v2"
       chunking:
         enabled: true
@@ -12,11 +12,15 @@ params:
         overlap: 32
         pooling: mean
       cache:
-        enabled: true
+        enabled: true # if true, then cached embeddings will be used if available, otherwise embeddings will be generated and cached
         id_column: "QuestionId"
         cache_dir: "output/embeddings_cache"
         overwrite: true
         # only overwrite if the model parameter change
+    dimensionality_reduction_model:
+      name: umap
+      params:
+        random_state: 42
 save_path: "output/topic_modelling/baseline_minilm"
 visualisations:
   - name: topic_distribution

@@ -29,8 +29,9 @@ class TopicModelingPipeline(Pipeline):
         mlflow_experiment: Optional[str] = None,
         name: Optional[str] = None,
         global_config: Optional[Dict[str, Any]] = None,
-        default_text_field: Optional[Any] = "text",
-        combined_text_field_name: str = "__topic_input_text__",
+        #default_text_field: Optional[Any] = "text",
+        #combined_text_field_name: str = "__topic_input_text__",
+        representation_text_field: Optional[str] = None,
         **kwargs,
     ) -> None:
         super().__init__(name=name or "TopicModelingPipeline")
@@ -43,8 +44,9 @@ class TopicModelingPipeline(Pipeline):
         self.mlflow_experiment = mlflow_experiment
         self.global_config = global_config or {}
         self.logger = get_logger(self.__class__.__name__)
-        self.default_text_field = default_text_field
-        self.combined_text_field_name = combined_text_field_name
+        #self.default_text_field = default_text_field
+        #self.combined_text_field_name = combined_text_field_name
+        self.representation_text_field = representation_text_field
         self._cfg_loader = ConfigLoader()
         self.logger.info(f"Initialized TopicModelingPipeline with model '{self.model_name}', evaluator '{self.evaluator_name}', dataset '{self.dataset_name}'")
 
@@ -74,7 +76,7 @@ class TopicModelingPipeline(Pipeline):
         """
         X = data
         self.logger.info("Starting topic modelling pipeline")
-        tf = self.default_text_field
+        #tf = self.default_text_field
 
         # Load experiment configs: ONLY load from experiment_refs; do NOT fall back to inline experiments.
         experiment_configs: List[Dict[str, Any]] = []
@@ -118,16 +120,16 @@ class TopicModelingPipeline(Pipeline):
                 X_exp = preprocessor.fit_transform(X_exp)
 
             # Combine text fields (after preprocessing if applied)
-            if isinstance(tf, (list, tuple)):
-                combined = X_exp[tf[0]].fillna("")
-                for col in tf[1:]:
-                    combined = combined + " " + X_exp[col].fillna("")
-            else:
-                combined = X_exp[tf].fillna("")
+            # if isinstance(tf, (list, tuple)):
+            #     combined = X_exp[tf[0]].fillna("")
+            #     for col in tf[1:]:
+            #         combined = combined + " " + X_exp[col].fillna("")
+            # else:
+            #     combined = X_exp[tf].fillna("")
+            #
+            # X_exp[self.combined_text_field_name] = combined
 
-            X_exp[self.combined_text_field_name] = combined
-
-            self.logger.info(f"Combined text fields into '{self.combined_text_field_name}' for experiment {run_name}")
+            # self.logger.info(f"Combined text fields into '{self.combined_text_field_name}' for experiment {run_name}")
             # Prepare a run-style experiment config expected by ExperimentRunner
             runner_exp = {
                 "run_name": run_name,
@@ -143,7 +145,8 @@ class TopicModelingPipeline(Pipeline):
                     "X": X_exp,
                     "dataset_name": self.dataset_name,
                     "visualisations": exp_cfg.get("visualisations", []),
-                    "combined_text_field_name": self.combined_text_field_name,
+                    #"combined_text_field_name": self.combined_text_field_name,
+                    "representation_text_field": self.representation_text_field,
                 },
             }
             self.logger.info(f"Runner experiment built with sweep: {exp_cfg.get('sweep') is not None}")
