@@ -9,10 +9,11 @@ params:
   evaluator_params:
     top_n_topics: 100
   mlflow_experiment: topic_modeling
-  default_text_field:
-    - QuestionText
-    - AnswerText
-  combined_text_field_name: CombinedText
+#  default_text_field:
+#    - QuestionText
+#    - AnswerText
+#  combined_text_field_name: CombinedText
+  representation_text_field: RepresentationDocument
   experiment_refs:
     - config/experiments/minilm_embeddings_baseline.yaml
 #    - config/experiments/roberta_embeddings_default.yaml

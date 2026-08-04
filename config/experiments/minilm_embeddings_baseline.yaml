@@ -4,7 +4,7 @@ params:
   model_params:
     embedding_model: # optional custom embedding model config
       name: bert
-      column: "CombinedText"
+      column: "DocumentText" #embeddings are created from this column
       model_name: "sentence-transformers/all-MiniLM-L6-v2"
       chunking:
         enabled: true

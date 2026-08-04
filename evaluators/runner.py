@@ -36,7 +36,8 @@ class EvaluationRunner:
         metadata = result.get("metadata", {})
         params = {
             **params,
-            "combined_text_field_name": metadata.get("combined_text_field_name")
+            **metadata.get("evaluator_params", {})
+            #"combined_text_field_name": metadata.get("combined_text_field_name")
         }
 
         evaluator = EvaluatorFactory.get_evaluator(name, **params)
