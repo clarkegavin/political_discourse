@@ -42,7 +42,13 @@ class VisualisationRunner:
         try:
             self.logger.info(f"Rendering visualisation '{name}'")
             # Standardized call
-            out = viz.plot(result.get("df"), model=model, **plot_params)
+            #out = viz.plot(result.get("df"), model=model, **plot_params)
+            out = viz.plot(
+                result.get("df"),
+                model=model,
+                metadata=result.get("metadata", {}),
+                **plot_params
+            )
 
             # Normalize outputs into list of artifact paths
             if out is None:

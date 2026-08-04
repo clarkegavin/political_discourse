@@ -1,11 +1,11 @@
-# file: `config/experiments/minilm_embeddings_baseline.yaml`
-run_name: "MiniLM_baseline"
+# file: `config/experiments/bertopic_default.yaml`
+run_name: "RoBERTa_baseline"
 params:
   model_params:
     embedding_model: # optional custom embedding model config
       name: bert
       column: "DocumentText" #embeddings are created from this column
-      model_name: "sentence-transformers/all-MiniLM-L6-v2"
+      model_name: "sentence-transformers/all-roberta-large-v1"
       chunking:
         enabled: true
         chunk_size: 224
@@ -17,8 +17,7 @@ params:
         id_column: "QuestionId"
         cache_dir: "output/embeddings_cache"
         overwrite: true
-        # only overwrite if the model parameter change
-save_path: "output/topic_modelling/MiniLM_baseline"
+save_path: "output/topic_modelling/RoBERTa_baseline"
 visualisations:
   - name: topic_distribution
     init:

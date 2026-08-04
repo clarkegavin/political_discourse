@@ -22,7 +22,14 @@ from .area_plot import AreaPlot
 from .line_plot import LinePlot
 from .language_distribution import LanguageDistributionVisualisation
 from .language_by_column import LanguageByColumnVisualisation
-
+from .topic_barchart import TopicBarChart
+from .topic_documents import TopicDocuments
+from .topic_heatmap import TopicHeatmap
+from .topic_hierarchy import TopicHierarchy
+from .topic_term_rank import TopicTermRank
+from .bertopic_visualisation import BERTopicVisualisation
+from .topics_over_time import TopicsOverTime
+from .topics_per_class import TopicsPerClass
 # Register visualisations
 
 VisualisationFactory.register_visualisation("confusion_matrix", ConfusionMatrixChart)
@@ -47,14 +54,17 @@ VisualisationFactory.register_visualisation("word_cloud_eda", WordCloudVisualisa
 VisualisationFactory.register_visualisation("eda_wordcloud", WordCloudVisualisation)  # alias
 VisualisationFactory.register_visualisation('line_plot', LinePlot)
 VisualisationFactory.register_visualisation('area_plot', AreaPlot)
-VisualisationFactory.register_visualisation(
-    "language_distribution",
-    LanguageDistributionVisualisation
-)
-VisualisationFactory.register_visualisation(
-    "language_by_column",
-    LanguageByColumnVisualisation
-)
+VisualisationFactory.register_visualisation("language_distribution",  LanguageDistributionVisualisation)
+VisualisationFactory.register_visualisation("language_by_column",   LanguageByColumnVisualisation)
+VisualisationFactory.register_visualisation("topic_barchart", TopicBarChart)
+VisualisationFactory.register_visualisation("topic_barcharts", TopicBarChart)  # alias
+VisualisationFactory.register_visualisation("topic_documents", TopicDocuments)
+VisualisationFactory.register_visualisation("topic_heatmap", TopicHeatmap)
+VisualisationFactory.register_visualisation("topic_hierarchy", TopicHierarchy)
+VisualisationFactory.register_visualisation("topic_term_rank", TopicTermRank)
+VisualisationFactory.register_visualisation("topics_over_time", TopicsOverTime)
+VisualisationFactory.register_visualisation("topics_per_class", TopicsPerClass)
+
 
 __all__ = [
     "ConfusionMatrixChart",
@@ -78,5 +88,13 @@ __all__ = [
     "AreaPlot",
     "LinePlot",
     "LanguageDistributionVisualisation",
-    "LanguageByColumnVisualisation"
+    "LanguageByColumnVisualisation",
+    "TopicBarChart",
+    "TopicDocuments",
+    "TopicHeatmap",
+    "TopicHierarchy",
+    "TopicTermRank",
+    "BERTopicVisualisation",
+    "TopicsOverTime",
+    "TopicsPerClass"
 ]
