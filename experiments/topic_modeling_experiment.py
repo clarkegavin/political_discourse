@@ -531,11 +531,19 @@ class TopicModelingExperiment(Experiment):
             .replace("/", "_")
         )
 
+        normalised_dataset_name = (
+            (self.dataset_name or "unknown")
+            .strip()
+            .lower()
+            .replace(" ", "_")
+            .replace("/", "_")
+        )
         chunking = cfg.get("chunking", {})
 
         if chunking.get("enabled", False):
 
             suffix = (
+                f"_dataset{normalised_dataset_name}"
                 f"_chunk{chunking.get('chunk_size')}"
                 f"_overlap{chunking.get('overlap')}"
                 f"_{chunking.get('pooling')}"
