@@ -1,11 +1,11 @@
-# file: `config/experiments/minilm_embeddings_baseline.yaml`
-run_name: "MiniLM_baseline"
+# file: `config/experiments/bertopic_default.yaml`
+run_name: "RoBERTa_baseline"
 params:
   model_params:
     embedding_model: # optional custom embedding model config
       name: bert
       column: "DocumentText" #embeddings are created from this column
-      model_name: "sentence-transformers/all-MiniLM-L6-v2"
+      model_name: "sentence-transformers/all-roberta-large-v1"
       chunking:
         enabled: true
         chunk_size: 224
@@ -13,25 +13,24 @@ params:
         pooling: mean
       cache:
         enabled: true # if true, then cached embeddings will be used if available, otherwise embeddings will be generated and cached
-        id_column: "QuestionId"
+        id_column: "DocumentId"
         cache_dir: "output/embeddings_cache"
         overwrite: true
-        # only overwrite if the model parameter change
-save_path: "output/topic_modelling/MiniLM_baseline"
+save_path: "output/topic_modelling/RoBERTa_baseline"
 visualisations:
   - name: topic_distribution
     init:
-      filename: bertopic_default_topic_distribution.png
+      filename: boards_bertopic_default_topic_distribution.png
   - name: topic_wordclouds
     init:
-      filename_prefix: bertopic_default_topic
+      filename_prefix: boards_bertopic_default_topic
       top_n_topics: 10
   - name: intertopic_distance
     init:
-      filename: intertopic_distance.html
+      filename: boards_intertopic_distance.html
   - name: topic_barchart
     init:
-      filename: topic_barchart.html
+      filename: boards_topic_barchart.html
       # BERTopic parameters
       top_n_topics: 10
       n_words: 10
@@ -40,37 +39,43 @@ visualisations:
       topics: null        # optional list of topic ids
   - name: topic_heatmap
     init:
-      filename: topic_heatmap.html
+      filename: boards_topic_heatmap.html
   - name: topic_term_rank
     init:
-      filename: topic_term_rank.html
+      filename: boards_topic_term_rank.html
   - name: topic_documents
     init:
-      filename: topic_documents.html
+      filename: boards_topic_documents.html
   - name: topic_hierarchy
     init:
-      filename: topic_hierarchy.html
+      filename: boards_topic_hierarchy.html
   - name: topics_over_time
     init:
-      filename: topics_over_time.html
-      date_column: QuestionDate
+      filename: boards_topics_over_time_start.html
+      date_column: DocumentStartDate
+      text_column: RepresentationDocument
+      interval: month
+  - name: topics_over_time
+    init:
+      filename: boards_topics_over_time_end.html
+      date_column: DocumentEndDate
       text_column: RepresentationDocument
       interval: month
   - name: topics_per_class
     init:
-      filename: topics_per_party.html
-      classes_column: QuestionerParty
+      filename: boards_topics_per_discussion.html
+      classes_column: DiscussionId
       text_column: RepresentationDocument
       top_n_topics: 10
   - name: topics_per_class
     init:
-      filename: topics_per_constituency.html
-      classes_column: QuestionerConstituency
+      filename: boards_topics_per_subforum.html
+      classes_column: DiscussionCategoryId
       text_column: RepresentationDocument
       top_n_topics: 10
   - name: topics_per_class
     init:
-      filename: topics_per_td.html
-      classes_column: Questioner
+      filename: boards_topics_per_replychain.html
+      classes_column: ChainId
       text_column: RepresentationDocument
       top_n_topics: 10
