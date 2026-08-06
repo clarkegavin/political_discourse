@@ -4,7 +4,7 @@ pipelines:
   enabled: true
   params:
     saver_name: sql_server
-    table_name: oireachtas_topic_output
+    table_name: boards_topic_output
     if_exists: replace
     chunk_size: 1000
     schema: dbo
