@@ -12,12 +12,12 @@ params:
         overlap: 32
         pooling: mean
       cache:
-        enabled: true # if true, then cached embeddings will be used if available, otherwise embeddings will be generated and cached
+        enabled: true # if true, then cached embeddings will be used if available, otherwise embeddings will be generated
         id_column: "QuestionId"
         cache_dir: "output/embeddings_cache"
-        overwrite: true
+        overwrite: false
         # only overwrite if the model parameter change
-save_path: "output/topic_modelling/MiniLM_baseline"
+save_path: "output/topic_modelling/MiniLM_sweep"
 visualisations:
   - name: topic_distribution
     init:

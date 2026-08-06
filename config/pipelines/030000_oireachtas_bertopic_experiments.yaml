@@ -15,6 +15,12 @@ params:
     - config/experiments/roberta_embeddings_baseline.yaml
     - config/experiments/rooseberta_embeddings_baseline.yaml
 
+    - config/experiments/01000_minilm_reducer.yaml
+    - config/experiments/02000_minilm_clusterer.yaml
+    - config/experiments/03000_minilm_vectorizer.yaml
+    - config/experiments/04000_minilm_ctfidf.yaml
+    - config/experiments/05000_minilm_representation.yaml
+
 #   - config/experiments/minilm_embeddings.yaml
 #    - config/experiments/roberta_embeddings.yaml
 #    - config/experiments/rooseberta_embeddings.yaml

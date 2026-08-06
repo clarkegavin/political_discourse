@@ -44,9 +44,9 @@ visualisations:
   - name: topic_term_rank
     init:
       filename: boards_topic_term_rank.html
-  - name: topic_documents
-    init:
-      filename: boards_topic_documents.html
+#  - name: topic_documents # takes approximately 1 hour to run, which is too expensive
+#    init:
+#      filename: boards_topic_documents.html
   - name: topic_hierarchy
     init:
       filename: boards_topic_hierarchy.html

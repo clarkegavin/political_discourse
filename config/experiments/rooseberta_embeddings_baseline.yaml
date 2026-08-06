@@ -9,7 +9,6 @@ params:
       chunking:
         enabled: true
         chunk_size: 224
-
         overlap: 32
         pooling: mean
       cache:
