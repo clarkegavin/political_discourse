@@ -19,6 +19,7 @@ class ReportingDataBuilder:
 
     def build(self):
 
+
         reader = MLflowReader(
             tracking_uri=self.config.get(
                 "tracking_uri"
@@ -36,6 +37,13 @@ class ReportingDataBuilder:
 
         rows = []
 
+        self.logger.info("Temporary logging...")
+        for run in runs:
+            self.logger.info(
+                run["metrics"]
+            )
+
+
         for run in runs:
 
             row = {}
@@ -47,6 +55,11 @@ class ReportingDataBuilder:
                 )
 
                 row[field_config["name"]] = value
+
+            # Add readable experiment label
+            # row["Experiment"] = (
+            #     self._create_experiment_label(run)
+            # )
 
             rows.append(row)
 
@@ -70,3 +83,46 @@ class ReportingDataBuilder:
             )
 
         return value
+
+    def _create_experiment_label(self, run):
+
+        params = run.get(
+            "params",
+            {}
+        )
+
+        model = params.get(
+            "embedding_model_model_name",
+            "unknown"
+        )
+
+        # shorten model names
+        model = (
+            model
+            .split("/")[-1]
+            .replace("-v1", "")
+        )
+
+        components = []
+
+        for parameter in [
+            "n_neighbors",
+            "n_components",
+            "min_dist",
+            "distance_metric"
+        ]:
+
+            value = params.get(parameter)
+
+            if value is not None:
+                components.append(
+                    f"{parameter}={value}"
+                )
+
+        if components:
+            return (
+                    f"{model}: "
+                    + ", ".join(components)
+            )
+
+        return model

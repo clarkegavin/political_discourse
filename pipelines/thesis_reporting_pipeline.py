@@ -60,6 +60,8 @@ class ThesisReportingPipeline(Pipeline):
 
         reporting_data = self.reporting_data_builder.build()
 
+        self.logger.info(f"Reporting dataframe contains columns: {list(reporting_data.columns)}")
+
         outputs = {}
 
         for step in self.reporting_steps:

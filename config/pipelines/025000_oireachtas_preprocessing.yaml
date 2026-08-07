@@ -1,56 +1,56 @@
-#pipelines:
-#- name: preprocess_boards_data
-#  type: pipelines.preprocessing_pipeline.PreprocessingPipeline
-#  enabled: true
-#  params:
-#    preprocessors:
-#      - name: remove_urls
+pipelines:
+- name: preprocess_boards_data
+  type: pipelines.preprocessing_pipeline.PreprocessingPipeline
+  enabled: true
+  params:
+    preprocessors:
+      - name: remove_urls
+        params:
+          columns:
+            - DocumentText
+      - name: regex_replace # Remove leading question number, parliamentary reference, and consolidated question boilerplate
+        params:
+          columns:
+            - DocumentText
+
+          replacements:
+            # Remove leading question number
+            - pattern: '^\s*\d+\.\s+'
+              replacement: ''
+
+            # Remove parliamentary reference
+            - pattern: '\[\d+/\d+\]'
+              replacement: ''
+
+            # Remove consolidated question boilerplate
+            - pattern: '\s*I propose to take Questions Nos?\..*?together\.\s*'
+              replacement: ' '
+              ignore_case: true
+              dotall: true
+
+            # Remove year references (e.g., 2021, 1999) from the text
+            - pattern: '\b(19|20)\d{2}\b'
+              replacement: ''
+      - name: duplicate_column
+        params:
+          source_column: DocumentText #embeddings are generated from this
+          target_column: RepresentationDocument # representations are generated from this
+      - name: stopword_remover
+        params:
+          language: "english"
+          lower: true
+          columns: [ RepresentationDocument ]
+          include_procedural: true
+          include_nltk: false
+          include_default: true
+      - name: lowercase
+        params:
+          columns: [ RepresentationDocument ]
+#      - name: lemmatizer
 #        params:
-#          columns:
-#            - DocumentText
-#      - name: regex_replace # Remove leading question number, parliamentary reference, and consolidated question boilerplate
-#        params:
-#          columns:
-#            - DocumentText
-#
-#          replacements:
-#            # Remove leading question number
-#            - pattern: '^\s*\d+\.\s+'
-#              replacement: ''
-#
-#            # Remove parliamentary reference
-#            - pattern: '\[\d+/\d+\]'
-#              replacement: ''
-#
-#            # Remove consolidated question boilerplate
-#            - pattern: '\s*I propose to take Questions Nos?\..*?together\.\s*'
-#              replacement: ' '
-#              ignore_case: true
-#              dotall: true
-#
-#            # Remove year references (e.g., 2021, 1999) from the text
-#            - pattern: '\b(19|20)\d{2}\b'
-#              replacement: ''
-#      - name: duplicate_column
-#        params:
-#          source_column: DocumentText #embeddings are generated from this
-#          target_column: RepresentationDocument # representations are generated from this
-#      - name: stopword_remover
-#        params:
-#          language: "english"
-#          lower: true
 #          columns: [ RepresentationDocument ]
-#          include_procedural: true
-#          include_nltk: false
-#          include_default: true
-#      - name: lowercase
-#        params:
-#          columns: [ RepresentationDocument ]
-##      - name: lemmatizer
-##        params:
-##          columns: [ RepresentationDocument ]
-##          model: "en_core_web_sm"
-##          # remove procedural language
-##          # remove numeric data at beginning and end of text
-##
+#          model: "en_core_web_sm"
+#          # remove procedural language
+#          # remove numeric data at beginning and end of text
 #
+

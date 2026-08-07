@@ -1,95 +1,207 @@
-pipelines:
-  - name: thesis_reporting
-    type: pipelines.thesis_reporting_pipeline.ThesisReportingPipeline
-    enabled: true
-    params:
-      output_path: output/thesis
-      data_builder:
-        experiment_id: 459812648607800342
-        run_list:
-          - c35a6c389b634a5c9d821c28961a8bf3
-          - 8a9aa87067f64f69a0aaae69b404c9f0
-          - 4643157a720f43d0a7feed9e68931ed4
-        fields:
-          - field: run_id
-            name: Run ID
-          - field: params.embedding_model_model_name
-            name: Embedding Model
-          - field: metrics.coherence
-            name: Coherence
-          - field: metrics.coherence_npmi
-            name: NPMI
-          - field: metrics.topic_diversity
-            name: Diversity
-          - field: metrics.topic_exclusivity
-            name: Exclusivity
-          - field: metrics.outlier_ratio
-            name: Outliers
-      steps:
-        - name: latex_summary_table
-          params:
-            experiment_id:
-              459812648607800342
-            run_list:
-              - c35a6c389b634a5c9d821c28961a8bf3
-              - 8a9aa87067f64f69a0aaae69b404c9f0
-              - 4643157a720f43d0a7feed9e68931ed4
-            output_file:
-              baseline_embedding_results.tex
-            caption:
-              Baseline embedding model evaluation.
-            label:
-              tab:baseline_embedding_results
-            sort:
-              field: metrics.coherence
-              descending: true
-            highlight:
-              - field: metrics.coherence
-                direction: max
-              - field: metrics.coherence_npmi
-                direction: max
-              - field: metrics.topic_diversity
-                direction: max
-              - field: metrics.topic_exclusivity
-                direction: max
-              - field: metrics.outlier_ratio
-                direction: min
-            columns:
-              - field: params.embedding_model_model_name
-                header: Embedding Model
-                latex_type: p{5cm}
-              - field: metrics.coherence
-                header: Coherence
-                latex_type: l
-                precision: 3
-              - field: metrics.coherence_npmi
-                header: NPMI
-                latex_type: l
-                precision: 3
-              - field: metrics.topic_diversity
-                header: Diversity
-                latex_type: l
-                precision: 3
-              - field: metrics.topic_exclusivity
-                header: Exclusivity
-                latex_type: l
-                precision: 3
-              - field: metrics.outlier_ratio
-                header: Outliers
-                latex_type: l
-                precision: 3
-        - name: grouped_metric_chart
-          params:
-            x_field: Embedding Model
-            inverse_metrics:
-              - Outliers
-            metrics:
-              - Coherence
-              - NPMI
-              - Diversity
-              - Exclusivity
-              - Outliers
-            filename: baseline_metric_comparison.png
-
-            visualisation:
-              name: grouped_bar_chart
+#pipelines:
+#  - name: thesis_reporting
+#    type: pipelines.thesis_reporting_pipeline.ThesisReportingPipeline
+#    enabled: true
+#    params:
+#      output_path: output/thesis
+#      data_builder:
+#        experiment_id: 459812648607800342
+#        run_list:
+#          - 884eef15e4f1404f8085bd042cb02fd2
+#          - abc41b8617a34671a994d19c6704484b
+#          - f42c78f1ef1047a6a35d7f950009fd31
+#          - e76275461f204f78be76b7a623d679da
+#          - a5d9ab775ba54296ac4b1e9872ed0e95
+#          - 47d5afe618b0466985c682874e53756d
+#          - 62cd6c922a674a2db80f37a662244563
+#          - 79cef6a763a84d4dbd4958733863bd58
+#          - accf73c5d4dd45a9a033ac2825d0fc25
+#          - 68e172c109744dc0b64d748d09b0b46e
+#          - c776c33f647d440a8839260f34df4c86
+#          - 63ea9d82b7f6417ba719ae995afb56cb
+#          - 96a52bba057149ea8fd3cded10f0e0d8
+#          - ac964f41496147afa1373f9fabe2caad
+#          - d43d00f229d841dfab2110c71835ceb2
+#          - 1046aee1391c4fbea6f8bfa18ed32953
+#          - 7222ebdc724146af99dd73c053e903e7
+#          - 066dc58678a14c4ab8e9dd8c551b2b72
+#          - 5b6a57eae0ef4ec29ededc9c22875523
+#          - 473374f936f541a58b7082fb09e195bc
+#          - b514d37e93d44fe0bf6da553cd96cb89
+#          - e6476e60b91c4c0faa4e1d1d2843abe4
+#          - 096eca78303843bd89b8d60a93070bb7
+#          - 6a41cf16e301428aa33837f01735cd1c
+#          - 1fc35e3786604d7994cd8070b6311c59
+#          - 174cde2892ba49eeacf45a71e406a0a7
+#          - ebfb103cf5d74085a855ffb52c0119db
+#          - accd558eb0f7498db86fa1f16df38e0b
+#          - f944ee1e6bfe45088add22a2f90b4f2f
+#          - 40cc7282c74843cfb431420f15e1fbf5
+#          - 2fc4017d8817413aaa9bb53486132298
+#          - 65f7e582d65749fd8b8d8047ae32a81b
+#          - de8f225219714524b1bf255e66fab09c
+#          - b68bd4796be141408d02979c0289e9ff
+#          - cb731d272565449a848c5630a0737d9f
+#          - 3bcb9a2c3f944b8daf81f8279def2438
+#
+#        fields:
+#          - field: run_name
+#            name: Experiment
+#          - field: run_id
+#            name: Run ID
+#          - field: params.embedding_model_model_name
+#            name: Embedding Model
+#          - field: metrics.coherence
+#            name: Coherence
+#          - field: metrics.coherence_npmi
+#            name: NPMI
+#          - field: metrics.topic_diversity
+#            name: Diversity
+#          - field: metrics.topic_exclusivity
+#            name: Exclusivity
+#          - field: metrics.outlier_ratio
+#            name: Outliers
+#          - field: params.dimensionality_reduction_model_params_n_neighbors
+#            name: n_neighbors
+#          - field: params.dimensionality_reduction_model_params_n_components
+#            name: n_components
+#          - field: params.dimensionality_reduction_model_params_min_dist
+#            name: min_dist
+#          - field: params.dimensionality_reduction_model_params_metric
+#            name: distance_metric
+#          - field: params.dimensionality_reduction_model_params_random_state
+#            name: random_state
+#          - field: params.clusterer_params_min_cluster_size
+#            name: min_cluster_size
+#          - field: params.clusterer_params_min_samples
+#            name: min_samples
+#          - field: params.ctfidf_params_bm25_weighting
+#            name: bm25_weighting
+#          - field: params.ctfidf_params_reduce_frequent_words
+#            name: reduce_frequent_words
+#          - field: params.model_params_vectorizer_params_min_df
+#            name: min_df
+#          - field: params.model_params_vectorizer_params_ngram_range
+#            name: ngram_range
+#          - field: params.representation_model_name
+#            name: representation_model
+#          - field: params.representation_model_params_diversity
+#            name: diversity
+#          - field: params.representation_model_params_top_n_words
+#            name: top_n
+#
+#      steps:
+#        - name: latex_summary_table
+#          params:
+#            experiment_id:
+#              459812648607800342
+#            run_list:
+#              - c35a6c389b634a5c9d821c28961a8bf3
+#              - 8a9aa87067f64f69a0aaae69b404c9f0
+#              - 4643157a720f43d0a7feed9e68931ed4
+#            output_file:
+#              baseline_embedding_results.tex
+#            caption:
+#              Baseline embedding model evaluation.
+#            label:
+#              tab:baseline_embedding_results
+#            sort:
+#              field: metrics.coherence
+#              descending: true
+#            highlight:
+#              - field: metrics.coherence
+#                direction: max
+#              - field: metrics.coherence_npmi
+#                direction: max
+#              - field: metrics.topic_diversity
+#                direction: max
+#              - field: metrics.topic_exclusivity
+#                direction: max
+#              - field: metrics.outlier_ratio
+#                direction: min
+#            columns:
+#              - field: params.embedding_model_model_name
+#                header: Embedding Model
+#                latex_type: p{5cm}
+#              - field: metrics.coherence
+#                header: Coherence
+#                latex_type: l
+#                precision: 3
+#              - field: metrics.coherence_npmi
+#                header: NPMI
+#                latex_type: l
+#                precision: 3
+#              - field: metrics.topic_diversity
+#                header: Diversity
+#                latex_type: l
+#                precision: 3
+#              - field: metrics.topic_exclusivity
+#                header: Exclusivity
+#                latex_type: l
+#                precision: 3
+#              - field: metrics.outlier_ratio
+#                header: Outliers
+#                latex_type: l
+#                precision: 3
+#        - name: grouped_metric_chart
+#          params:
+#            x_field: Embedding Model
+#            inverse_metrics:
+#              - Outliers
+#            metrics:
+#              - Coherence
+#              - NPMI
+#              - Diversity
+#              - Exclusivity
+#              - Outliers
+#            filename: baseline_metric_comparison.png
+#
+#            visualisation:
+#              name: grouped_bar_chart
+#              figsize:
+#                - 10
+#                - 6
+#        - name: metric_heatmap
+#          params:
+#            index_field: Embedding Model
+#            metrics:
+#              - Coherence
+#              - NPMI
+#              - Diversity
+#              - Exclusivity
+#              - Outliers
+#            inverse_metrics:
+#              - Outliers
+#            filename: baseline_metric_heatmap.png
+#            visualisation:
+#              name: metric_heatmap
+#              figsize:
+#                - 10
+#                - 6
+#        - name: metric_line_chart
+#          params:
+#
+#            parameters:
+#              - n_neighbors
+#              - n_components
+#              - min_dist
+#              - distance_metric
+#
+#            metrics:
+#              - Coherence
+#              - NPMI
+#              - Diversity
+#              - Exclusivity
+#              - Outliers
+#
+#            inverse_metrics:
+#              - Outliers
+#
+#            filename: umap_parameters.png
+#
+#            visualisation:
+#              name: metric_line_chart
+#              #title: Effect of UMAP Parameters
+#              figsize: [ 12,8 ]
+#              rows: 2
+#              cols: 3
