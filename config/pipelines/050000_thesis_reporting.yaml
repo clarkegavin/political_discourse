@@ -1,0 +1,95 @@
+pipelines:
+  - name: thesis_reporting
+    type: pipelines.thesis_reporting_pipeline.ThesisReportingPipeline
+    enabled: true
+    params:
+      output_path: output/thesis
+      data_builder:
+        experiment_id: 459812648607800342
+        run_list:
+          - c35a6c389b634a5c9d821c28961a8bf3
+          - 8a9aa87067f64f69a0aaae69b404c9f0
+          - 4643157a720f43d0a7feed9e68931ed4
+        fields:
+          - field: run_id
+            name: Run ID
+          - field: params.embedding_model_model_name
+            name: Embedding Model
+          - field: metrics.coherence
+            name: Coherence
+          - field: metrics.coherence_npmi
+            name: NPMI
+          - field: metrics.topic_diversity
+            name: Diversity
+          - field: metrics.topic_exclusivity
+            name: Exclusivity
+          - field: metrics.outlier_ratio
+            name: Outliers
+      steps:
+        - name: latex_summary_table
+          params:
+            experiment_id:
+              459812648607800342
+            run_list:
+              - c35a6c389b634a5c9d821c28961a8bf3
+              - 8a9aa87067f64f69a0aaae69b404c9f0
+              - 4643157a720f43d0a7feed9e68931ed4
+            output_file:
+              baseline_embedding_results.tex
+            caption:
+              Baseline embedding model evaluation.
+            label:
+              tab:baseline_embedding_results
+            sort:
+              field: metrics.coherence
+              descending: true
+            highlight:
+              - field: metrics.coherence
+                direction: max
+              - field: metrics.coherence_npmi
+                direction: max
+              - field: metrics.topic_diversity
+                direction: max
+              - field: metrics.topic_exclusivity
+                direction: max
+              - field: metrics.outlier_ratio
+                direction: min
+            columns:
+              - field: params.embedding_model_model_name
+                header: Embedding Model
+                latex_type: p{5cm}
+              - field: metrics.coherence
+                header: Coherence
+                latex_type: l
+                precision: 3
+              - field: metrics.coherence_npmi
+                header: NPMI
+                latex_type: l
+                precision: 3
+              - field: metrics.topic_diversity
+                header: Diversity
+                latex_type: l
+                precision: 3
+              - field: metrics.topic_exclusivity
+                header: Exclusivity
+                latex_type: l
+                precision: 3
+              - field: metrics.outlier_ratio
+                header: Outliers
+                latex_type: l
+                precision: 3
+        - name: grouped_metric_chart
+          params:
+            x_field: Embedding Model
+            inverse_metrics:
+              - Outliers
+            metrics:
+              - Coherence
+              - NPMI
+              - Diversity
+              - Exclusivity
+              - Outliers
+            filename: baseline_metric_comparison.png
+
+            visualisation:
+              name: grouped_bar_chart

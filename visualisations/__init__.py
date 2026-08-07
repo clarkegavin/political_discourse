@@ -30,6 +30,7 @@ from .topic_term_rank import TopicTermRank
 from .bertopic_visualisation import BERTopicVisualisation
 from .topics_over_time import TopicsOverTime
 from .topics_per_class import TopicsPerClass
+from .grouped_bar_chart import GroupedBarChart
 # Register visualisations
 
 VisualisationFactory.register_visualisation("confusion_matrix", ConfusionMatrixChart)
@@ -64,7 +65,7 @@ VisualisationFactory.register_visualisation("topic_hierarchy", TopicHierarchy)
 VisualisationFactory.register_visualisation("topic_term_rank", TopicTermRank)
 VisualisationFactory.register_visualisation("topics_over_time", TopicsOverTime)
 VisualisationFactory.register_visualisation("topics_per_class", TopicsPerClass)
-
+VisualisationFactory.register_visualisation("grouped_bar_chart", GroupedBarChart)
 
 __all__ = [
     "ConfusionMatrixChart",
@@ -96,5 +97,6 @@ __all__ = [
     "TopicTermRank",
     "BERTopicVisualisation",
     "TopicsOverTime",
-    "TopicsPerClass"
+    "TopicsPerClass",
+    "GroupedBarChart",
 ]

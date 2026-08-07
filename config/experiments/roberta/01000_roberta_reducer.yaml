@@ -96,7 +96,8 @@ sweep:
   params.model_params.dimensionality_reduction_model:
     - name: umap
       params:
-         n_neighbors: [ 5, 15, 30 ]
+         #n_neighbors: [ 5, 15, 30 ]
+         n_neighbors: [ 15, 30 ]
          n_components: [ 5, 10, 25 ]
          metric: [ cosine, euclidean ]
          min_dist: [ 0.0, 0.1]

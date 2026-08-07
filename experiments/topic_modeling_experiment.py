@@ -15,6 +15,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
 from pathlib import Path
 import json
+import torch
+
 
 TOPIC_ID = "_topic_id"
 TOPIC_PROB = "topic_probability"
@@ -411,6 +413,7 @@ class TopicModelingExperiment(Experiment):
         self.logger.info(f"Running topic modelling experiment '{self.name}' with model {self.model_name}")
         #docs = self.X[self.combined_text_field_name].fillna("").tolist()
 
+        self._log_gpu_memory("Before experiment")
         representation_docs = (
             self.X[self.representation_text_field]
             .fillna("")
@@ -455,7 +458,7 @@ class TopicModelingExperiment(Experiment):
         else:
             self.logger.info(f"Fitting BERTopicModel without embeddings - embeddings are generated using {self.representation_text_field} ")
             topics, probs = self.model.fit_transform(representation_docs)
-
+        self._log_gpu_memory("After fit_transform")
         # get topic info
         try:
             topic_info = self.model.get_topic_info()
@@ -489,6 +492,7 @@ class TopicModelingExperiment(Experiment):
             "topics": topics,
             "model": self.model,
         }
+
 
         return {"df": result_df, "metadata": metadata, "artifacts": artifacts}
 
@@ -677,3 +681,29 @@ class TopicModelingExperiment(Experiment):
             "visualisations": self.visualisations,
             "preprocessing": self.preprocessing_metadata,
         }
+
+    def _log_gpu_memory(self, stage):
+
+        try:
+
+            if torch.cuda.is_available():
+                allocated = (
+                        torch.cuda.memory_allocated()
+                        / 1024 ** 3
+                )
+
+                reserved = (
+                        torch.cuda.memory_reserved()
+                        / 1024 ** 3
+                )
+
+                self.logger.info(
+                    f"{stage} - "
+                    f"GPU allocated: {allocated:.2f}GB, "
+                    f"reserved: {reserved:.2f}GB"
+                )
+
+        except Exception as e:
+            self.logger.debug(
+                f"Unable to log GPU memory: {e}"
+            )

@@ -16,6 +16,7 @@ from .boards_comments_pipeline import BoardsCommentsPipeline
 from .topic_modeling_pipeline import TopicModelingPipeline
 from .boards_document_pipeline import BoardsDocumentPipeline
 from .merge_pipeline import MergeTablesPipeline
+from .thesis_reporting_pipeline import ThesisReportingPipeline
 
 
 __all__ = [
@@ -35,5 +36,6 @@ __all__ = [
     "BoardsCommentsPipeline",
     "TopicModelingPipeline",
     "BoardsDocumentPipeline",
-    "MergeTablesPipeline"
+    "MergeTablesPipeline",
+    "ThesisReportingPipeline",
 ]
