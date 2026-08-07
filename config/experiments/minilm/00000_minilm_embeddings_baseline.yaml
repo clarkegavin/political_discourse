@@ -1,10 +1,12 @@
-# file: `config/experiments/bertopic_default.yaml`
-run_name: "MiniLM_sweep_reducer"
+# file: `config/experiments/minilm_embeddings_baseline.yaml`
+run_name: "MiniLM_baseline"
 params:
   model_params:
     embedding_model: # optional custom embedding model config
       name: bert
-      column: "DocumentText"
+      column: "DocumentText" #embeddings are created from this column
+      batch_size: 32
+      device: cuda
       model_name: "sentence-transformers/all-MiniLM-L6-v2"
       chunking:
         enabled: true
@@ -12,26 +14,11 @@ params:
         overlap: 32
         pooling: mean
       cache:
-        enabled: true
+        enabled: true # if true, then cached embeddings will be used if available, otherwise embeddings will be generated
         id_column: "QuestionId"
         cache_dir: "output/embeddings_cache"
-        overwrite: false
-      # max_seq_length: 512
-    vectorizer:
-      name: CountVectorizer
-      params: {}
-    clusterer:
-      name: hdbscan
-      params: {}
-    dimensionality_reduction_model:
-      name: umap
-      params: {}
-    ctfidf:
-      name: class_tfidf
-      params: {}
-    representation_model:
-      name: keybert
-      params: {}
+        overwrite: true
+        # only overwrite if the model parameter change
 save_path: "output/topic_modelling/MiniLM_sweep"
 visualisations:
   - name: topic_distribution
@@ -59,9 +46,9 @@ visualisations:
   - name: topic_term_rank
     init:
       filename: topic_term_rank.html
-#  - name: topic_documents
-#    init:
-#      filename: topic_documents.html
+  - name: topic_documents
+    init:
+      filename: topic_documents.html
   - name: topic_hierarchy
     init:
       filename: topic_hierarchy.html
@@ -89,13 +76,3 @@ visualisations:
       classes_column: Questioner
       text_column: RepresentationDocument
       top_n_topics: 10
-
-sweep:
-  params.model_params.dimensionality_reduction_model:
-    - name: umap
-      params:
-         n_neighbors: [ 5, 15, 30 ]
-         n_components: [ 5, 10, 25 ]
-         metric: [ cosine, euclidean ]
-         min_dist: [ 0.0, 0.1]
-         random_state: [ 42 ]

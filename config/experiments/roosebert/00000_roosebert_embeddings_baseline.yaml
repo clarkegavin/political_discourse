@@ -5,6 +5,8 @@ params:
     embedding_model: # optional custom embedding model config
       name: bert
       column: "DocumentText" #embeddings are created from this column
+      batch_size: 32
+      device: cuda
       model_name: "ddore14/RooseBERT-scr-cased"
       chunking:
         enabled: true

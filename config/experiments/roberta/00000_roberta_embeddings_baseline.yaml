@@ -1,38 +1,24 @@
 # file: `config/experiments/bertopic_default.yaml`
-run_name: "MiniLM_sweep_representation"
+run_name: "RoBERTa_baseline"
 params:
   model_params:
     embedding_model: # optional custom embedding model config
       name: bert
-      column: "DocumentText"
-      model_name: "sentence-transformers/all-MiniLM-L6-v2"
+      column: "DocumentText" #embeddings are created from this column
+      batch_size: 32
+      device: cuda
+      model_name: "sentence-transformers/all-roberta-large-v1"
       chunking:
         enabled: true
         chunk_size: 224
         overlap: 32
         pooling: mean
       cache:
-        enabled: true
+        enabled: true # if true, then cached embeddings will be used if available, otherwise embeddings will be generated and cached
         id_column: "QuestionId"
         cache_dir: "output/embeddings_cache"
-        overwrite: false
-      # max_seq_length: 512
-    vectorizer:
-      name: CountVectorizer
-      params: {}
-    clusterer:
-      name: hdbscan
-      params: {}
-    dimensionality_reduction_model:
-      name: umap
-      params: {}
-    ctfidf:
-      name: class_tfidf
-      params: {}
-    representation_model:
-      name: keybert
-      params: {}
-save_path: "output/topic_modelling/MiniLM_sweep"
+        overwrite: true
+save_path: "output/topic_modelling/RoBERTa_baseline"
 visualisations:
   - name: topic_distribution
     init:
@@ -59,9 +45,9 @@ visualisations:
   - name: topic_term_rank
     init:
       filename: topic_term_rank.html
-#  - name: topic_documents
-#    init:
-#      filename: topic_documents.html
+  - name: topic_documents
+    init:
+      filename: topic_documents.html
   - name: topic_hierarchy
     init:
       filename: topic_hierarchy.html
@@ -89,12 +75,3 @@ visualisations:
       classes_column: Questioner
       text_column: RepresentationDocument
       top_n_topics: 10
-
-sweep:
-  params.model_params.representation_model:
-    - name: mmr
-      params:
-        diversity: [ 0.1, 0.3]
-    - name: keybert
-      params:
-        top_n_words: [ 10, 15, 20 ]

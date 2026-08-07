@@ -577,7 +577,17 @@ class TopicModelingExperiment(Experiment):
                 f"Loading embeddings from cache: {embedding_file}"
             )
 
-            return np.load(embedding_file)
+            cached_embeddings = np.load(embedding_file)
+
+            if len(cached_embeddings) != len(self.X):
+                self.logger.warning(
+                    f"Embedding cache size mismatch. "
+                    f"Cache contains {len(cached_embeddings)} embeddings, "
+                    f"current dataset contains {len(self.X)} documents. "
+                    f"Regenerating embeddings."
+                )
+            else:
+                return cached_embeddings
 
         self.logger.info(
             "Generating embeddings..."

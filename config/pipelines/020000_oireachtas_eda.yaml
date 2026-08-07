@@ -477,3 +477,30 @@ pipelines:
 #            ylabel: Responses
 #            filename: oireachtas_questions_consolidated_records.png
 #            #title: Consolidated vs Non-consolidated Responses
+
+#      - name: embedding_batch_benchmark
+#        class: embedding_batch_benchmark
+#        params:
+#          embedding_text_field: DocumentText
+#          models:
+#            - sentence-transformers/all-MiniLM-L6-v2
+#            - sentence-transformers/all-roberta-large-v1
+#            - ddore14/RooseBERT-scr-cased
+#
+#          sample_size: null
+#
+#          batch_sizes:
+#            - 32
+##            - 64
+##            - 128
+#            - 256
+##            - 512
+#            - 1024
+#
+#          device: cuda
+#
+#          chunking_enabled: true
+#          chunk_size: 480
+#          chunk_overlap: 32
+#
+#          output_filename: embedding_batch_benchmark.csv

@@ -7,7 +7,7 @@ from .base import Preprocessor
 
 
 class RemoveWhitespace(Preprocessor):
-    """
+    r"""
     Collapses runs of whitespace into a single space and strips ends.
     Default pattern: r"\s+" -> replace_with " " (single space).
 
