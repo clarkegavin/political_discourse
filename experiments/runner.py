@@ -45,6 +45,22 @@ class ExperimentRunner:
                 items[new_key] = v
         return items
 
+    def _log_cuda_memory(self, label):
+        try:
+            import torch
+
+            if torch.cuda.is_available():
+                allocated = torch.cuda.memory_allocated() / 1024 ** 3
+                reserved = torch.cuda.memory_reserved() / 1024 ** 3
+
+                self.logger.info(
+                    f"[CUDA] {label}: "
+                    f"allocated={allocated:.2f} GB, "
+                    f"reserved={reserved:.2f} GB"
+                )
+        except Exception:
+            pass
+
     def expand_sweeps(self, experiments: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Expand sweep specs into a list of concrete experiment configs.
 
@@ -273,6 +289,12 @@ class ExperimentRunner:
             # retries support (default 0)
             retries = exp_cfg.get("retries", params.get("retries", 0) if isinstance(params, dict) else 0)
 
+            if self.mlflow_enabled and self._run_exists(run_name):
+                self.logger.info(
+                    f"Skipping existing completed run '{run_name}'"
+                )
+                continue
+
             # Begin MLflow run
             try:
                 if self.mlflow_enabled:
@@ -285,6 +307,7 @@ class ExperimentRunner:
                 try:
                     # If exp_cfg looks like a full config (contains more than just params) use build_experiment_from_config
                     is_full_config = any(k in exp_cfg for k in ("model_ref", "model", "evaluator_ref", "evaluator", "visualisation_ref", "visualisation", "preprocessing_ref", "preprocessing")) or ("params" in exp_cfg and len(exp_cfg.keys()) > 1)
+                    self._log_cuda_memory("BEFORE experiment")
                     if is_full_config:
                         self.logger.info(f"Building experiment from full config for '{experiment_type}'")
                         # Ensure run_name is visible to builder via top-level key
@@ -313,6 +336,7 @@ class ExperimentRunner:
                 while attempt < attempts_allowed:
                     try:
                         run_result = exp_instance.run()
+                        self._log_cuda_memory("AFTER experiment.run()")
                         last_exc = None
                         break
                     except Exception as e:
@@ -430,7 +454,24 @@ class ExperimentRunner:
                 except Exception:
                     pass
 
+                # Model is no longer required after evaluation and visualisations
+                metadata = run_result.get("metadata")
+
+
+                if isinstance(run_result.get("metadata"), dict):
+                    run_result["metadata"].pop("model", None)
+
+                if exp_instance is not None:
+                    exp_instance.model = None
+
+                self.logger.info(
+                    f"Model in run_result metadata: "
+                    f"{'model' in run_result.get('metadata', {})}"
+                )
+
                 results.append({"run_name": run_name, "result": run_result, "metrics": metrics, "artifacts": artifacts})
+
+
 
             except Exception as e:
                 self.logger.error(f"Run '{run_name}' failed: {e}")
@@ -442,6 +483,47 @@ class ExperimentRunner:
                         self.logger.info(f"Ended MLflow run: {run_name}")
                     except Exception:
                         pass
+
+                self._log_cuda_memory("BEFORE CLEANUP")
+
+                import gc
+                import types
+
+                try:
+
+                    # NOW remove the remaining local references
+                    if 'run_result' in locals():
+                        del run_result
+
+                    if 'exp_instance' in locals():
+                        del exp_instance
+
+                    if 'model' in locals():
+                        del model
+
+
+                except Exception as e:
+                    self.logger.exception(
+                        f"Cleanup failed: {e}"
+                    )
+
+                gc.collect()
+
+                try:
+                    import torch
+
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+                        torch.cuda.ipc_collect()
+
+                except Exception as cleanup_error:
+                    self.logger.warning(
+                        f"CUDA cleanup failed: {cleanup_error}"
+                    )
+
+                gc.collect()
+
+                self._log_cuda_memory("AFTER cleanup")
 
         return results
 
@@ -499,6 +581,57 @@ class ExperimentRunner:
         return hashlib.sha256(
             canonical.encode("utf-8")
         ).hexdigest()[:length]
+
+    def _run_exists(self, run_name: str) -> bool:
+        """
+        Check whether an MLflow run with this run_name already completed.
+        """
+
+        self.logger.info(
+            f"Checking whether MLflow run already exists: '{run_name}'"
+        )
+
+        runs = mlflow.search_runs(
+            filter_string=f"tags.mlflow.runName = '{run_name}'",
+            run_view_type=mlflow.entities.ViewType.ACTIVE_ONLY
+        )
+
+        if runs.empty:
+            self.logger.info(
+                f"No existing MLflow run found for '{run_name}' - will execute"
+            )
+            return False
+
+
+        statuses = runs["status"].tolist()
+
+        if "RUNNING" in statuses:
+            self.logger.warning(
+                f"Found orphaned RUNNING MLflow run(s) for {run_name}"
+            )
+            return False
+
+        self.logger.info(
+            f"Found existing MLflow run(s) for '{run_name}' "
+            f"with status: {statuses}"
+        )
+
+        completed = runs[
+            runs["status"] == "FINISHED"
+            ]
+
+        if not completed.empty:
+            self.logger.info(
+                f"Skipping run '{run_name}' because a FINISHED MLflow run already exists"
+            )
+            return True
+
+        self.logger.info(
+            f"Existing run(s) found for '{run_name}', "
+            f"but none completed successfully - will execute"
+        )
+
+        return False
 
     def _expand_nested_model_configs(self, model_configs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Expand a list of model configs by replacing nested list parameters with cartesian products.

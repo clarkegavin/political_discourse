@@ -18,21 +18,8 @@ params:
         id_column: "QuestionId"
         cache_dir: "output/embeddings_cache"
         overwrite: false
-      # max_seq_length: 512
-    vectorizer:
-      name: CountVectorizer
-      params: {}
-    clusterer:
-      name: hdbscan
-      params: {}
-    dimensionality_reduction_model:
-      name: umap
-      params: {}
     ctfidf:
       name: class_tfidf
-      params: {}
-    representation_model:
-      name: keybert
       params: {}
 save_path: "output/topic_modelling/RoBERTa_sweep"
 #visualisations:

@@ -5,9 +5,11 @@ from gensim.models.coherencemodel import CoherenceModel
 from sklearn.feature_extraction.text import CountVectorizer
 from typing import List
 from .base import Evaluator
+
 from gensim.corpora import Dictionary
 from collections import Counter
 import os
+import math
 
 class TopicModelingEvaluator(Evaluator):
     """Evaluator for topic models. Computes coherence, diversity and topic sizes."""
@@ -173,10 +175,19 @@ class TopicModelingEvaluator(Evaluator):
 
                     # Additionally compute NPMI coherence (c_npmi) and add as separate metric
                     try:
+
                         self.logger.info("Computing NPMI coherence (c_npmi) using gensim")
-                        cm_npmi = CoherenceModel(topics=topics_for_gensim, texts=tokenized, dictionary=dictionary, coherence="c_npmi", processes=1)
+                        cm_npmi = CoherenceModel(topics=topics_for_gensim, texts=tokenized, dictionary=dictionary, coherence="c_npmi", processes=max(1, os.cpu_count() // 4))
+
                         coherence_npmi = cm_npmi.get_coherence()
                         self.logger.info(f"Computed coherence (c_npmi): {coherence_npmi}")
+                        self.logger.info(f"Number of topics: {len(topics_for_gensim)}")
+                        if math.isfinite(coherence_npmi):
+                            metrics["coherence_npmi"] = float(coherence_npmi)
+                        else:
+                            self.logger.warning(
+                                f"NPMI returned non-finite value: {coherence_npmi}"
+                            )
                         metrics["coherence_npmi"] = float(coherence_npmi)
                     except Exception as e:
                         self.logger.warning(f"Could not compute coherence (c_npmi): {e}")

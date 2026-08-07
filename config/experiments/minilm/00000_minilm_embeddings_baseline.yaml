@@ -19,18 +19,18 @@ params:
         cache_dir: "output/embeddings_cache"
         overwrite: true
         # only overwrite if the model parameter change
-save_path: "output/topic_modelling/MiniLM_sweep"
+save_path: "output/topic_modelling/MiniLM_baseline"
 visualisations:
-  - name: topic_distribution
-    init:
-      filename: bertopic_default_topic_distribution.png
-  - name: topic_wordclouds
-    init:
-      filename_prefix: bertopic_default_topic
-      top_n_topics: 10
-  - name: intertopic_distance
-    init:
-      filename: intertopic_distance.html
+#  - name: topic_distribution
+#    init:
+#      filename: bertopic_default_topic_distribution.png
+#  - name: topic_wordclouds
+#    init:
+#      filename_prefix: bertopic_default_topic
+#      top_n_topics: 10
+#  - name: intertopic_distance
+#    init:
+#      filename: intertopic_distance.html
   - name: topic_barchart
     init:
       filename: topic_barchart.html
@@ -40,39 +40,39 @@ visualisations:
       width: 350
       height: 350
       topics: null        # optional list of topic ids
-  - name: topic_heatmap
-    init:
-      filename: topic_heatmap.html
-  - name: topic_term_rank
-    init:
-      filename: topic_term_rank.html
-  - name: topic_documents
-    init:
-      filename: topic_documents.html
-  - name: topic_hierarchy
-    init:
-      filename: topic_hierarchy.html
-  - name: topics_over_time
-    init:
-      filename: topics_over_time.html
-      date_column: QuestionDate
-      text_column: RepresentationDocument
-      interval: month
-  - name: topics_per_class
-    init:
-      filename: topics_per_party.html
-      classes_column: QuestionerParty
-      text_column: RepresentationDocument
-      top_n_topics: 10
-  - name: topics_per_class
-    init:
-      filename: topics_per_constituency.html
-      classes_column: QuestionerConstituency
-      text_column: RepresentationDocument
-      top_n_topics: 10
-  - name: topics_per_class
-    init:
-      filename: topics_per_td.html
-      classes_column: Questioner
-      text_column: RepresentationDocument
-      top_n_topics: 10
+#  - name: topic_heatmap
+#    init:
+#      filename: topic_heatmap.html
+#  - name: topic_term_rank
+#    init:
+#      filename: topic_term_rank.html
+#  - name: topic_documents
+#    init:
+#      filename: topic_documents.html
+#  - name: topic_hierarchy
+#    init:
+#      filename: topic_hierarchy.html
+#  - name: topics_over_time
+#    init:
+#      filename: topics_over_time.html
+#      date_column: QuestionDate
+#      text_column: RepresentationDocument
+#      interval: month
+#  - name: topics_per_class
+#    init:
+#      filename: topics_per_party.html
+#      classes_column: QuestionerParty
+#      text_column: RepresentationDocument
+#      top_n_topics: 10
+#  - name: topics_per_class
+#    init:
+#      filename: topics_per_constituency.html
+#      classes_column: QuestionerConstituency
+#      text_column: RepresentationDocument
+#      top_n_topics: 10
+#  - name: topics_per_class
+#    init:
+#      filename: topics_per_td.html
+#      classes_column: Questioner
+#      text_column: RepresentationDocument
+#      top_n_topics: 10

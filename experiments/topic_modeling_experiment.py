@@ -16,6 +16,7 @@ import numpy as np
 from pathlib import Path
 import json
 import torch
+import hashlib
 
 
 TOPIC_ID = "_topic_id"
@@ -443,6 +444,16 @@ class TopicModelingExperiment(Experiment):
             #embeddings = self.embedding_model_wrapper.transform(self.X)
             embeddings = self._get_embeddings()
             self.logger.info(f"Embedding model produced embeddings with shape {embeddings.shape}")
+            embedding_hash = hashlib.sha256(
+                np.ascontiguousarray(embeddings).tobytes()
+            ).hexdigest()
+
+            self.logger.info(
+                "Embeddings: shape=%s, dtype=%s, hash=%s",
+                embeddings.shape,
+                embeddings.dtype,
+                embedding_hash,
+            )
         else:
             embeddings = None
 
@@ -488,6 +499,7 @@ class TopicModelingExperiment(Experiment):
             #"combined_text_field_name": self.combined_text_field_name,
             "embedding_text_field": self.model_params["embedding_model"]["column"],
             "representation_text_field": self.representation_text_field,
+
             "visualisations": self.visualisations,
             "topics": topics,
             "model": self.model,

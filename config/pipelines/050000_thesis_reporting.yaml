@@ -3,7 +3,7 @@
 #    type: pipelines.thesis_reporting_pipeline.ThesisReportingPipeline
 #    enabled: true
 #    params:
-#      output_path: output/thesis
+#      output_path: output/thesis/parliamentary_questions
 #      data_builder:
 #        experiment_id: 459812648607800342
 #        run_list:

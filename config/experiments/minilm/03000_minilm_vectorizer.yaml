@@ -22,18 +22,6 @@ params:
     vectorizer:
       name: CountVectorizer
       params: {}
-    clusterer:
-      name: hdbscan
-      params: {}
-    dimensionality_reduction_model:
-      name: umap
-      params: {}
-    ctfidf:
-      name: class_tfidf
-      params: {}
-    representation_model:
-      name: keybert
-      params: {}
 save_path: "output/topic_modelling/MiniLM_sweep"
 #visualisations:
 #  - name: topic_distribution

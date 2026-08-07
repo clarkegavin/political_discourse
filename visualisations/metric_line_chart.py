@@ -45,6 +45,11 @@ class MetricLineChart(Visualisation):
 
         axes = axes.flatten()
 
+        # Sort data before grouping
+        data = self._sort_parameter(
+            data,
+            parameter
+        )
 
         for index, metric in enumerate(metrics):
 
@@ -116,3 +121,20 @@ class MetricLineChart(Visualisation):
         fig.tight_layout()
 
         return fig, axes
+
+    def _sort_parameter(
+            self,
+            data,
+            parameter
+    ):
+
+        try:
+            data[parameter] = pd.to_numeric(
+                data[parameter]
+            )
+        except ValueError:
+            pass
+
+        return data.sort_values(
+            parameter
+        )

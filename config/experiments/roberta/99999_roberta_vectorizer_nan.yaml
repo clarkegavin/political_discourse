@@ -1,0 +1,28 @@
+# file: `config/experiments/bertopic_default.yaml`
+run_name: "RoBERTa_sweep_vectorizer"
+params:
+  model_params:
+    embedding_model: # optional custom embedding model config
+      name: bert
+      column: "DocumentText"
+      batch_size: 32
+      device: cuda
+      model_name: "sentence-transformers/all-roberta-large-v1"
+      chunking:
+        enabled: true
+        chunk_size: 224
+        overlap: 32
+        pooling: mean
+      cache:
+        enabled: true
+        id_column: "QuestionId"
+        cache_dir: "output/embeddings_cache"
+        overwrite: false
+      # max_seq_length: 512
+    vectorizer:
+      name: CountVectorizer
+      params: {}
+save_path: "output/topic_modelling/RoBERTa_sweep"
+sweep:
+  params.model_params.vectorizer.params.ngram_range: [ [1, 3] ]
+  params.model_params.vectorizer.params.min_df: [ 10 ]
