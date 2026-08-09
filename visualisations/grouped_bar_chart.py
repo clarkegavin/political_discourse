@@ -8,12 +8,15 @@ class GroupedBarChart(Visualisation):
     def __init__(
         self,
         title="",
-        figsize=(10, 6)
+        figsize=(10, 6),
+        **kwargs
+
     ):
         super().__init__(
             title,
             figsize
         )
+        self.y_label = kwargs.get("y_label", "Score")
 
 
     def plot(
@@ -67,9 +70,8 @@ class GroupedBarChart(Visualisation):
             ha="right"
         )
 
-        ax.set_ylabel(
-            "Score"
-        )
+
+        ax.set_ylabel(self.y_label)
 
         ax.set_title(
             self.title

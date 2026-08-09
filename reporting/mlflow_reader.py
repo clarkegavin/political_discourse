@@ -1,11 +1,9 @@
 import mlflow
-import os
 
 from logs.logger import get_logger
 
 
 class MLflowReader:
-
 
     def __init__(
         self,
@@ -21,21 +19,26 @@ class MLflowReader:
                 tracking_uri
             )
 
-
     def load_runs(
         self,
         experiment_id=None,
-        run_list=None
+        run_list=None,
+        filter_expression=None
     ):
 
         client = mlflow.tracking.MlflowClient()
-
 
         # ---------------------------------
         # Specific runs requested
         # ---------------------------------
 
         if run_list:
+
+            if filter_expression:
+                raise ValueError(
+                    "Cannot use both 'run_list' and "
+                    "'filter_expression'."
+                )
 
             runs = []
 
@@ -49,42 +52,74 @@ class MLflowReader:
                     self._extract_run(run)
                 )
 
+            self.logger.info(
+                f"Loaded {len(runs)} specific MLflow runs"
+            )
+
             return runs
 
-
         # ---------------------------------
-        # Specific experiment
+        # Experiment runs
         # ---------------------------------
 
         if experiment_id:
+
             runs = client.search_runs(
                 experiment_ids=[
                     str(experiment_id)
-                ]
+                ],
+                filter_string=filter_expression
+                if filter_expression
+                else None
             )
+
+            self.logger.info(
+                f"Loaded {len(runs)} MLflow runs "
+                f"from experiment {experiment_id}"
+            )
+
+            if filter_expression:
+                self.logger.info(
+                    f"Applied MLflow filter: "
+                    f"{filter_expression}"
+                )
 
             return [
                 self._extract_run(run)
                 for run in runs
             ]
 
-
         # ---------------------------------
         # Everything
         # ---------------------------------
 
-        experiments = client.search_runs(
-            experiment_ids=[
-                exp.experiment_id
-                for exp in client.search_experiments()
-            ]
+        experiment_ids = [
+            exp.experiment_id
+            for exp in client.search_experiments()
+        ]
+
+        runs = client.search_runs(
+            experiment_ids=experiment_ids,
+            filter_string=filter_expression
+            if filter_expression
+            else None
         )
+
+        self.logger.info(
+            f"Loaded {len(runs)} MLflow runs "
+            f"across all experiments"
+        )
+
+        if filter_expression:
+            self.logger.info(
+                f"Applied MLflow filter: "
+                f"{filter_expression}"
+            )
 
         return [
             self._extract_run(run)
-            for run in experiments
+            for run in runs
         ]
-
 
     def _extract_run(
         self,

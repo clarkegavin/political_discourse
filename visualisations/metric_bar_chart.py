@@ -1,10 +1,9 @@
 import matplotlib.pyplot as plt
-import pandas as pd
 
 from visualisations.base import Visualisation
 
 
-class MetricLineChart(Visualisation):
+class MetricBarChart(Visualisation):
 
     def __init__(
         self,
@@ -67,15 +66,6 @@ class MetricLineChart(Visualisation):
             )
 
         # ---------------------------------
-        # Prepare data
-        # ---------------------------------
-
-        data = self._sort_parameter(
-            data,
-            parameter
-        )
-
-        # ---------------------------------
         # Create figure
         # ---------------------------------
 
@@ -107,23 +97,20 @@ class MetricLineChart(Visualisation):
             )
 
             # ---------------------------------
-            # Sort x-axis values
+            # Sort categories
             # ---------------------------------
 
-            grouped = self._sort_parameter(
-                grouped,
+            grouped = grouped.sort_values(
                 parameter
             )
 
             # ---------------------------------
-            # Plot
+            # Plot bars
             # ---------------------------------
 
-            ax.plot(
-                grouped[parameter],
-                grouped[metric],
-                marker="o",
-                linewidth=2
+            ax.bar(
+                grouped[parameter].astype(str),
+                grouped[metric]
             )
 
             ax.set_title(
@@ -138,18 +125,10 @@ class MetricLineChart(Visualisation):
                 "Score"
             )
 
-            # ---------------------------------
-            # Rotate categorical labels
-            # ---------------------------------
-
-            if not pd.api.types.is_numeric_dtype(
-                grouped[parameter]
-            ):
-
-                ax.tick_params(
-                    axis="x",
-                    rotation=45
-                )
+            ax.tick_params(
+                axis="x",
+                rotation=45
+            )
 
             ax.grid(
                 axis="y",
@@ -189,36 +168,3 @@ class MetricLineChart(Visualisation):
         )
 
         return fig, axes
-
-    def _sort_parameter(
-        self,
-        data,
-        parameter
-    ):
-
-        data = data.copy()
-
-        # ---------------------------------
-        # Numeric parameter
-        # ---------------------------------
-
-        numeric_values = pd.to_numeric(
-            data[parameter],
-            errors="coerce"
-        )
-
-        if numeric_values.notna().all():
-
-            data[parameter] = numeric_values
-
-            return data.sort_values(
-                parameter
-            )
-
-        # ---------------------------------
-        # Categorical parameter
-        # ---------------------------------
-
-        return data.sort_values(
-            parameter
-        )

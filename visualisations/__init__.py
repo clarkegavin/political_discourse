@@ -33,6 +33,8 @@ from .topics_per_class import TopicsPerClass
 from .grouped_bar_chart import GroupedBarChart
 from .metric_heatmap import MetricHeatmap
 from .metric_line_chart import MetricLineChart
+from .metric_strip_plot import MetricStripPlot
+from .metric_bar_chart import MetricBarChart
 # Register visualisations
 
 VisualisationFactory.register_visualisation("confusion_matrix", ConfusionMatrixChart)
@@ -70,6 +72,8 @@ VisualisationFactory.register_visualisation("topics_per_class", TopicsPerClass)
 VisualisationFactory.register_visualisation("grouped_bar_chart", GroupedBarChart)
 VisualisationFactory.register_visualisation(    "metric_heatmap", MetricHeatmap)
 VisualisationFactory.register_visualisation("metric_line_chart", MetricLineChart)
+VisualisationFactory.register_visualisation("metric_strip_plot", MetricStripPlot)
+VisualisationFactory.register_visualisation("metric_bar_chart", MetricBarChart)
 
 
 __all__ = [
@@ -104,4 +108,8 @@ __all__ = [
     "TopicsOverTime",
     "TopicsPerClass",
     "GroupedBarChart",
+    "MetricHeatmap",
+    "MetricLineChart",
+    "MetricStripPlot",
+    "MetricBarChart",
 ]

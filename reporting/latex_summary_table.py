@@ -1,27 +1,33 @@
 import os
 
 from logs.logger import get_logger
-from reporting.mlflow_reader import MLflowReader
 
 
 class LatexSummaryTable:
 
-
     def __init__(self):
+
         self.logger = get_logger(
             self.__class__.__name__
         )
 
     def run(
         self,
+        data,
         output_path,
         **kwargs
     ):
-        reader = MLflowReader(tracking_uri=kwargs.get("tracking_uri"))
-        runs = reader.load_runs(experiment_id=kwargs.get("experiment_id"),
-            run_list=kwargs.get("run_list")
+
+        if data is None:
+
+            raise ValueError(
+                "LatexSummaryTable requires reporting data."
+            )
+
+        latex = self._generate_table(
+            data,
+            kwargs
         )
-        latex = self._generate_table(runs, kwargs)
 
         filename = kwargs.get(
             "output_file",
@@ -49,97 +55,151 @@ class LatexSummaryTable:
 
         return output_file
 
-
-
     def _generate_table(
         self,
-        runs,
+        data,
         config
     ):
 
-        runs = self._sort_runs(
-            runs,
+        data = self._sort_data(
+            data,
             config
         )
-        columns = config["columns"]
+
+        columns = config[
+            "columns"
+        ]
+
+        # ---------------------------------
+        # Validate configured columns
+        # ---------------------------------
+
+        missing_columns = [
+            column["field"]
+            for column in columns
+            if column["field"] not in data.columns
+        ]
+
+        if missing_columns:
+
+            raise ValueError(
+                "Configured table columns are missing "
+                f"from reporting data: {missing_columns}. "
+                f"Available fields: {list(data.columns)}"
+            )
+
+        # ---------------------------------
+        # LaTeX column specification
+        # ---------------------------------
 
         latex_columns = "".join(
             [
-                c.get(
+                column.get(
                     "latex_type",
                     "l"
                 )
-
-                for c in columns
+                for column in columns
             ]
         )
+
+        # ---------------------------------
+        # Headers
+        # ---------------------------------
 
         headers = " & ".join(
             [
-                f"\\textbf{{{self._escape_latex(c['header'])}}}"
-                for c in columns
+                (
+                    "\\textbf{"
+                    f"{self._escape_latex(column['header'])}"
+                    "}"
+                )
+                for column in columns
             ]
         )
 
+        # ---------------------------------
+        # Determine highlighted values
+        # ---------------------------------
+
         highlights = self._get_highlight_values(
-            runs,
+            data,
             config
         )
 
+        # ---------------------------------
+        # Generate rows
+        # ---------------------------------
+
         rows = []
 
-        for run in runs:
-            self.logger.info(run["params"])
-            self.logger.info(run["metrics"])
+        for _, row in data.iterrows():
+
             values = []
 
             for column in columns:
 
-                value = self._resolve_field(
-                    run,
-                    column["field"]
+                field = column[
+                    "field"
+                ]
+
+                value = row[
+                    field
+                ]
+
+                formatted_value = (
+                    self._format_value(
+                        value,
+                        column
+                    )
                 )
 
-                formatted = self._format_value(
-                    value,
-                    column
-                )
+                # ---------------------------------
+                # Highlight value
+                # ---------------------------------
 
-                # apply bolding here
                 if self._should_highlight(
-                        run,
-                        column,
-                        highlights
+                    row,
+                    column,
+                    highlights
                 ):
-                    formatted = (
-                        f"\\textbf{{{formatted}}}"
+
+                    formatted_value = (
+                        "\\textbf{"
+                        f"{formatted_value}"
+                        "}"
                     )
 
-                values.append(formatted)
+                values.append(
+                    formatted_value
+                )
 
             rows.append(
-                " & ".join(values) + r" \\"
+                " & ".join(values)
+                + r" \\"
             )
+
+        # ---------------------------------
+        # Generate LaTeX
+        # ---------------------------------
 
         return f"""
 \\begin{{table}}[!htbp]
 \\centering
 \\begin{{scriptsize}}
-\\caption{{{config.get('caption','')}}}
-\\label{{{config.get('label','')}}}
+\\caption{{{config.get('caption', '')}}}
+\\label{{{config.get('label', '')}}}
 
 \\begin{{tabular}}{{{latex_columns}}}
 
 \\toprule
 
-\\textbf{headers}
+{headers}
 
 \\\\
 
 \\midrule
 
 {chr(10).join(rows)}
-
 
 \\bottomrule
 
@@ -149,25 +209,15 @@ class LatexSummaryTable:
 \\end{{table}}
 """
 
-
-    def _resolve_field(
+    def _escape_latex(
         self,
-        run,
-        field
+        value
     ):
 
-        parts = field.split(".")
-        value = run
-        for part in parts:
-            value = value.get(
-                part,
-                ""
-            )
-        return value
-
-    def _escape_latex(self, value):
         if value is None:
+
             return ""
+
         replacements = {
             "\\": "\\textbackslash{}",
             "_": "\\_",
@@ -177,9 +227,15 @@ class LatexSummaryTable:
             "{": "\\{",
             "}": "\\}",
         }
-        value = str(value)
 
-        for char, replacement in replacements.items():
+        value = str(
+            value
+        )
+
+        for char, replacement in (
+            replacements.items()
+        ):
+
             value = value.replace(
                 char,
                 replacement
@@ -188,12 +244,13 @@ class LatexSummaryTable:
         return value
 
     def _format_value(
-            self,
-            value,
-            column
+        self,
+        value,
+        column
     ):
 
         if value is None:
+
             return ""
 
         precision = column.get(
@@ -201,64 +258,103 @@ class LatexSummaryTable:
         )
 
         if precision is not None:
+
             try:
-                value = f"{float(value):.{precision}f}"
-            except (ValueError, TypeError):
+
+                value = (
+                    f"{float(value):.{precision}f}"
+                )
+
+            except (
+                ValueError,
+                TypeError
+            ):
+
                 pass
 
-        return self._escape_latex(value)
+        return self._escape_latex(
+            value
+        )
 
-    def _sort_runs(self, runs, config):
-        self.logger.info("Sorting runs")
-        sort_config = config.get("sort")
+    def _sort_data(
+        self,
+        data,
+        config
+    ):
+
+        self.logger.info(
+            "Sorting data"
+        )
+
+        sort_config = config.get(
+            "sort"
+        )
 
         if not sort_config:
-            return runs
 
-        field = sort_config["field"]
+            return data
+
+        field = sort_config[
+            "field"
+        ]
+
         descending = sort_config.get(
             "descending",
             True
         )
 
-        return sorted(
-            runs,
-            key=lambda x: self._resolve_field(
-                x,
-                field
-            ) or 0,
-            reverse=descending
+        if field not in data.columns:
+
+            raise ValueError(
+                f"Sort field '{field}' "
+                f"not found in reporting data. "
+                f"Available fields: "
+                f"{list(data.columns)}"
+            )
+
+        return data.sort_values(
+            by=field,
+            ascending=not descending,
+            na_position="last"
         )
 
     def _should_highlight(
-            self,
-            run,
-            column,
-            highlights
+        self,
+        row,
+        column,
+        highlights
     ):
-        self.logger.info("Checking if run should be highlighted")
-        field = column["field"]
+
+        field = column[
+            "field"
+        ]
 
         if field not in highlights:
+
             return False
 
         return (
-                run["run_id"]
-                ==
-                highlights[field]["run_id"]
+            row.get(
+                "Run ID"
+            )
+            ==
+            highlights[field][
+                "run_id"
+            ]
         )
 
     def _get_highlight_values(
-            self,
-            runs,
-            config
+        self,
+        data,
+        config
     ):
         """
-        Identify which runs should be highlighted for each configured metric.
+        Identify which rows should be highlighted
+        for each configured metric.
 
         Returns:
             {
-                "metrics.coherence": {
+                "Coherence": {
                     "run_id": "...",
                     "value": 0.452
                 }
@@ -267,64 +363,139 @@ class LatexSummaryTable:
 
         highlights = {}
 
+        # ---------------------------------
+        # Determine run ID column
+        # ---------------------------------
+
+        run_id_field = config.get(
+            "run_id_field",
+            "Run ID"
+        )
+
+        if run_id_field not in data.columns:
+
+            raise ValueError(
+                f"Run ID field '{run_id_field}' "
+                f"not found in reporting data. "
+                f"Available fields: "
+                f"{list(data.columns)}"
+            )
+
+        # ---------------------------------
+        # Process highlight rules
+        # ---------------------------------
+
         for rule in config.get(
-                "highlight",
-                []
+            "highlight",
+            []
         ):
 
-            field = rule["field"]
+            field = rule[
+                "field"
+            ]
+
             direction = rule.get(
                 "direction",
                 "max"
             )
 
-            candidates = []
+            if field not in data.columns:
 
-            for run in runs:
-
-                value = self._resolve_field(
-                    run,
+                self.logger.warning(
+                    "Highlight field '%s' "
+                    "not found in reporting data. "
+                    "Skipping.",
                     field
                 )
 
-                try:
-                    candidates.append(
-                        (
-                            run["run_id"],
-                            float(value)
-                        )
-                    )
-
-                except (ValueError, TypeError):
-                    continue
-
-            if not candidates:
                 continue
+
+            # ---------------------------------
+            # Convert values to numeric
+            # ---------------------------------
+
+            candidates = (
+                data[
+                    [
+                        run_id_field,
+                        field
+                    ]
+                ]
+                .copy()
+            )
+
+            candidates[
+                field
+            ] = candidates[
+                field
+            ].apply(
+                self._to_float
+            )
+
+            candidates = candidates.dropna(
+                subset=[
+                    field
+                ]
+            )
+
+            if candidates.empty:
+
+                self.logger.warning(
+                    "No numeric values available "
+                    "for highlight field '%s'.",
+                    field
+                )
+
+                continue
+
+            # ---------------------------------
+            # Select best value
+            # ---------------------------------
 
             if direction == "max":
 
-                selected = max(
-                    candidates,
-                    key=lambda x: x[1]
-                )
+                selected = candidates.loc[
+                    candidates[field].idxmax()
+                ]
 
             elif direction == "min":
 
-                selected = min(
-                    candidates,
-                    key=lambda x: x[1]
-                )
+                selected = candidates.loc[
+                    candidates[field].idxmin()
+                ]
 
             else:
 
                 raise ValueError(
-                    f"Unsupported highlight direction: {direction}"
+                    "Unsupported highlight "
+                    f"direction: {direction}"
                 )
 
             highlights[field] = {
-                "run_id": selected[0],
-                "value": selected[1]
+                "run_id": selected[
+                    run_id_field
+                ],
+                "value": selected[
+                    field
+                ]
             }
 
         return highlights
 
+    @staticmethod
+    def _to_float(
+        value
+    ):
+
+        try:
+
+            return float(
+                value
+            )
+
+        except (
+            ValueError,
+            TypeError
+        ):
+
+            return None

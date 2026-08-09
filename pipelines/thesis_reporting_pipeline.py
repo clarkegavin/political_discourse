@@ -13,6 +13,7 @@ class ThesisReportingPipeline(Pipeline):
     def __init__(
         self,
         output_path: str,
+        data_builder=None,
         steps=None,
         **kwargs
     ):
@@ -23,8 +24,10 @@ class ThesisReportingPipeline(Pipeline):
             "Initializing Thesis Reporting Pipeline"
         )
 
-        self.reporting_data_builder = ReportingDataBuilder(
-            **kwargs.get("data_builder", {})
+        self.reporting_data_builder = (
+            ReportingDataBuilder(
+                **(data_builder or {})
+            )
         )
         self.output_path = output_path
         self.reporting_steps = steps or []
