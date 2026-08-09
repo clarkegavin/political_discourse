@@ -154,8 +154,30 @@ class TopicModelingEvaluator(Evaluator):
         if top_terms:
             try:
                 self.logger.info("Computing topic coherence using gensim")
-                # Build gensim objects
-                #vec = CountVectorizer()
+
+                # Get cached tokenized documents and Gensim dictionary.
+                # These provide the vocabulary against which coherence
+                # terms will be evaluated.
+                tokenized, dictionary = self._get_coherence_resources(
+                    docs
+                )
+
+                self.logger.info(
+                    f"Sample tokenized document: {tokenized[0][:50]}"
+                )
+
+                corpus_tokens = {
+                    token
+                    for doc in tokenized
+                    for token in doc
+                }
+
+                self.logger.info(
+                    f"Gensim corpus vocabulary size: "
+                    f"{len(corpus_tokens)}"
+                )
+
+                # Get BERTopic vectorizer information for diagnostics.
                 vec = estimator.vectorizer_model
 
                 self.logger.info(
@@ -164,125 +186,131 @@ class TopicModelingEvaluator(Evaluator):
                 self.logger.info(
                     f"BERTopic ngram_range: {vec.ngram_range}"
                 )
-                #doc_term = vec.fit_transform(docs)
-                feature_names = set(vec.get_feature_names_out())
 
-                # TEMPORARY DIAGNOSTIC
+                # ------------------------------------------------------------------
+                # Convert BERTopic top terms to unigram topics for Gensim.
+                #
+                # This ensures that Gensim receives tokens that actually exist
+                # in its tokenized corpus, regardless of whether BERTopic uses
+                # unigrams, bigrams, or trigrams.
+                # ------------------------------------------------------------------
 
-                self.logger.info(
-                    f"Sample features: {feature_names[:30]}"
-                )
-                # END TEMPORARY
-
-                # convert top_terms words to indices in feature_names if possible
                 topics_for_gensim = []
-                for tlist in top_terms:
-                    mapped = [w for w in tlist if w in feature_names]
-                    if mapped:
+
+                for topic_idx, tlist in enumerate(top_terms):
+
+                    # Split any BERTopic n-grams into individual unigrams.
+                    unigram_terms = []
+
+                    for term in tlist:
+                        unigram_terms.extend(term.split())
+
+                    # Remove duplicates while preserving order.
+                    unigram_terms = list(dict.fromkeys(unigram_terms))
+
+                    # Keep only unigrams that exist in the Gensim corpus.
+                    mapped = [
+                        word
+                        for word in unigram_terms
+                        if word in corpus_tokens
+                    ]
+
+                    # self.logger.info(
+                    #     f"Coherence topic {topic_idx}: "
+                    #     f"{len(tlist)} BERTopic terms -> "
+                    #     f"{len(mapped)} usable unigrams"
+                    # )
+
+                    if len(mapped) >= 2:
                         topics_for_gensim.append(mapped)
 
-                # TEMPORARY DIAGNOSTIC
                 self.logger.info(
-                    f"Number of Gensim topics: {len(topics_for_gensim)}"
+                    f"Number of Gensim topics: "
+                    f"{len(topics_for_gensim)}"
                 )
 
-                for topic_idx, topic in enumerate(topics_for_gensim):
-                    self.logger.info(
-                        f"NPMI topic {topic_idx}: {topic}"
-                    )
-
-                # END TEMPORARY
+                # ------------------------------------------------------------------
+                # Compute configured coherence metric
+                # ------------------------------------------------------------------
 
                 if topics_for_gensim:
-                    # caching tokenized, dictionary for performance improvements
-                    tokenized, dictionary = self._get_coherence_resources(
-                        docs
+
+                    self.logger.info(
+                        f"Computing coherence with "
+                        f"{len(topics_for_gensim)} topics, "
+                        f"{len(tokenized)} documents and "
+                        f"cpu count {max(1, os.cpu_count() // 4)}"
+                    )
+
+                    cm = CoherenceModel(
+                        topics=topics_for_gensim,
+                        texts=tokenized,
+                        dictionary=dictionary,
+                        coherence=self.coherence_type,
+                        processes=max(1, os.cpu_count() // 4)
                     )
 
                     self.logger.info(
-                        f"Sample tokenized document: {tokenized[0][:50]}"
+                        "Coherence model computed successfully, "
+                        "extracting coherence score"
                     )
 
-                    corpus_tokens = {
-                        token
-                        for doc in tokenized
-                        for token in doc
-                    }
-
-                    # for topic_idx, topic in enumerate(topics_for_gensim):
-                    #     missing = [word for word in topic if word not in corpus_tokens]
-                    #     available = [word for word in topic if word in corpus_tokens]
-                    #
-                    #     if not available:
-                    #         self.logger.warning(
-                    #             f"NPMI topic {topic_idx} has NO terms present in corpus. "
-                    #             f"Terms: {topic}"
-                    #         )
-                    #     elif missing:
-                    #         self.logger.info(
-                    #             f"NPMI topic {topic_idx}: "
-                    #             f"{len(available)}/{len(topic)} terms available; "
-                    #             f"missing={missing}"
-                    #         )
-
-
-                    self.logger.info(f"Computing coherence with {len(topics_for_gensim)} topics and {len(tokenized)} documents and cpu count {max(1, os.cpu_count() // 4)}")
-                    cm = CoherenceModel(topics=topics_for_gensim, texts=tokenized, dictionary=dictionary, coherence=self.coherence_type, processes=max(1, os.cpu_count() // 4))
-                    self.logger.info("Coherence model computed successfully, extracting coherence score")
                     coherence = cm.get_coherence()
-                    self.logger.info(f"Computed coherence: {coherence}")
+
+                    self.logger.info(
+                        f"Computed coherence: {coherence}"
+                    )
+
                     metrics["coherence"] = float(coherence)
 
-                    # Additionally compute NPMI coherence (c_npmi) and add as separate metric
+                    # ------------------------------------------------------------------
+                    # Compute NPMI coherence (c_npmi)
+                    # ------------------------------------------------------------------
+
                     try:
+                        self.logger.info(
+                            "Computing NPMI coherence (c_npmi) using gensim"
+                        )
 
-                        topics_for_npmi = []
-
-                        for topic_idx, tlist in enumerate(top_terms):
-
-                            # Convert BERTopic n-grams into individual unigrams
-                            unigram_terms = []
-
-                            for term in tlist:
-                                unigram_terms.extend(term.split())
-
-                            # Remove duplicates while preserving original order
-                            unigram_terms = list(dict.fromkeys(unigram_terms))
-
-                            # Keep only unigrams that exist in the Gensim corpus
-                            mapped = [
-                                word
-                                for word in unigram_terms
-                                if word in corpus_tokens
-                            ]
-
-                            # self.logger.info(
-                            #     f"NPMI topic {topic_idx}: "
-                            #     f"{len(tlist)} BERTopic terms -> "
-                            #     f"{len(mapped)} usable unigrams"
-                            # )
-
-                            if mapped:
-                                topics_for_npmi.append(mapped)
-
-
-                        self.logger.info("Computing NPMI coherence (c_npmi) using gensim")
-                        cm_npmi = CoherenceModel(topics=topics_for_npmi, texts=tokenized, dictionary=dictionary, coherence="c_npmi", processes=max(1, os.cpu_count() // 4))
+                        cm_npmi = CoherenceModel(
+                            topics=topics_for_gensim,
+                            texts=tokenized,
+                            dictionary=dictionary,
+                            coherence="c_npmi",
+                            processes=max(1, os.cpu_count() // 4)
+                        )
 
                         coherence_npmi = cm_npmi.get_coherence()
-                        self.logger.info(f"Computed coherence (c_npmi): {coherence_npmi}")
-                        self.logger.info(f"Number of topics: {len(topics_for_npmi)}")
+
+                        self.logger.info(
+                            f"Computed coherence (c_npmi): "
+                            f"{coherence_npmi}"
+                        )
+
+                        self.logger.info(
+                            f"Number of NPMI topics: "
+                            f"{len(topics_for_gensim)}"
+                        )
+
                         if math.isfinite(coherence_npmi):
-                            metrics["coherence_npmi"] = float(coherence_npmi)
+                            metrics["coherence_npmi"] = float(
+                                coherence_npmi
+                            )
                         else:
                             self.logger.warning(
-                                f"NPMI returned non-finite value: {coherence_npmi}"
+                                f"NPMI returned non-finite value: "
+                                f"{coherence_npmi}"
                             )
-                        #metrics["coherence_npmi"] = float(coherence_npmi)
+
                     except Exception as e:
-                        self.logger.warning(f"Could not compute coherence (c_npmi): {e}")
+                        self.logger.warning(
+                            f"Could not compute coherence (c_npmi): {e}"
+                        )
+
             except Exception as e:
-                self.logger.warning(f"Could not compute coherence: {e}")
+                self.logger.warning(
+                    f"Could not compute coherence: {e}"
+                )
 
         # Compute topic exclusivity
         exclusivity = self._compute_exclusivity(top_terms)

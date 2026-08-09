@@ -8,57 +8,30 @@ class LatexSummaryTable:
 
 
     def __init__(self):
-
         self.logger = get_logger(
             self.__class__.__name__
         )
-
 
     def run(
         self,
         output_path,
         **kwargs
     ):
-
-
-        reader = MLflowReader(
-            tracking_uri=kwargs.get(
-                "tracking_uri"
-            )
+        reader = MLflowReader(tracking_uri=kwargs.get("tracking_uri"))
+        runs = reader.load_runs(experiment_id=kwargs.get("experiment_id"),
+            run_list=kwargs.get("run_list")
         )
-
-
-        runs = reader.load_runs(
-
-            experiment_id=
-                kwargs.get(
-                    "experiment_id"
-                ),
-
-            run_list=
-                kwargs.get(
-                    "run_list"
-                )
-        )
-
-
-        latex = self._generate_table(
-            runs,
-            kwargs
-        )
-
+        latex = self._generate_table(runs, kwargs)
 
         filename = kwargs.get(
             "output_file",
             "summary_table.tex"
         )
 
-
         output_file = os.path.join(
             output_path,
             filename
         )
-
 
         with open(
             output_file,
@@ -70,11 +43,9 @@ class LatexSummaryTable:
                 latex
             )
 
-
         self.logger.info(
             f"LaTeX table generated: {output_file}"
         )
-
 
         return output_file
 
@@ -90,9 +61,7 @@ class LatexSummaryTable:
             runs,
             config
         )
-
         columns = config["columns"]
-
 
         latex_columns = "".join(
             [
@@ -118,7 +87,6 @@ class LatexSummaryTable:
         )
 
         rows = []
-
 
         for run in runs:
             self.logger.info(run["params"])
@@ -152,7 +120,6 @@ class LatexSummaryTable:
             rows.append(
                 " & ".join(values) + r" \\"
             )
-
 
         return f"""
 \\begin{{table}}[!htbp]
@@ -190,25 +157,17 @@ class LatexSummaryTable:
     ):
 
         parts = field.split(".")
-
         value = run
-
-
         for part in parts:
-
             value = value.get(
                 part,
                 ""
             )
-
-
         return value
 
     def _escape_latex(self, value):
-
         if value is None:
             return ""
-
         replacements = {
             "\\": "\\textbackslash{}",
             "_": "\\_",
@@ -218,7 +177,6 @@ class LatexSummaryTable:
             "{": "\\{",
             "}": "\\}",
         }
-
         value = str(value)
 
         for char, replacement in replacements.items():
