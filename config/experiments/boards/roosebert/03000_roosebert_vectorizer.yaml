@@ -1,0 +1,85 @@
+# file: `config/experiments/bertopic_default.yaml`
+run_name: "RooseBERT_sweep_vectorizer"
+params:
+  model_params:
+    embedding_model: # optional custom embedding model config
+      name: bert
+      column: "DocumentText"
+      batch_size: 32
+      device: cuda
+      model_name: "ddore14/RooseBERT-scr-cased"
+      chunking:
+        enabled: true
+        chunk_size: 224
+        overlap: 32
+        pooling: mean
+      cache:
+        enabled: true
+        id_column: "DocumentId"
+        cache_dir: "output/embeddings_cache"
+        overwrite: false
+      # max_seq_length: 512
+    vectorizer:
+      name: CountVectorizer
+      params: {}
+save_path: "output/topic_modelling/boards/RooseBERT_sweep"
+#visualisations:
+#  - name: topic_distribution
+#    init:
+#      filename: bertopic_default_topic_distribution.png
+#  - name: topic_wordclouds
+#    init:
+#      filename_prefix: bertopic_default_topic
+#      top_n_topics: 10
+#  - name: intertopic_distance
+#    init:
+#      filename: intertopic_distance.html
+#  - name: topic_barchart
+#    init:
+#      filename: topic_barchart.html
+#      # BERTopic parameters
+#      top_n_topics: 10
+#      n_words: 10
+#      width: 350
+#      height: 350
+#      topics: null        # optional list of topic ids
+#  - name: topic_heatmap
+#    init:
+#      filename: topic_heatmap.html
+#  - name: topic_term_rank
+#    init:
+#      filename: topic_term_rank.html
+##  - name: topic_documents
+##    init:
+##      filename: topic_documents.html
+#  - name: topic_hierarchy
+#    init:
+#      filename: topic_hierarchy.html
+#  - name: topics_over_time
+#    init:
+#      filename: topics_over_time.html
+#      date_column: QuestionDate
+#      text_column: RepresentationDocument
+#      interval: month
+#  - name: topics_per_class
+#    init:
+#      filename: topics_per_party.html
+#      classes_column: QuestionerParty
+#      text_column: RepresentationDocument
+#      top_n_topics: 10
+#  - name: topics_per_class
+#    init:
+#      filename: topics_per_constituency.html
+#      classes_column: QuestionerConstituency
+#      text_column: RepresentationDocument
+#      top_n_topics: 10
+#  - name: topics_per_class
+#    init:
+#      filename: topics_per_td.html
+#      classes_column: Questioner
+#      text_column: RepresentationDocument
+#      top_n_topics: 10
+
+sweep:
+  params.model_params.vectorizer.params.ngram_range: [ [1, 1], [1, 2] , [1, 3] ]
+  params.model_params.vectorizer.params.min_df: [ 1, 5, 10 ]
