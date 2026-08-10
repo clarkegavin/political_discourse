@@ -35,6 +35,12 @@ class GroupedBarChart(Visualisation):
             len(data[x_field])
         )
 
+        group_labels = kwargs.get(
+            "group_labels"
+        )
+
+        rotation = kwargs.get("rotation")
+
         num_metrics = len(metrics)
 
         width = (
@@ -64,9 +70,23 @@ class GroupedBarChart(Visualisation):
             ]
         )
 
+        if group_labels is None:
+
+            labels = data[x_field]
+
+        else:
+
+            labels = [
+                group_labels.get(
+                    value,
+                    value
+                )
+                for value in data[x_field]
+            ]
+
         ax.set_xticklabels(
-            data[x_field],
-            rotation=45,
+            labels,
+            rotation=rotation,
             ha="right"
         )
 

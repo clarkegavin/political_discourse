@@ -153,7 +153,10 @@ class ComponentComparisonChart:
         fig, ax = visualisation.plot(
             data=chart_data,
             x_field=embedding_field,
-            metrics=components
+            metrics=components,
+            group_labels=kwargs.get(
+                "group_labels"
+            )
         )
 
         # ---------------------------------

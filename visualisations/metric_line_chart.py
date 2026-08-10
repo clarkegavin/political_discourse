@@ -13,6 +13,7 @@ class MetricLineChart(Visualisation):
         rows=None,
         cols=None,
     ):
+
         super().__init__(
             title,
             figsize
@@ -70,6 +71,64 @@ class MetricLineChart(Visualisation):
         # Prepare data
         # ---------------------------------
 
+        data = data.copy()
+
+        # ---------------------------------
+        # Remove null / empty parameter values
+        # ---------------------------------
+
+        parameter_values = (
+            data[parameter]
+            .astype(str)
+            .str.strip()
+        )
+
+        valid_parameter = (
+            data[parameter].notna()
+            &
+            parameter_values.ne("")
+            &
+            parameter_values.str.lower().ne(
+                "none"
+            )
+        )
+
+        data = data[
+            valid_parameter
+        ].copy()
+
+        if data.empty:
+
+            raise ValueError(
+                f"No populated values available "
+                f"for parameter '{parameter}'."
+            )
+
+        # ---------------------------------
+        # Convert parameter to numeric
+        # ---------------------------------
+
+        numeric_values = pd.to_numeric(
+            data[parameter],
+            errors="coerce"
+        )
+
+        if numeric_values.notna().all():
+
+            data[parameter] = numeric_values
+
+        else:
+
+            raise ValueError(
+                f"MetricLineChart received "
+                f"non-numeric values for "
+                f"parameter '{parameter}'."
+            )
+
+        # ---------------------------------
+        # Sort parameter
+        # ---------------------------------
+
         data = self._sort_parameter(
             data,
             parameter
@@ -92,31 +151,56 @@ class MetricLineChart(Visualisation):
         # Generate metric subplots
         # ---------------------------------
 
-        for index, metric in enumerate(metrics):
+        for index, metric in enumerate(
+            metrics
+        ):
 
             ax = axes[index]
+
+            # Convert metric to numeric.
+            # This prevents strings such as
+            # "None" from interfering with
+            # aggregation.
+            data[metric] = pd.to_numeric(
+                data[metric],
+                errors="coerce"
+            )
 
             grouped = (
                 data
                 .groupby(
                     parameter,
-                    dropna=False
+                    dropna=True
                 )[metric]
                 .mean()
                 .reset_index()
             )
 
-            # ---------------------------------
-            # Sort x-axis values
-            # ---------------------------------
+            # Remove any invalid x-axis values
+            # after grouping as a final safeguard.
+            grouped = grouped[
+                grouped[parameter].notna()
+            ].copy()
 
             grouped = self._sort_parameter(
                 grouped,
                 parameter
             )
 
+            if grouped.empty:
+
+                self.logger.warning(
+                    "No valid data available "
+                    "for metric '%s' and "
+                    "parameter '%s'.",
+                    metric,
+                    parameter
+                )
+
+                continue
+
             # ---------------------------------
-            # Plot
+            # Plot line
             # ---------------------------------
 
             ax.plot(
@@ -137,19 +221,6 @@ class MetricLineChart(Visualisation):
             ax.set_ylabel(
                 "Score"
             )
-
-            # ---------------------------------
-            # Rotate categorical labels
-            # ---------------------------------
-
-            if not pd.api.types.is_numeric_dtype(
-                grouped[parameter]
-            ):
-
-                ax.tick_params(
-                    axis="x",
-                    rotation=45
-                )
 
             ax.grid(
                 axis="y",
@@ -198,18 +269,20 @@ class MetricLineChart(Visualisation):
 
         data = data.copy()
 
-        # ---------------------------------
-        # Numeric parameter
-        # ---------------------------------
-
         numeric_values = pd.to_numeric(
             data[parameter],
             errors="coerce"
         )
 
+        # ---------------------------------
+        # Numeric parameter
+        # ---------------------------------
+
         if numeric_values.notna().all():
 
-            data[parameter] = numeric_values
+            data[parameter] = (
+                numeric_values
+            )
 
             return data.sort_values(
                 parameter

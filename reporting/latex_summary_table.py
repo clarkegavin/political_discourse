@@ -1,4 +1,5 @@
 import os
+import pandas as pd
 
 from logs.logger import get_logger
 
@@ -71,6 +72,40 @@ class LatexSummaryTable:
         ]
 
         # ---------------------------------
+        # Optional display labels
+        # ---------------------------------
+
+        group_labels = config.get(
+            "group_labels",
+            {}
+        )
+
+        group_field = config.get(
+            "group_field",
+            "Embedding Model"
+        )
+
+        group_separator = config.get(
+            "group_separator",
+            False
+        )
+
+        # ---------------------------------
+        # Validate group field
+        # ---------------------------------
+
+        if group_separator:
+
+            if group_field not in data.columns:
+
+                raise ValueError(
+                    f"Group field '{group_field}' "
+                    f"not found in reporting data. "
+                    f"Available fields: "
+                    f"{list(data.columns)}"
+                )
+
+        # ---------------------------------
         # Validate configured columns
         # ---------------------------------
 
@@ -132,7 +167,28 @@ class LatexSummaryTable:
 
         rows = []
 
+        previous_group = None
+        first_row = True
+
         for _, row in data.iterrows():
+
+            current_group = row.get(
+                group_field
+            )
+
+            # ---------------------------------
+            # Add group separator
+            # ---------------------------------
+
+            if (
+                group_separator
+                and not first_row
+                and current_group != previous_group
+            ):
+
+                rows.append(
+                    r"\midrule"
+                )
 
             values = []
 
@@ -145,6 +201,20 @@ class LatexSummaryTable:
                 value = row[
                     field
                 ]
+
+                # ---------------------------------
+                # Apply group display label
+                # ---------------------------------
+
+                if (
+                    field == group_field
+                    and group_labels
+                ):
+
+                    value = group_labels.get(
+                        value,
+                        value
+                    )
 
                 formatted_value = (
                     self._format_value(
@@ -177,6 +247,9 @@ class LatexSummaryTable:
                 " & ".join(values)
                 + r" \\"
             )
+
+            previous_group = current_group
+            first_row = False
 
         # ---------------------------------
         # Generate LaTeX
@@ -294,6 +367,88 @@ class LatexSummaryTable:
 
             return data
 
+        # ---------------------------------
+        # Multiple sort fields
+        # ---------------------------------
+
+        if "fields" in sort_config:
+
+            fields = []
+            ascending = []
+
+            data = data.copy()
+
+            for sort_field in sort_config["fields"]:
+
+                field = sort_field[
+                    "field"
+                ]
+
+                if field not in data.columns:
+
+                    raise ValueError(
+                        f"Sort field '{field}' "
+                        f"not found in reporting data. "
+                        f"Available fields: "
+                        f"{list(data.columns)}"
+                    )
+
+                # ---------------------------------
+                # Explicit categorical ordering
+                # ---------------------------------
+
+                if "order" in sort_field:
+
+                    order = sort_field[
+                        "order"
+                    ]
+
+                    unknown_values = (
+                        set(
+                            data[field]
+                            .dropna()
+                            .unique()
+                        )
+                        -
+                        set(order)
+                    )
+
+                    if unknown_values:
+
+                        self.logger.warning(
+                            "Sort order for field '%s' "
+                            "does not contain values: %s",
+                            field,
+                            unknown_values
+                        )
+
+                    data[field] = pd.Categorical(
+                        data[field],
+                        categories=order,
+                        ordered=True
+                    )
+
+                fields.append(
+                    field
+                )
+
+                ascending.append(
+                    not sort_field.get(
+                        "descending",
+                        False
+                    )
+                )
+
+            return data.sort_values(
+                by=fields,
+                ascending=ascending,
+                na_position="last"
+            )
+
+        # ---------------------------------
+        # Backwards compatibility
+        # ---------------------------------
+
         field = sort_config[
             "field"
         ]
@@ -348,18 +503,6 @@ class LatexSummaryTable:
         data,
         config
     ):
-        """
-        Identify which rows should be highlighted
-        for each configured metric.
-
-        Returns:
-            {
-                "Coherence": {
-                    "run_id": "...",
-                    "value": 0.452
-                }
-            }
-        """
 
         highlights = {}
 
@@ -409,10 +552,6 @@ class LatexSummaryTable:
                 )
 
                 continue
-
-            # ---------------------------------
-            # Convert values to numeric
-            # ---------------------------------
 
             candidates = (
                 data[

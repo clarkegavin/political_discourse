@@ -56,7 +56,6 @@ class MetricLineChart:
 
         else:
 
-            # Preserve existing behaviour
             groups = [None]
 
         # ---------------------------------
@@ -81,7 +80,10 @@ class MetricLineChart:
                 )
 
                 data[new_name] = (
-                    1 - data[metric]
+                    1 - pd.to_numeric(
+                        data[metric],
+                        errors="coerce"
+                    )
                 )
 
                 if metric in metrics:
@@ -145,34 +147,129 @@ class MetricLineChart:
                     continue
 
                 # ---------------------------------
-                # Determine visualisation type
+                # Identify genuinely populated values
+                # ---------------------------------
+
+                parameter_series = (
+                    group_data[parameter]
+                    .copy()
+                )
+
+                populated = (
+                    parameter_series.notna()
+                    &
+                    parameter_series.astype(str)
+                    .str.strip()
+                    .ne("")
+                    &
+                    parameter_series.astype(str)
+                    .str.strip()
+                    .str.lower()
+                    .ne("none")
+                )
+
+                populated_values = (
+                    parameter_series[populated]
+                )
+
+                if populated_values.empty:
+
+                    self.logger.warning(
+                        "Parameter '%s' has no "
+                        "populated values for group "
+                        "'%s'. Skipping.",
+                        parameter,
+                        group
+                    )
+
+                    continue
+
+                # ---------------------------------
+                # Determine whether parameter is numeric
                 # ---------------------------------
 
                 numeric_values = pd.to_numeric(
-                    group_data[parameter],
+                    populated_values,
                     errors="coerce"
                 )
 
-                non_null_values = (
-                    group_data[parameter]
-                    .notna()
-                )
-
                 is_numeric = (
-                    numeric_values[non_null_values]
-                    .notna()
-                    .all()
+                    numeric_values.notna().all()
                 )
 
                 if is_numeric:
 
-                    group_data[parameter] = numeric_values
+                    self.logger.info(
+                        "Parameter '%s' detected as "
+                        "numeric for group '%s'. "
+                        "Using line chart.",
+                        parameter,
+                        group
+                    )
 
-                    viz_name = "metric_line_chart"
+                    # Keep ONLY rows with valid
+                    # numeric parameter values.
+                    parameter_data = (
+                        group_data.loc[
+                            populated
+                        ].copy()
+                    )
+
+                    parameter_data[
+                        parameter
+                    ] = pd.to_numeric(
+                        parameter_data[
+                            parameter
+                        ],
+                        errors="coerce"
+                    )
+
+                    parameter_data = (
+                        parameter_data[
+                            parameter_data[
+                                parameter
+                            ].notna()
+                        ].copy()
+                    )
+
+                    viz_name = (
+                        "metric_line_chart"
+                    )
 
                 else:
 
-                    viz_name = "metric_bar_chart"
+                    self.logger.info(
+                        "Parameter '%s' detected as "
+                        "categorical for group '%s'. "
+                        "Using bar chart.",
+                        parameter,
+                        group
+                    )
+
+                    # For categorical parameters,
+                    # retain only genuinely populated
+                    # values as well.
+                    parameter_data = (
+                        group_data.loc[
+                            populated
+                        ].copy()
+                    )
+
+                    viz_name = (
+                        "metric_bar_chart"
+                    )
+
+                if parameter_data.empty:
+
+                    self.logger.warning(
+                        "No valid data remains for "
+                        "parameter '%s' for group "
+                        "'%s'. Skipping.",
+                        parameter,
+                        group
+                    )
+
+                    continue
 
                 # ---------------------------------
                 # Visualisation configuration
@@ -183,17 +280,13 @@ class MetricLineChart:
                     {}
                 ).copy()
 
-                # The configured visualisation name
-                # is the default for numeric parameters.
-                #
-                # Categorical parameters are automatically
-                # routed to metric_bar_chart.
-
                 if viz_name == "metric_line_chart":
 
-                    configured_name = viz_params.pop(
-                        "name",
-                        "metric_line_chart"
+                    configured_name = (
+                        viz_params.pop(
+                            "name",
+                            "metric_line_chart"
+                        )
                     )
 
                     viz_name = configured_name
@@ -205,7 +298,9 @@ class MetricLineChart:
                         None
                     )
 
-                    viz_name = "metric_bar_chart"
+                    viz_name = (
+                        "metric_bar_chart"
+                    )
 
                 visualisation = (
                     VisualisationFactory
@@ -227,17 +322,23 @@ class MetricLineChart:
                 # Generate figure
                 # ---------------------------------
 
-                fig, axes = visualisation.plot(
-                    data=group_data,
-                    parameter=parameter,
-                    metrics=metrics,
-                    rows=kwargs.get(
-                        "rows",
-                        2
-                    ),
-                    cols=kwargs.get(
-                        "cols",
-                        3
+                fig, axes = (
+                    visualisation.plot(
+                        data=parameter_data,
+                        parameter=parameter,
+                        metrics=metrics,
+                        rows=kwargs.get(
+                            "rows",
+                            2
+                        ),
+                        cols=kwargs.get(
+                            "cols",
+                            3
+                        ),
+                        group_labels=kwargs.get(
+                            "group_labels"
+                        )
+
                     )
                 )
 

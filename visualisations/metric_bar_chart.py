@@ -28,6 +28,7 @@ class MetricBarChart(Visualisation):
         metrics,
         rows=2,
         cols=3,
+        group_labels=None,
         **kwargs
     ):
 
@@ -129,6 +130,7 @@ class MetricBarChart(Visualisation):
                 axis="x",
                 rotation=45
             )
+
 
             ax.grid(
                 axis="y",

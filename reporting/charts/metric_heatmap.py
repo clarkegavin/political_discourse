@@ -84,7 +84,10 @@ class MetricHeatmap:
         fig, ax = visualisation.plot(
             data=data,
             index_field=kwargs["index_field"],
-            metrics=metrics
+            metrics=metrics,
+            group_labels=kwargs.get(
+                "group_labels"
+            )
         )
 
 

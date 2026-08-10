@@ -75,7 +75,10 @@ class GroupedMetricChart:
         fig, ax = visualisation.plot(
             data=data,
             x_field=kwargs["x_field"],
-            metrics=metrics
+            metrics=metrics,
+            group_labels=kwargs.get(
+                "group_labels"
+            )
         )
 
 

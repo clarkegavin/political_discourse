@@ -19,7 +19,6 @@ class MetricHeatmap(Visualisation):
 
         self.figsize = figsize
 
-
     def plot(
         self,
         data,
@@ -32,15 +31,39 @@ class MetricHeatmap(Visualisation):
         # Select required fields
         # -----------------------------
 
-        heatmap_data = data.set_index(
-            index_field
-        )[metrics]
+        heatmap_data = (
+            data
+            .set_index(index_field)[metrics]
+            .copy()
+        )
 
+        # -----------------------------
+        # Apply optional group labels
+        # -----------------------------
+
+        group_labels = kwargs.get(
+            "group_labels"
+        )
+
+        if group_labels:
+
+            heatmap_data.index = (
+                heatmap_data.index.map(
+                    lambda value:
+                    group_labels.get(
+                        value,
+                        value
+                    )
+                )
+            )
+
+        # -----------------------------
+        # Create figure
+        # -----------------------------
 
         fig, ax = plt.subplots(
             figsize=self.figsize
         )
-
 
         sns.heatmap(
             heatmap_data,
@@ -50,23 +73,18 @@ class MetricHeatmap(Visualisation):
             ax=ax
         )
 
-
         ax.set_title(
             self.title
         )
-
 
         ax.set_xlabel(
             ""
         )
 
-
         ax.set_ylabel(
             ""
         )
 
-
         plt.tight_layout()
-
 
         return fig, ax
