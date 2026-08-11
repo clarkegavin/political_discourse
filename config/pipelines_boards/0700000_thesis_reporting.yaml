@@ -93,6 +93,10 @@
 #            x_field: Embedding Model
 #            group_field:
 #              Embedding Model
+#            group_order:
+#              - sentence-transformers/all-MiniLM-L6-v2
+#              - sentence-transformers/all-roberta-large-v1
+#              - ddore14/RooseBERT-scr-cased
 #            group_separator: true
 #            group_labels:
 #              sentence-transformers/all-MiniLM-L6-v2: MiniLM
@@ -258,7 +262,10 @@
 #        - name: metric_strip_chart
 #          params:
 #            group_field: Embedding Model
-#
+#            group_order:
+#              - sentence-transformers/all-MiniLM-L6-v2
+#              - sentence-transformers/all-roberta-large-v1
+#              - ddore14/RooseBERT-scr-cased
 #            group_labels:
 #              sentence-transformers/all-MiniLM-L6-v2: MiniLM
 #              sentence-transformers/all-roberta-large-v1: RoBERTa
@@ -291,7 +298,10 @@
 #        - name: metric_strip_chart
 #          params:
 #            group_field: Embedding Model
-#
+#            group_order:
+#              - sentence-transformers/all-MiniLM-L6-v2
+#              - sentence-transformers/all-roberta-large-v1
+#              - ddore14/RooseBERT-scr-cased
 #            group_labels:
 #              sentence-transformers/all-MiniLM-L6-v2: MiniLM
 #              sentence-transformers/all-roberta-large-v1: RoBERTa
@@ -392,7 +402,7 @@
 #            output_file:
 #              reducer_top_5_results.tex
 #            caption:
-#              Online forum top 5 reducer experiments by embedding model, ranked by coherence score.
+#              Top five dimensionality reduction (UMAP) experiments by embedding model for the online forum corpus, ranked by coherence score.
 #            label:
 #              tab:boards_reducer_top_5_results
 #            sort:
@@ -425,7 +435,7 @@
 #            columns:
 #              - field: Embedding Model
 #                header: Embedding Model
-#                latex_type: p{5cm}
+#                latex_type: p{1.5cm}
 #              - field: Coherence
 #                header: Coherence
 #                latex_type: l
@@ -448,13 +458,13 @@
 #                precision: 3
 #              - field: n_neighbors
 #                header: n_neighbors
-#                latex_type: l
+#                latex_type: p{1cm}
 #              - field: n_components
 #                header: n_components
-#                latex_type: l
+#                latex_type: p{1cm}
 #              - field: min_dist
 #                header: min_dist
-#                latex_type: l
+#                latex_type: p{1cm}
 #              - field: distance_metric
 #                header: Distance
 #                latex_type: l
@@ -550,7 +560,7 @@
 #            output_file:
 #              clusterer_top_5_results.tex
 #            caption:
-#              Online forum top 5 clusterer experiments by embedding model, ranked by coherence score.
+#              Top five clustering experiments by embedding model for the online forum corpus, ranked by coherence score.
 #            label:
 #              tab:boards_clusterer_top_5_results
 #            sort:
@@ -583,7 +593,7 @@
 #            columns:
 #              - field: Embedding Model
 #                header: Embedding Model
-#                latex_type: p{5cm}
+#                latex_type: p{2cm}
 #              - field: Coherence
 #                header: Coherence
 #                latex_type: l
@@ -699,7 +709,7 @@
 #            output_file:
 #              vectorizer_top_5_results.tex
 #            caption:
-#              Online forum top 5 vectorizer experiments by embedding model, ranked by coherence score.
+#              Top five vectorizer experiments by embedding model for the online forum corpus, ranked by coherence score.
 #            label:
 #              tab:boards_vectorizer_top_5_results
 #            sort:
@@ -732,7 +742,7 @@
 #            columns:
 #              - field: Embedding Model
 #                header: Embedding Model
-#                latex_type: p{5cm}
+#                latex_type: p{2cm}
 #              - field: Coherence
 #                header: Coherence
 #                latex_type: l
@@ -849,9 +859,9 @@
 #            output_file:
 #              ctfidf_top_5_results.tex
 #            caption:
-#              Online forum top 5 CTFIDF experiments by embedding model, ranked by coherence score.
+#              Vectorizer experiments by embedding model for the online forum corpus, ranked by coherence score.
 #            label:
-#              tab:boards_ctfidf_top_5_results
+#              tab:boards_ctfidf_top_4_results
 #            sort:
 #              fields:
 #                - field: Embedding Model
@@ -882,7 +892,7 @@
 #            columns:
 #              - field: Embedding Model
 #                header: Embedding Model
-#                latex_type: p{5cm}
+#                latex_type: p{2cm}
 #              - field: Coherence
 #                header: Coherence
 #                latex_type: l
@@ -999,7 +1009,7 @@
 #            output_file:
 #              representation_top_5_results.tex
 #            caption:
-#              Online forum top 5 Representation experiments by embedding model, ranked by coherence score.
+#              Top five representation experiments by embedding model for the online forum corpus, ranked by coherence score.
 #            label:
 #              tab:boards_representation_top_5_results
 #            sort:
@@ -1032,7 +1042,7 @@
 #            columns:
 #              - field: Embedding Model
 #                header: Embedding Model
-#                latex_type: p{5cm}
+#                latex_type: p{1.5cm}
 #              - field: Coherence
 #                header: Coherence
 #                latex_type: l
@@ -1151,7 +1161,10 @@
 #        - name: metric_strip_chart
 #          params:
 #            group_field: Embedding Model
-#
+#            group_order:
+#              - sentence-transformers/all-MiniLM-L6-v2
+#              - sentence-transformers/all-roberta-large-v1
+#              - ddore14/RooseBERT-scr-cased
 #            group_labels:
 #              sentence-transformers/all-MiniLM-L6-v2: MiniLM
 #              sentence-transformers/all-roberta-large-v1: RoBERTa
@@ -1246,7 +1259,10 @@
 #        - name: metric_strip_chart
 #          params:
 #            group_field: Embedding Model
-#
+#            group_order:
+#              - sentence-transformers/all-MiniLM-L6-v2
+#              - sentence-transformers/all-roberta-large-v1
+#              - ddore14/RooseBERT-scr-cased
 #            group_labels:
 #              sentence-transformers/all-MiniLM-L6-v2: MiniLM
 #              sentence-transformers/all-roberta-large-v1: RoBERTa
@@ -1341,7 +1357,10 @@
 #        - name: metric_strip_chart
 #          params:
 #            group_field: Embedding Model
-#
+#            group_order:
+#              - sentence-transformers/all-MiniLM-L6-v2
+#              - sentence-transformers/all-roberta-large-v1
+#              - ddore14/RooseBERT-scr-cased
 #            group_labels:
 #              sentence-transformers/all-MiniLM-L6-v2: MiniLM
 #              sentence-transformers/all-roberta-large-v1: RoBERTa
@@ -1436,7 +1455,10 @@
 #        - name: metric_strip_chart
 #          params:
 #            group_field: Embedding Model
-#
+#            group_order:
+#              - sentence-transformers/all-MiniLM-L6-v2
+#              - sentence-transformers/all-roberta-large-v1
+#              - ddore14/RooseBERT-scr-cased
 #            group_labels:
 #              sentence-transformers/all-MiniLM-L6-v2: MiniLM
 #              sentence-transformers/all-roberta-large-v1: RoBERTa
@@ -1531,7 +1553,10 @@
 #        - name: metric_strip_chart
 #          params:
 #            group_field: Embedding Model
-#
+#            group_order:
+#              - sentence-transformers/all-MiniLM-L6-v2
+#              - sentence-transformers/all-roberta-large-v1
+#              - ddore14/RooseBERT-scr-cased
 #            group_labels:
 #              sentence-transformers/all-MiniLM-L6-v2: MiniLM
 #              sentence-transformers/all-roberta-large-v1: RoBERTa

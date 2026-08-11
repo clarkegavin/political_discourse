@@ -7,8 +7,8 @@
 #    enabled: true
 #    params:
 #      output_path: output/thesis/parliamentary_questions/baseline
-
-
+#
+#
 #      data_builder:
 #        experiment_id: 502413359867310494
 #        filter_expression: "tags.mlflow.runName LIKE '%baseline%'"
@@ -97,6 +97,11 @@
 #            group_field:
 #              Embedding Model
 #            group_separator: true
+#            group_order:
+#              - sentence-transformers/all-MiniLM-L6-v2
+#              - sentence-transformers/all-roberta-large-v1
+#              - ddore14/RooseBERT-scr-cased
+#
 #            group_labels:
 #              sentence-transformers/all-MiniLM-L6-v2: MiniLM
 #              sentence-transformers/all-roberta-large-v1: RoBERTa
@@ -261,7 +266,10 @@
 #        - name: metric_strip_chart
 #          params:
 #            group_field: Embedding Model
-#
+#            group_order:
+#              - sentence-transformers/all-MiniLM-L6-v2
+#              - sentence-transformers/all-roberta-large-v1
+#              - ddore14/RooseBERT-scr-cased
 #            group_labels:
 #              sentence-transformers/all-MiniLM-L6-v2: MiniLM
 #              sentence-transformers/all-roberta-large-v1: RoBERTa
@@ -294,7 +302,10 @@
 #        - name: metric_strip_chart
 #          params:
 #            group_field: Embedding Model
-#
+#            group_order:
+#              - sentence-transformers/all-MiniLM-L6-v2
+#              - sentence-transformers/all-roberta-large-v1
+#              - ddore14/RooseBERT-scr-cased
 #            group_labels:
 #              sentence-transformers/all-MiniLM-L6-v2: MiniLM
 #              sentence-transformers/all-roberta-large-v1: RoBERTa
@@ -1082,7 +1093,10 @@
 #        - name: metric_strip_chart
 #          params:
 #            group_field: Embedding Model
-#
+#            group_order:
+#              - sentence-transformers/all-MiniLM-L6-v2
+#              - sentence-transformers/all-roberta-large-v1
+#              - ddore14/RooseBERT-scr-cased
 #            group_labels:
 #              sentence-transformers/all-MiniLM-L6-v2: MiniLM
 #              sentence-transformers/all-roberta-large-v1: RoBERTa
@@ -1199,7 +1213,10 @@
 #        - name: metric_strip_chart
 #          params:
 #            group_field: Embedding Model
-#
+#            group_order:
+#              - sentence-transformers/all-MiniLM-L6-v2
+#              - sentence-transformers/all-roberta-large-v1
+#              - ddore14/RooseBERT-scr-cased
 #            group_labels:
 #              sentence-transformers/all-MiniLM-L6-v2: MiniLM
 #              sentence-transformers/all-roberta-large-v1: RoBERTa
@@ -1316,7 +1333,10 @@
 #        - name: metric_strip_chart
 #          params:
 #            group_field: Embedding Model
-#
+#            group_order:
+#              - sentence-transformers/all-MiniLM-L6-v2
+#              - sentence-transformers/all-roberta-large-v1
+#              - ddore14/RooseBERT-scr-cased
 #            group_labels:
 #              sentence-transformers/all-MiniLM-L6-v2: MiniLM
 #              sentence-transformers/all-roberta-large-v1: RoBERTa
@@ -1433,7 +1453,10 @@
 #        - name: metric_strip_chart
 #          params:
 #            group_field: Embedding Model
-#
+#            group_order:
+#              - sentence-transformers/all-MiniLM-L6-v2
+#              - sentence-transformers/all-roberta-large-v1
+#              - ddore14/RooseBERT-scr-cased
 #            group_labels:
 #              sentence-transformers/all-MiniLM-L6-v2: MiniLM
 #              sentence-transformers/all-roberta-large-v1: RoBERTa

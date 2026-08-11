@@ -123,6 +123,9 @@ class MetricStripChart:
                 ),
                 group_labels=kwargs.get(
                     "group_labels"
+                ),
+                group_order=kwargs.get(
+                    "group_order"
                 )
             )
 

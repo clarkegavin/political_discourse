@@ -26,6 +26,7 @@ class MetricStripPlot(Visualisation):
         central_tendency=None,
         jitter=0.08,
         group_labels=None,
+        group_order=None,
         **kwargs
     ):
 
@@ -74,6 +75,42 @@ class MetricStripPlot(Visualisation):
             .tolist()
         )
 
+        # ---------------------------------
+        # Apply explicit group ordering
+        # ---------------------------------
+
+        if group_order is not None:
+
+            data_groups = set(groups)
+            ordered_groups = set(group_order)
+
+            unknown_order_values = (
+                    ordered_groups - data_groups
+            )
+
+            missing_order_values = (
+                    data_groups - ordered_groups
+            )
+
+            if unknown_order_values:
+                raise ValueError(
+                    f"Group order for field '{group_field}' "
+                    f"contains values not present in the data: "
+                    f"{unknown_order_values}"
+                )
+
+            if missing_order_values:
+                raise ValueError(
+                    f"Group order for field '{group_field}' "
+                    f"is missing values present in the data: "
+                    f"{missing_order_values}"
+                )
+
+            groups = [
+                group
+                for group in group_order
+                if group in data_groups
+            ]
         # ---------------------------------
         # Resolve display labels
         # ---------------------------------
