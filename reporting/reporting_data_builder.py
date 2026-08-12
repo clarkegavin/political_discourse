@@ -29,6 +29,9 @@ class ReportingDataBuilder:
             experiment_id=self.config.get(
                 "experiment_id"
             ),
+            experiment_ids=self.config.get(
+                "experiment_ids"
+            ),
             run_list=self.config.get(
                 "run_list"
             ),

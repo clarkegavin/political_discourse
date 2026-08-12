@@ -22,6 +22,7 @@ class MLflowReader:
     def load_runs(
         self,
         experiment_id=None,
+        experiment_ids=None,
         run_list=None,
         filter_expression=None
     ):
@@ -38,6 +39,12 @@ class MLflowReader:
                 raise ValueError(
                     "Cannot use both 'run_list' and "
                     "'filter_expression'."
+                )
+
+            if experiment_id or experiment_ids:
+                raise ValueError(
+                    "Cannot use 'run_list' with "
+                    "'experiment_id' or 'experiment_ids'."
                 )
 
             runs = []
@@ -59,7 +66,45 @@ class MLflowReader:
             return runs
 
         # ---------------------------------
-        # Experiment runs
+        # Multiple experiments requested
+        # ---------------------------------
+
+        if experiment_ids:
+
+            if experiment_id:
+                raise ValueError(
+                    "Cannot use both 'experiment_id' and "
+                    "'experiment_ids'."
+                )
+
+            runs = client.search_runs(
+                experiment_ids=[
+                    str(exp_id)
+                    for exp_id in experiment_ids
+                ],
+                filter_string=filter_expression
+                if filter_expression
+                else None
+            )
+
+            self.logger.info(
+                f"Loaded {len(runs)} MLflow runs "
+                f"from experiments {experiment_ids}"
+            )
+
+            if filter_expression:
+                self.logger.info(
+                    f"Applied MLflow filter: "
+                    f"{filter_expression}"
+                )
+
+            return [
+                self._extract_run(run)
+                for run in runs
+            ]
+
+        # ---------------------------------
+        # Single Experiment runs
         # ---------------------------------
 
         if experiment_id:
