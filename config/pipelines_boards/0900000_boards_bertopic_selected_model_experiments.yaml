@@ -1,0 +1,16 @@
+# file: `config/pipelines_boards/0500000_boards_bertopic_experiments.yaml
+name: topic_modeling_bertopic
+type: pipelines.topic_modeling_pipeline.TopicModelingPipeline
+enabled: true
+params:
+  model_name: bertopic
+  dataset_name: online_forum
+  evaluator_name: topic_modeling
+  evaluator_params:
+    top_n: 10
+  mlflow_experiment: online_forum_final_model
+  representation_text_field: RepresentationDocument
+  experiment_refs:
+
+     # RoBERTa Selected  Model
+    - config/experiments/boards/roberta/07000_roberta_selected_model.yaml

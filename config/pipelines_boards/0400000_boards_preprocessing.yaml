@@ -1,25 +1,26 @@
-#pipelines:
-#- name: preprocess_data
-#  type: pipelines.preprocessing_pipeline.PreprocessingPipeline
-#  enabled: true
-#  params:
-#    preprocessors:
-#      - name: remove_urls
-#        params:
-#          columns:
-#            - DocumentText
-#      - name: duplicate_column
-#        params:
-#          source_column: DocumentText #embeddings are generated from this
-#          target_column: RepresentationDocument # representations are generated from this
-#      - name: stopword_remover
-#        params:
-#          language: "english"
-#          lower: true
-#          columns: [ RepresentationDocument ]
-#          include_procedural: false
-#          include_nltk: false
-#          include_default: true
-#      - name: lowercase
-#        params:
-#          columns: [ RepresentationDocument ]
+pipelines:
+- name: preprocess_data
+  type: pipelines.preprocessing_pipeline.PreprocessingPipeline
+  enabled: true
+  params:
+    preprocessors:
+      - name: remove_urls
+        params:
+          columns:
+            - DocumentText
+      - name: duplicate_column
+        params:
+          source_column: DocumentText #embeddings are generated from this
+          target_column: RepresentationDocument # representations are generated from this
+      - name: stopword_remover
+        params:
+          language: "english"
+          lower: true
+          columns: [ RepresentationDocument ]
+          include_procedural: false
+          include_nltk: false
+          include_default: true
+      - name: lowercase
+        params:
+          columns: [ RepresentationDocument ]
+

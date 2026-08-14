@@ -35,6 +35,9 @@ from .metric_heatmap import MetricHeatmap
 from .metric_line_chart import MetricLineChart
 from .metric_strip_plot import MetricStripPlot
 from .metric_bar_chart import MetricBarChart
+from .topic_tree import TopicTree
+from .topic_hierarchical_documents import HierarchicalDocuments
+from .topic_approximate_distribution import ApproximateDistribution
 # Register visualisations
 
 VisualisationFactory.register_visualisation("confusion_matrix", ConfusionMatrixChart)
@@ -74,6 +77,9 @@ VisualisationFactory.register_visualisation(    "metric_heatmap", MetricHeatmap)
 VisualisationFactory.register_visualisation("metric_line_chart", MetricLineChart)
 VisualisationFactory.register_visualisation("metric_strip_plot", MetricStripPlot)
 VisualisationFactory.register_visualisation("metric_bar_chart", MetricBarChart)
+VisualisationFactory.register_visualisation("topic_tree", TopicTree)
+VisualisationFactory.register_visualisation("hierarchical_documents", HierarchicalDocuments)
+VisualisationFactory.register_visualisation("approximate_distribution", ApproximateDistribution)
 
 
 __all__ = [
@@ -112,4 +118,7 @@ __all__ = [
     "MetricLineChart",
     "MetricStripPlot",
     "MetricBarChart",
+    "TopicTree",
+    "HierarchicalDocuments",
+    "ApproximateDistribution",
 ]

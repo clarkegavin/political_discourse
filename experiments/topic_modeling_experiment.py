@@ -477,7 +477,7 @@ class TopicModelingExperiment(Experiment):
                 self.logger.info(f"Saving topic info to CSV at {self.save_path}")
                 csv_path = os.path.join(self.save_path or ".", f"{self.name}_topic_info.csv")
                 os.makedirs(self.save_path, exist_ok=True)
-                topic_info.to_csv(csv_path, index=False)
+                topic_info.to_csv(csv_path, index=False, encoding='utf-8-sig')
                 artifacts = [csv_path]
             else:
                 artifacts = []

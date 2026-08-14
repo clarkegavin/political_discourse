@@ -1,0 +1,11 @@
+pipelines:
+- name: save_extracted_table
+  type: pipelines.data_saver_pipeline.DataSaverPipeline
+  enabled: true
+  params:
+    saver_name: sql_server
+    table_name: boards_topic_output
+    if_exists: replace
+    chunk_size: 1000
+    schema: dbo
+    connector_params: {}

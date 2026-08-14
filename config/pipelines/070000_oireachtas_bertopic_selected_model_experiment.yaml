@@ -1,0 +1,19 @@
+# file: `config/pipelines/topic_modeling_bertopic.yaml`
+name: topic_modeling_bertopic
+type: pipelines.topic_modeling_pipeline.TopicModelingPipeline
+enabled: true
+params:
+  model_name: bertopic
+  dataset_name: parliamentary_questions
+  evaluator_name: topic_modeling
+  evaluator_params:
+    top_n: 10
+  mlflow_experiment: pq_final_model
+  representation_text_field: RepresentationDocument
+  experiment_refs:
+
+
+#     # MiniLM Selected Model
+    #- config/experiments/minilm/05500_minilm_embeddings_baseline.yaml
+    - config/experiments/minilm/07000_minilm_selected_model.yaml
+

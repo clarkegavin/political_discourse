@@ -16,7 +16,7 @@ params:
       cache:
         enabled: true # if true, then cached embeddings will be used if available, otherwise embeddings will be generated
         id_column: "QuestionId"
-        cache_dir: "output/embeddings_cache/final_optimisation"
+        cache_dir: "output/embeddings_cache/selected_model"
         overwrite: true
         # only overwrite if the model parameter change
 save_path: "output/topic_modelling/MiniLM_baseline"
