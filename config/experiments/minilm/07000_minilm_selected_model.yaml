@@ -17,7 +17,7 @@ params:
         enabled: true
         id_column: "QuestionId"
         cache_dir: "output/embeddings_cache/selected_model"
-        overwrite: true
+        overwrite: false
     dimensionality_reduction_model:
       name: umap
       params: {}
@@ -104,7 +104,34 @@ visualisations:
       batch_size: 1000
       top_n_topics: 20
       text_column: RepresentationDocument
+topic_outputs:
+  enabled: true
+  save_topic_info: true
+  save_topic_hierarchy: true
 
+  topic_info_output:
+    saver_name: sql_server
+    table_name: oireachtas_topic_info
+    if_exists: replace
+    chunk_size: 1000
+    schema: dbo
+    connector_params: { }
+
+  hierarchy_output:
+    saver_name: sql_server
+    table_name: oireachtas_topic_hierarchy
+    if_exists: replace
+    chunk_size: 1000
+    schema: dbo
+    connector_params: { }
+
+  hierarchy_nodes_output:
+    saver_name: sql_server
+    table_name: oireachtas_topic_hierarchy_nodes
+    if_exists: replace
+    chunk_size: 1000
+    schema: dbo
+    connector_params: { }
 sweep:
   params.model_params.dimensionality_reduction_model:
     - name: umap

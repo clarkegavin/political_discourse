@@ -41,6 +41,7 @@ class TopicModelingExperiment(Experiment):
         mlflow_tracking: bool = True,
         mlflow_experiment: Optional[str] = None,
         visualisations: Optional[list] = None,
+        topic_outputs: Optional[Dict[str, Any]] = None,
         save_path: Optional[str] = None,
         preprocessing_metadata: Optional[Dict] = None,
         #combined_text_field_name: str = "__topic_input_text__",
@@ -67,7 +68,35 @@ class TopicModelingExperiment(Experiment):
         #     for viz_cfg in self.visualisations:
         #         viz_cfg["combined_text_field_name"] = combined_text_field_name
 
+        self.topic_outputs = topic_outputs or {}
+
+        self.topic_outputs_enabled = self.topic_outputs.get(
+            "enabled",
+            False
+        )
+
+        self.save_topic_info = self.topic_outputs.get(
+            "save_topic_info",
+            self.topic_outputs_enabled
+        )
+
+        self.save_topic_hierarchy = self.topic_outputs.get(
+            "save_topic_hierarchy",
+            self.topic_outputs_enabled
+        )
+
+        self.logger.info(
+            "Topic outputs configuration: enabled=%s, "
+            "save_topic_info=%s, "
+            "save_topic_hierarchy=%s",
+            self.topic_outputs_enabled,
+            self.save_topic_info,
+            self.save_topic_hierarchy
+        )
+
+
         self.save_path = save_path
+
         self.preprocessing_metadata = preprocessing_metadata or {}
         self.logger.info(f"Initialized TopicModelingExperiment with model '{self.model_name}' '")
         #self.combined_text_field_name = combined_text_field_name
@@ -135,6 +164,343 @@ class TopicModelingExperiment(Experiment):
                 self.logger.warning(f"Could not merge topic info: {e}")
 
         return df
+
+    def _build_topic_hierarchy(self, documents):
+        """
+        Generate the BERTopic hierarchical topic structure.
+
+        Unwraps the BERTopicModel wrapper before calling
+        BERTopic.hierarchical_topics().
+        """
+
+        if self.model is None:
+            self.logger.warning(
+                "Cannot build topic hierarchy: BERTopic model is not available"
+            )
+            return None
+
+        try:
+
+            # Unwrap the BERTopicModel wrapper
+            bertopic_model = getattr(
+                self.model,
+                "model",
+                self.model
+            )
+
+            self.logger.info(
+                "Underlying BERTopic model type: %s",
+                type(bertopic_model).__name__
+            )
+
+            if not hasattr(
+                    bertopic_model,
+                    "hierarchical_topics"
+            ):
+                self.logger.warning(
+                    "Underlying model does not expose "
+                    "'hierarchical_topics'"
+                )
+                return None
+
+            self.logger.info(
+                "Generating BERTopic hierarchical topic structure"
+            )
+
+            hierarchical_topics = (
+                bertopic_model.hierarchical_topics(
+                    documents
+                )
+            )
+
+            if hierarchical_topics is None:
+                self.logger.warning(
+                    "BERTopic returned no hierarchical topics"
+                )
+                return None
+
+            self.logger.info(
+                "Generated topic hierarchy with %d rows "
+                "and columns: %s",
+                len(hierarchical_topics),
+                hierarchical_topics.columns.tolist()
+            )
+
+            self.logger.info(
+                "Topic hierarchy preview:\n%s",
+                hierarchical_topics.head().to_string()
+            )
+
+            return hierarchical_topics
+
+        except Exception as e:
+
+            self.logger.exception(
+                f"Could not generate topic hierarchy: {e}"
+            )
+
+            return None
+
+    def _build_topic_hierarchy_nodes(
+            self,
+            topic_info,
+            topic_hierarchy
+    ):
+        """
+        Build a relational representation of all nodes in the BERTopic
+        hierarchy.
+
+        Leaf nodes come from BERTopic topic_info.
+        Parent nodes come from BERTopic hierarchical_topics().
+
+        Returns
+        -------
+        pd.DataFrame
+            One row per hierarchy node.
+        """
+
+        self.logger.info(
+            "Building topic hierarchy nodes"
+        )
+
+        if topic_info is None or topic_info.empty:
+            self.logger.warning(
+                "Cannot build hierarchy nodes: topic_info is empty"
+            )
+            return None
+
+        if topic_hierarchy is None or topic_hierarchy.empty:
+            self.logger.warning(
+                "Cannot build hierarchy nodes: topic_hierarchy is empty"
+            )
+            return None
+
+        try:
+
+            nodes = []
+
+            # ---------------------------------------------------------
+            # Identify hierarchy parent IDs
+            # ---------------------------------------------------------
+
+            hierarchy_parent_ids = set(
+                topic_hierarchy["Parent_ID"]
+                .dropna()
+                .astype(int)
+                .tolist()
+            )
+
+            # ---------------------------------------------------------
+            # Leaf nodes
+            #
+            # These are the actual BERTopic topics from topic_info.
+            # Topic -1 is the BERTopic outlier topic and is retained
+            # as a leaf node.
+            # ---------------------------------------------------------
+
+            for _, row in topic_info.iterrows():
+                topic_id = int(row["Topic"])
+
+                nodes.append({
+                    "node_id": topic_id,
+                    "node_type": "leaf",
+                    "topic_label": row.get("Name"),
+                    "topic_count": row.get("Count"),
+                    "top_words": row.get("Representation"),
+                    "representative_docs": row.get(
+                        "Representative_Docs"
+                    ),
+                    "parent_id": None,
+                    "child_left_id": None,
+                    "child_right_id": None,
+                    "distance": None,
+                })
+
+            # ---------------------------------------------------------
+            # Parent nodes
+            #
+            # Every row in hierarchical_topics represents a merge:
+            #
+            #       Child_Left + Child_Right
+            #                  ↓
+            #              Parent_ID
+            #
+            # Therefore each Parent_ID becomes a node.
+            # ---------------------------------------------------------
+
+            for _, row in topic_hierarchy.iterrows():
+                parent_id = int(row["Parent_ID"])
+
+                nodes.append({
+                    "node_id": parent_id,
+                    "node_type": "parent",
+                    "topic_label": row.get("Parent_Name"),
+                    "topic_count": None,
+                    "top_words": None,
+                    "representative_docs": None,
+                    "parent_id": None,
+                    "child_left_id": (
+                        int(row["Child_Left_ID"])
+                        if pd.notna(row["Child_Left_ID"])
+                        else None
+                    ),
+                    "child_right_id": (
+                        int(row["Child_Right_ID"])
+                        if pd.notna(row["Child_Right_ID"])
+                        else None
+                    ),
+                    "distance": (
+                        float(row["Distance"])
+                        if pd.notna(row["Distance"])
+                        else None
+                    ),
+                })
+
+            # ---------------------------------------------------------
+            # Create DataFrame
+            # ---------------------------------------------------------
+
+            nodes_df = pd.DataFrame(nodes)
+
+            # ---------------------------------------------------------
+            # Build parent relationships
+            #
+            # If a node appears as either child of a hierarchy merge,
+            # its parent is that merge's Parent_ID.
+            # ---------------------------------------------------------
+
+            parent_relationships = {}
+
+            for _, row in topic_hierarchy.iterrows():
+
+                parent_id = int(row["Parent_ID"])
+
+                for child_column in [
+                    "Child_Left_ID",
+                    "Child_Right_ID"
+                ]:
+
+                    child_id = row[child_column]
+
+                    if pd.notna(child_id):
+                        child_id = int(child_id)
+
+                        parent_relationships[child_id] = parent_id
+
+            nodes_df["parent_id"] = (
+                nodes_df["node_id"]
+                .map(parent_relationships)
+            )
+
+            # ---------------------------------------------------------
+            # Ensure sensible ordering:
+            #
+            # leaf topics first, followed by generated parent nodes.
+            # ---------------------------------------------------------
+
+            nodes_df["_node_type_order"] = (
+                nodes_df["node_type"]
+                .map({
+                    "leaf": 0,
+                    "parent": 1
+                })
+            )
+
+            nodes_df = (
+                nodes_df
+                .sort_values(
+                    ["_node_type_order", "node_id"]
+                )
+                .drop(
+                    columns=["_node_type_order"]
+                )
+                .reset_index(drop=True)
+            )
+
+            # ---------------------------------------------------------
+            # Logging / validation
+            # ---------------------------------------------------------
+
+            leaf_count = (
+                nodes_df["node_type"]
+                .eq("leaf")
+                .sum()
+            )
+
+            parent_count = (
+                nodes_df["node_type"]
+                .eq("parent")
+                .sum()
+            )
+
+            self.logger.info(
+                "Generated topic hierarchy nodes: "
+                "%d total nodes (%d leaf, %d parent)",
+                len(nodes_df),
+                leaf_count,
+                parent_count
+            )
+
+            self.logger.info(
+                "Topic hierarchy nodes columns: %s",
+                nodes_df.columns.tolist()
+            )
+
+            self.logger.info(
+                "Topic hierarchy nodes preview:\n%s",
+                nodes_df.head(10).to_string()
+            )
+
+            # ---------------------------------------------------------
+            # Validate parent/child relationships
+            # ---------------------------------------------------------
+
+            sample_parent_id = 1177
+
+            sample_parent = nodes_df[
+                nodes_df["node_id"] == sample_parent_id
+                ]
+
+            if not sample_parent.empty:
+
+                self.logger.info(
+                    "Sample parent node %s:\n%s",
+                    sample_parent_id,
+                    sample_parent.to_string(index=False)
+                )
+
+                child_ids = []
+
+                for column in [
+                    "child_left_id",
+                    "child_right_id"
+                ]:
+                    child_id = sample_parent.iloc[0][column]
+
+                    if pd.notna(child_id):
+                        child_ids.append(int(child_id))
+
+                for child_id in child_ids:
+                    child = nodes_df[
+                        nodes_df["node_id"] == child_id
+                        ]
+
+                    self.logger.info(
+                        "Child node %s:\n%s",
+                        child_id,
+                        child.to_string(index=False)
+                    )
+
+            return nodes_df
+
+        except Exception as e:
+
+            self.logger.exception(
+                "Could not build topic hierarchy nodes: %s",
+                e
+            )
+
+            return None
 
     # Helper builders to keep run() tidy
     def _build_embedding_model(self):
@@ -471,20 +837,225 @@ class TopicModelingExperiment(Experiment):
             topics, probs = self.model.fit_transform(representation_docs)
         self._log_gpu_memory("After fit_transform")
         # get topic info
-        try:
-            topic_info = self.model.get_topic_info()
-            if topic_info is not None and self.save_path:
-                self.logger.info(f"Saving topic info to CSV at {self.save_path}")
-                csv_path = os.path.join(self.save_path or ".", f"{self.name}_topic_info.csv")
-                os.makedirs(self.save_path, exist_ok=True)
-                topic_info.to_csv(csv_path, index=False, encoding='utf-8-sig')
-                artifacts = [csv_path]
-            else:
-                artifacts = []
-        except Exception as e:
-            self.logger.warning(f"Could not get topic info: {e}")
-            artifacts = []
+        # try:
+        #     topic_info = self.model.get_topic_info()
+        #     if topic_info is not None and self.save_path:
+        #         self.logger.info(f"Saving topic info to CSV at {self.save_path}")
+        #         csv_path = os.path.join(self.save_path or ".", f"{self.name}_topic_info.csv")
+        #         os.makedirs(self.save_path, exist_ok=True)
+        #         topic_info.to_csv(csv_path, index=False, encoding='utf-8-sig')
+        #         artifacts = [csv_path]
+        #     else:
+        #         artifacts = []
+        # except Exception as e:
+        #     self.logger.warning(f"Could not get topic info: {e}")
+        #     artifacts = []
 
+        # ---------------------------------------------------------
+        # Get topic information
+        # ---------------------------------------------------------
+
+        topic_info = None
+        topic_hierarchy = None
+        artifacts = []
+
+        try:
+
+            # -----------------------------------------------------
+            # Topic information
+            # -----------------------------------------------------
+
+            # We always retrieve topic_info because _attach_topics()
+            # uses it to attach topic metadata to the document-level
+            # dataframe.
+            topic_info = self.model.get_topic_info()
+
+            if topic_info is not None:
+                self.logger.info(
+                    "Retrieved topic info with %d rows",
+                    len(topic_info)
+                )
+
+                self.logger.info(
+                    "Topic info columns: %s",
+                    topic_info.columns.tolist()
+                )
+
+            # -----------------------------------------------------
+            # Optional topic analysis outputs
+            # -----------------------------------------------------
+
+            if self.topic_outputs_enabled:
+
+                self.logger.info(
+                    "Topic output generation enabled"
+                )
+
+                # ---------------------------------------------
+                # Hierarchical topic structure
+                # ---------------------------------------------
+
+                if self.save_topic_hierarchy:
+
+                    topic_hierarchy = (
+                        self._build_topic_hierarchy(
+                            representation_docs
+                        )
+                    )
+
+                    # -----------------------------------------
+                    # Save topic hierarchy to configured
+                    # data store
+                    # -----------------------------------------
+
+                    if topic_hierarchy is not None:
+
+                        hierarchy_table = (
+                            self._save_topic_hierarchy(
+                                topic_hierarchy
+                            )
+                        )
+
+                        if hierarchy_table:
+                            self.logger.info(
+                                "Topic hierarchy saved to SQL table: %s",
+                                hierarchy_table
+                            )
+
+                        # -----------------------------------------
+                        # Build hierarchy nodes
+                        # -----------------------------------------
+
+                        topic_hierarchy_nodes = (
+                            self._build_topic_hierarchy_nodes(
+                                topic_info=topic_info,
+                                topic_hierarchy=topic_hierarchy
+                            )
+                        )
+
+                        if topic_hierarchy_nodes is not None:
+                            self._save_topic_hierarchy_nodes(
+                                topic_hierarchy_nodes
+                            )
+
+                else:
+
+                    self.logger.info(
+                        "Topic hierarchy output disabled"
+                    )
+
+                # ---------------------------------------------
+                # Save topic information
+                # ---------------------------------------------
+
+                if (
+                        self.save_topic_info
+                        and topic_info is not None
+                ):
+
+                    # -----------------------------------------
+                    # Save topic info to configured data store
+                    # -----------------------------------------
+
+                    topic_info_table = self._save_topic_info(
+                        topic_info
+                    )
+
+                    if topic_info_table:
+                        self.logger.info(
+                            "Topic info saved to SQL table: %s",
+                            topic_info_table
+                        )
+
+                    # -----------------------------------------
+                    # Optional local CSV artifact
+                    # -----------------------------------------
+
+                    if self.save_path:
+                        os.makedirs(
+                            self.save_path,
+                            exist_ok=True
+                        )
+
+                        topic_info_path = os.path.join(
+                            self.save_path,
+                            f"{self.name}_topic_info.csv"
+                        )
+
+                        self.logger.info(
+                            "Saving topic info to CSV: %s",
+                            topic_info_path
+                        )
+
+                        topic_info.to_csv(
+                            topic_info_path,
+                            index=False,
+                            encoding="utf-8-sig"
+                        )
+
+                        artifacts.append(
+                            topic_info_path
+                        )
+
+                else:
+
+                    if not self.save_topic_info:
+
+                        self.logger.info(
+                            "Topic info output disabled"
+                        )
+
+                    elif topic_info is None:
+
+                        self.logger.info(
+                            "No topic info available"
+                        )
+
+                # ---------------------------------------------
+                # Save topic hierarchy
+                # ---------------------------------------------
+
+                if (
+                        self.save_topic_hierarchy
+                        and topic_hierarchy is not None
+                        and self.save_path
+                ):
+                    os.makedirs(
+                        self.save_path,
+                        exist_ok=True
+                    )
+
+                    hierarchy_path = os.path.join(
+                        self.save_path,
+                        f"{self.name}_topic_hierarchy.csv"
+                    )
+
+                    self.logger.info(
+                        "Saving topic hierarchy to CSV: %s",
+                        hierarchy_path
+                    )
+
+                    topic_hierarchy.to_csv(
+                        hierarchy_path,
+                        index=False,
+                        encoding="utf-8-sig"
+                    )
+
+                    artifacts.append(
+                        hierarchy_path
+                    )
+
+            else:
+
+                self.logger.info(
+                    "Topic output generation disabled"
+                )
+
+        except Exception as e:
+
+            self.logger.exception(
+                f"Could not generate topic outputs: {e}"
+            )
         # Attach back
         result_df = self._attach_topics(topics=topics, probs=probs, topic_info=topic_info)
         self.logger.info(f"Attached topic assignments to original dataframe; result shape: {result_df.shape}")
@@ -499,14 +1070,21 @@ class TopicModelingExperiment(Experiment):
             #"combined_text_field_name": self.combined_text_field_name,
             "embedding_text_field": self.model_params["embedding_model"]["column"],
             "representation_text_field": self.representation_text_field,
-
             "visualisations": self.visualisations,
+            "topic_outputs": self.topic_outputs,
             "topics": topics,
             "model": self.model,
         }
 
 
-        return {"df": result_df, "metadata": metadata, "artifacts": artifacts}
+        #return {"df": result_df, "metadata": metadata, "artifacts": artifacts}
+        return {
+            "df": result_df,
+            "topic_info": topic_info,
+            "topic_hierarchy": topic_hierarchy,
+            "metadata": metadata,
+            "artifacts": artifacts
+        }
 
     def _extract_embedding_cache_params(self):
 
@@ -691,6 +1269,7 @@ class TopicModelingExperiment(Experiment):
             "evaluator_name": self.evaluator_name,
             **(self.evaluator_params or {}),
             "visualisations": self.visualisations,
+            "topic_outputs": self.topic_outputs,
             "preprocessing": self.preprocessing_metadata,
         }
 
@@ -719,3 +1298,405 @@ class TopicModelingExperiment(Experiment):
             self.logger.debug(
                 f"Unable to log GPU memory: {e}"
             )
+
+    def _save_topic_hierarchy(self, hierarchy_df):
+        """
+        Save the BERTopic topic hierarchy using the configured
+        DataSaverFactory implementation.
+
+        The hierarchy is an auxiliary topic-analysis dataset and is
+        therefore persisted separately from the document-level result.
+        """
+
+        if hierarchy_df is None or hierarchy_df.empty:
+            self.logger.warning(
+                "No topic hierarchy available to save"
+            )
+            return None
+
+        output_cfg = self.topic_outputs.get(
+            "hierarchy_output",
+            {}
+        )
+
+        if not output_cfg:
+            self.logger.info(
+                "No hierarchy output configuration supplied; "
+                "topic hierarchy will not be saved"
+            )
+            return None
+
+        saver_name = output_cfg.get(
+            "saver_name",
+            "sql_server"
+        )
+
+        table_name = output_cfg.get(
+            "table_name"
+        )
+
+        if not table_name:
+            raise ValueError(
+                "topic_outputs.hierarchy_output.table_name "
+                "must be configured when saving topic hierarchy"
+            )
+
+        if_exists = output_cfg.get(
+            "if_exists",
+            "replace"
+        )
+
+        chunk_size = output_cfg.get(
+            "chunk_size",
+            1000
+        )
+
+        schema = output_cfg.get(
+            "schema"
+        )
+
+        connector_params = output_cfg.get(
+            "connector_params",
+            {}
+        )
+
+        self.logger.info(
+            "Saving topic hierarchy to table '%s' "
+            "using saver '%s'",
+            table_name,
+            saver_name
+        )
+
+        try:
+            from data.savers import DataSaverFactory
+            from data.sqlalchemy_connector import SQLAlchemyConnector
+
+            saver = DataSaverFactory.get_saver(
+                saver_name
+            )
+
+            if saver is None:
+                raise ValueError(
+                    f"No saver registered with name '{saver_name}'"
+                )
+
+            connector = SQLAlchemyConnector(
+                **connector_params
+            )
+
+            saver.save(
+                df=hierarchy_df,
+                table_name=table_name,
+                connector=connector,
+                if_exists=if_exists,
+                chunk_size=chunk_size,
+                schema=schema,
+            )
+
+            self.logger.info(
+                "Topic hierarchy successfully saved to '%s'",
+                table_name
+            )
+
+            return table_name
+
+        except Exception as e:
+            self.logger.exception(
+                "Failed to save topic hierarchy to '%s': %s",
+                table_name,
+                e
+            )
+            raise
+
+    def _save_topic_info(self, topic_info):
+        """
+        Save BERTopic topic information using the configured
+        DataSaverFactory implementation.
+
+        The topic info is the leaf-topic dataset, containing one row
+        per BERTopic topic.
+        """
+
+        if topic_info is None or topic_info.empty:
+            self.logger.warning(
+                "No topic info available to save"
+            )
+            return None
+
+
+        output_cfg = self.topic_outputs.get(
+            "topic_info_output",
+            {}
+        )
+
+        if not output_cfg:
+            self.logger.info(
+                "No topic info output configuration supplied; "
+                "topic info will not be saved"
+            )
+            return None
+
+        saver_name = output_cfg.get(
+            "saver_name",
+            "sql_server"
+        )
+
+        table_name = output_cfg.get(
+            "table_name"
+        )
+
+        if not table_name:
+            raise ValueError(
+                "topic_outputs.topic_info_output.table_name "
+                "must be configured when saving topic info"
+            )
+
+        if_exists = output_cfg.get(
+            "if_exists",
+            "replace"
+        )
+
+        chunk_size = output_cfg.get(
+            "chunk_size",
+            1000
+        )
+
+        schema = output_cfg.get(
+            "schema"
+        )
+
+        connector_params = output_cfg.get(
+            "connector_params",
+            {}
+        )
+
+        self.logger.info(
+            "Saving topic info to table '%s' "
+            "using saver '%s'",
+            table_name,
+            saver_name
+        )
+
+        try:
+            from data.savers import DataSaverFactory
+            from data.sqlalchemy_connector import SQLAlchemyConnector
+
+            saver = DataSaverFactory.get_saver(
+                saver_name
+            )
+
+            if saver is None:
+                raise ValueError(
+                    f"No saver registered with name '{saver_name}'"
+                )
+
+            connector = SQLAlchemyConnector(
+                **connector_params
+            )
+
+            topic_info_sql = self._prepare_topic_info_for_sql(
+                topic_info
+            )
+
+            saver.save(
+                df=topic_info_sql,
+                table_name=table_name,
+                connector=connector,
+                if_exists=if_exists,
+                chunk_size=chunk_size,
+                schema=schema,
+            )
+
+            self.logger.info(
+                "Topic info successfully saved to '%s'",
+                table_name
+            )
+
+            return table_name
+
+        except Exception as e:
+            self.logger.exception(
+                "Failed to save topic info to '%s': %s",
+                table_name,
+                e
+            )
+            raise
+
+    def _prepare_topic_info_for_sql(self, topic_info):
+        """
+        Prepare BERTopic topic_info for relational storage.
+
+        BERTopic stores Representation and Representative_Docs as
+        Python lists. These are serialised as JSON strings so they
+        can be stored in SQL Server while retaining their structure.
+        """
+
+        topic_info_sql = topic_info.copy()
+
+        list_columns = [
+            "Representation",
+            "Representative_Docs",
+        ]
+
+        for column in list_columns:
+
+            if column not in topic_info_sql.columns:
+                continue
+
+            topic_info_sql[column] = topic_info_sql[column].apply(
+                lambda value: json.dumps(
+                    value,
+                    ensure_ascii=False
+                )
+                if isinstance(value, (list, tuple))
+                else value
+            )
+
+        return topic_info_sql
+
+    def _save_topic_hierarchy_nodes(self, topic_hierarchy_nodes):
+        """
+        Save the BERTopic topic hierarchy using the configured
+        DataSaverFactory implementation.
+
+        The hierarchy is an auxiliary topic-analysis dataset and is
+        therefore persisted separately from the document-level result.
+        """
+
+        if topic_hierarchy_nodes is None or topic_hierarchy_nodes.empty:
+            self.logger.warning(
+                "No topic hierarchy nodes available to save"
+            )
+            return None
+
+        output_cfg = self.topic_outputs.get(
+            "hierarchy_nodes_output",
+            {}
+        )
+
+        if not output_cfg:
+            self.logger.info(
+                "No hierarchy nodes output configuration supplied; "
+                "topic hierarchy nodes will not be saved"
+            )
+            return None
+
+        saver_name = output_cfg.get(
+            "saver_name",
+            "sql_server"
+        )
+
+        table_name = output_cfg.get(
+            "table_name"
+        )
+
+        if not table_name:
+            raise ValueError(
+                "topic_outputs.hierarchy_nodes_output.table_name "
+                "must be configured when saving topic hierarchy nodes"
+            )
+
+        if_exists = output_cfg.get(
+            "if_exists",
+            "replace"
+        )
+
+        chunk_size = output_cfg.get(
+            "chunk_size",
+            1000
+        )
+
+        schema = output_cfg.get(
+            "schema"
+        )
+
+        connector_params = output_cfg.get(
+            "connector_params",
+            {}
+        )
+
+        self.logger.info(
+            "Saving topic hierarchy nodes to table '%s' "
+            "using saver '%s'",
+            table_name,
+            saver_name
+        )
+
+        try:
+            from data.savers import DataSaverFactory
+            from data.sqlalchemy_connector import SQLAlchemyConnector
+
+            saver = DataSaverFactory.get_saver(
+                saver_name
+            )
+
+            if saver is None:
+                raise ValueError(
+                    f"No saver registered with name '{saver_name}'"
+                )
+
+            connector = SQLAlchemyConnector(
+                **connector_params
+            )
+
+            topic_hierarchy_nodes_sql = (
+                self._prepare_topic_hierarchy_nodes_for_sql(
+                    topic_hierarchy_nodes
+                )
+            )
+
+            saver.save(
+                df=topic_hierarchy_nodes_sql,
+                table_name=table_name,
+                connector=connector,
+                if_exists=if_exists,
+                chunk_size=chunk_size,
+                schema=schema,
+            )
+
+            self.logger.info(
+                "Topic hierarchy nodes successfully saved to '%s'",
+                table_name
+            )
+
+            return table_name
+
+        except Exception as e:
+            self.logger.exception(
+                "Failed to save topic hierarchy nodes to '%s': %s",
+                table_name,
+                e
+            )
+            raise
+
+    def _prepare_topic_hierarchy_nodes_for_sql(self, topic_hierarchy_nodes):
+        """
+        Prepare topic hierarchy nodes for relational storage.
+
+        BERTopic hierarchy nodes may contain Python lists for fields such as
+        top_words and representative_docs. These are serialised as JSON strings
+        so they can be stored in SQL Server while retaining their structure.
+        """
+
+        nodes_sql = topic_hierarchy_nodes.copy()
+
+        list_columns = [
+            "top_words",
+            "representative_docs",
+        ]
+
+        for column in list_columns:
+
+            if column not in nodes_sql.columns:
+                continue
+
+            nodes_sql[column] = nodes_sql[column].apply(
+                lambda value: json.dumps(
+                    value,
+                    ensure_ascii=False
+                )
+                if isinstance(value, (list, tuple))
+                else value
+            )
+
+        return nodes_sql
