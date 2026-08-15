@@ -20,8 +20,12 @@ import hashlib
 import time
 from datetime import datetime, timezone
 from llm.prompts.topic_theme import (
-    build_topic_theme_prompt,
-    PROMPT_VERSION,
+    build_topic_theme_prompt as build_parliamentary_prompt,
+    PROMPT_VERSION as PARLIAMENTARY_PROMPT_VERSION,
+)
+from llm.prompts.topic_theme_online_forum import (
+    build_topic_theme_prompt as build_online_forum_prompt,
+    PROMPT_VERSION as ONLINE_FORUM_PROMPT_VERSION,
 )
 
 
@@ -142,12 +146,28 @@ class TopicModelingExperiment(Experiment):
             3
         )
 
+        self.llm_prompt_type = self.llm_config.get(
+            "prompt_type",
+            "parliamentary"
+        )
+
+        supported_prompt_types = {
+            "parliamentary",
+            "online_forum",
+        }
+
+        if self.llm_prompt_type not in supported_prompt_types:
+            raise ValueError(
+                f"Unsupported LLM prompt type '{self.llm_prompt_type}'. "
+                f"Supported types: {sorted(supported_prompt_types)}"
+            )
 
         self.logger.info(f"LLM Configurations: max_topics={self.llm_max_topics}, "
                          f"request_delay={self.llm_request_delay}, max_retries={self.llm_max_retries}, "
                          f"retry_delay={self.llm_retry_delay}, max_representative_docs={self.llm_max_representative_docs}, "
                          f"max_doc_characters={self.llm_max_doc_characters}, "
-                         f"max_ancestors={self.llm_max_ancestors}")
+                         f"max_ancestors={self.llm_max_ancestors}, "
+                         f"prompt_type={self.llm_prompt_type}")
 
         self.save_path = save_path
 
@@ -1130,10 +1150,10 @@ class TopicModelingExperiment(Experiment):
                     "model"
                 )
 
-                llm_prompt_version = self.llm_config.get(
-                    "prompt_version",
-                    PROMPT_VERSION
-                )
+                # llm_prompt_version = self.llm_config.get(
+                #     "prompt_version",
+                #     PARLIAMENTARY_PROMPT_VERSION
+                # )
 
 
 
@@ -1170,6 +1190,8 @@ class TopicModelingExperiment(Experiment):
                             theme_result = self._generate_topic_theme(
                                 topic_record
                             )
+
+                            llm_prompt_version = self.prompt_version
 
                             # ---------------------------------------------------------
                             # Enrich LLM result with original BERTopic metadata
@@ -2289,6 +2311,24 @@ class TopicModelingExperiment(Experiment):
 
         return records
 
+    def _build_topic_theme_prompt(self, topic_record):
+
+        if self.llm_prompt_type == "parliamentary_questions":
+
+            return build_parliamentary_prompt(
+                topic_record
+            )
+
+        elif self.llm_prompt_type == "online_forum":
+
+            return build_online_forum_prompt(
+                topic_record
+            )
+
+        raise ValueError(
+            f"Unsupported LLM prompt type: {self.llm_prompt_type}"
+        )
+
     # def _build_topic_theme_prompt(self, topic_record):
     #     """
     #     Build the prompt used to generate a human-readable theme for
@@ -2417,7 +2457,7 @@ class TopicModelingExperiment(Experiment):
                 "Cannot generate topic theme from an empty topic record"
             )
 
-        prompt = build_topic_theme_prompt(
+        prompt, self.prompt_version = self._build_topic_theme_prompt(
             topic_record
         )
 

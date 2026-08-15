@@ -137,6 +137,8 @@ llm:
   provider: openai
   model: gpt-5.4-mini
 
+  prompt_type: parliamentary_questions
+
   max_representative_docs: 3
   max_doc_characters: 1500
   max_ancestors: 3

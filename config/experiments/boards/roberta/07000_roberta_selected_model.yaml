@@ -25,17 +25,17 @@ save_path: "output/topic_modelling/boards/boards_selected_model"
 visualisations:
   - name: topic_distribution
     init:
-      filename: bertopic_default_topic_distribution.png
+      filename: boards_bertopic_topic_distribution.png
   - name: topic_wordclouds
     init:
-      filename_prefix: bertopic_default_topic
+      filename_prefix: boards_bertopic_topic
       top_n_topics: 10
   - name: intertopic_distance
     init:
-      filename: intertopic_distance.html
+      filename: boards_intertopic_distance.html
   - name: topic_barchart
     init:
-      filename: topic_barchart.html
+      filename: boards_topic_barchart.html
       # BERTopic parameters
       top_n_topics: 10
       n_words: 10
@@ -44,46 +44,98 @@ visualisations:
       topics: null        # optional list of topic ids
   - name: topic_tree
     init:
-      filename: topic_tree.txt
+      filename: boards_topic_tree.txt
       max_distance: null
       tight_layout: true
       text_column: RepresentationDocument
   - name: topic_heatmap
     init:
-      filename: topic_heatmap.html
+      filename: boards_topic_heatmap.html
   - name: topic_term_rank
     init:
-      filename: topic_term_rank.html
+      filename: boards_topic_term_rank.html
   - name: topic_term_rank
     init:
-      filename: topic_term_rank_scaled.html
+      filename: boards_topic_term_rank_scaled.html
       log_scale: true
   - name: topic_documents
     init:
-      filename: topic_documents.html
+      filename: boards_topic_documents.html
   - name: topic_hierarchy
     init:
-      filename: topic_hierarchy.html
+      filename: boards_topic_hierarchy.html
   - name: hierarchical_documents
     init:
-      filename: hierarchical_documents.html
+      filename: boards_hierarchical_documents.html
       width: 1200
       height: 800
       hide_annotations: false
       text_column: RepresentationDocument
   - name: topics_over_time
     init:
-      filename: topics_over_time.html
+      filename: boards_topics_over_time.html
       date_column: DocumentEndDate
       text_column: RepresentationDocument
       interval: month
   - name: approximate_distribution
     init:
-      filename: approximate_distribution.html
+      filename: boards_approximate_distribution.html
       batch_size: 1000
       top_n_topics: 20
       text_column: RepresentationDocument
+topic_outputs:
+  enabled: true
+  save_topic_info: true
+  save_topic_hierarchy: true
 
+  topic_info_output:
+    saver_name: sql_server
+    table_name: boards_topic_info
+    if_exists: replace
+    chunk_size: 1000
+    schema: dbo
+    connector_params: { }
+
+  hierarchy_output:
+    saver_name: sql_server
+    table_name: boards_topic_hierarchy
+    if_exists: replace
+    chunk_size: 1000
+    schema: dbo
+    connector_params: { }
+
+  hierarchy_nodes_output:
+    saver_name: sql_server
+    table_name: boards_topic_hierarchy_nodes
+    if_exists: replace
+    chunk_size: 1000
+    schema: dbo
+    connector_params: { }
+llm:
+  enabled: true
+  provider: openai
+  model: gpt-5.4-mini
+
+  prompt_type: online_forum
+
+  max_representative_docs: 3
+  max_doc_characters: 1500
+  max_ancestors: 3
+
+  max_topics: null
+
+  request_delay_seconds: 0.5
+  max_retries: 5
+  retry_delay: 2.0
+
+  llm_output:
+    saver_name: sql_server
+    table_name: boards_topic_llm
+    if_exists: replace
+    chunk_size: 1000
+    schema: dbo
+
+    connector_params: { }
 sweep:
   params.model_params.dimensionality_reduction_model:
     - name: umap

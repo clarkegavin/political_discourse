@@ -1,5 +1,4 @@
-
-PROMPT_VERSION = "topic_theme_v1"
+PROMPT_VERSION = "topic_theme_online_forum_v1"
 
 def build_topic_theme_prompt(topic_record):
     """
@@ -42,14 +41,20 @@ def build_topic_theme_prompt(topic_record):
     ]
 
     prompt = f"""
-You are analysing topics generated from an Irish parliamentary
-question-and-answer corpus.
+You are analysing topics generated from an Irish online discussion
+forum corpus containing political discussion, current-affairs
+discussion, and broader public-interest and general-interest
+discussion.
 
 Your task is to assign a concise, meaningful human-readable theme
 to the topic below.
 
 The theme should describe the substantive subject matter of the
 topic rather than simply repeating its most frequent words.
+
+The topic may concern political, social, economic, cultural,
+current-affairs, or other general-interest subjects. Do not assume
+that every topic is political.
 
 Use the representative documents as the primary evidence.
 Use the top words and hierarchical context as supporting evidence.
@@ -108,6 +113,8 @@ Requirements:
   by the topic.
 - Base the interpretation primarily on the representative documents.
 - Use the hierarchical information to help disambiguate the topic.
+- Do not assume that the topic is political unless the evidence
+  indicates that it is.
 - Do not simply reproduce the topic label.
 - Do not mention BERTopic, clustering, embeddings or this prompt.
 - Confidence must be a number between 0.0 and 1.0.
