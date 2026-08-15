@@ -15,7 +15,7 @@ class TopicHierarchy(BERTopicVisualisation):
 
         super().__init__(
             name="topic_hierarchy",
-            title="Topic Hierarchy",
+            title="",
             output_dir=output_dir,
             filename=filename,
             method="visualize_hierarchy",

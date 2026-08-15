@@ -3,6 +3,7 @@ from typing import Optional, Literal
 import pandas as pd
 from sqlalchemy import Table, MetaData
 from sqlalchemy import inspect
+from sqlalchemy.dialects.mssql import DATETIME2
 from logs.logger import get_logger
 
 class SQLServerSaver:

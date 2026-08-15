@@ -15,7 +15,7 @@ class TopicTermRank(BERTopicVisualisation):
 
         super().__init__(
             name="topic_term_rank",
-            title="Topic Term Rank",
+            title="",
             output_dir=output_dir,
             filename=filename,
             method="visualize_term_rank",

@@ -60,7 +60,7 @@ class TopicWordClouds:
             plt.figure(figsize=(10, 5))
             plt.imshow(wc, interpolation="bilinear")
             plt.axis("off")
-            plt.title(f"Topic {topic_id}")
+            #plt.title(f"Topic {topic_id}")
             plt.tight_layout()
 
             self.logger.info(f"Saving word cloud for topic {topic_id}")

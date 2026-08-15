@@ -37,7 +37,7 @@ class ApproximateDistribution(BERTopicVisualisation):
 
         super().__init__(
             name="approximate_distribution",
-            title="Approximate Topic Distribution",
+            title = "",
             output_dir=output_dir,
             filename=filename,
             method="approximate_distribution",

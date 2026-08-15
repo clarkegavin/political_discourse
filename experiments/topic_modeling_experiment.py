@@ -17,6 +17,12 @@ from pathlib import Path
 import json
 import torch
 import hashlib
+import time
+from datetime import datetime, timezone
+from llm.prompts.topic_theme import (
+    build_topic_theme_prompt,
+    PROMPT_VERSION,
+)
 
 
 TOPIC_ID = "_topic_id"
@@ -105,7 +111,43 @@ class TopicModelingExperiment(Experiment):
             "max_topics",
             None
         )
-        self.logger.info("LLM configuration: enabled=%s, max_topics=%s", self.llm_enabled, self.llm_max_topics)
+
+        self.llm_request_delay = self.llm_config.get(
+            "request_delay_seconds",
+            1.0
+        )
+
+        self.llm_max_retries = self.llm_config.get(
+            "max_retries",
+            5
+        )
+
+        self.llm_retry_delay = self.llm_config.get(
+            "retry_delay",
+            2.0
+        )
+
+        self.llm_max_representative_docs = self.llm_config.get(
+            "max_representative_docs",
+            3
+        )
+
+        self.llm_max_doc_characters = self.llm_config.get(
+            "max_doc_characters",
+            500
+        )
+
+        self.llm_max_ancestors = self.llm_config.get(
+            "max_ancestors",
+            3
+        )
+
+
+        self.logger.info(f"LLM Configurations: max_topics={self.llm_max_topics}, "
+                         f"request_delay={self.llm_request_delay}, max_retries={self.llm_max_retries}, "
+                         f"retry_delay={self.llm_retry_delay}, max_representative_docs={self.llm_max_representative_docs}, "
+                         f"max_doc_characters={self.llm_max_doc_characters}, "
+                         f"max_ancestors={self.llm_max_ancestors}")
 
         self.save_path = save_path
 
@@ -1061,6 +1103,9 @@ class TopicModelingExperiment(Experiment):
                     topic_info=topic_info,
                     topic_hierarchy=topic_hierarchy,
                     topic_hierarchy_nodes=topic_hierarchy_nodes,
+                    max_representative_docs=self.llm_max_representative_docs,
+                    max_doc_characters=self.llm_max_doc_characters,
+                    max_ancestors=self.llm_max_ancestors,
                 )
 
                 if llm_topic_records:
@@ -1076,6 +1121,21 @@ class TopicModelingExperiment(Experiment):
                 # ---------------------------------------------------------
                 # LLM topic processing limit
                 # ---------------------------------------------------------
+                llm_provider = self.llm_config.get(
+                    "provider",
+                    "openai"
+                )
+
+                llm_model = self.llm_config.get(
+                    "model"
+                )
+
+                llm_prompt_version = self.llm_config.get(
+                    "prompt_version",
+                    PROMPT_VERSION
+                )
+
+
 
                 records_to_process = llm_topic_records
 
@@ -1102,33 +1162,68 @@ class TopicModelingExperiment(Experiment):
                     )
 
                     llm_results = []
+                    llm_failures = []
 
                     for topic_record in records_to_process:
-                        theme_result = self._generate_topic_theme(
-                            topic_record
-                        )
 
-                        # ---------------------------------------------------------
-                        # Enrich LLM result with original BERTopic metadata
-                        # ---------------------------------------------------------
+                        try:
+                            theme_result = self._generate_topic_theme(
+                                topic_record
+                            )
 
-                        theme_result["topic_label"] = topic_record.get(
-                            "topic_label"
-                        )
+                            # ---------------------------------------------------------
+                            # Enrich LLM result with original BERTopic metadata
+                            # ---------------------------------------------------------
+                            theme_result["topic_id"] = topic_record.get("topic_id")
 
-                        theme_result["topic_count"] = topic_record.get(
-                            "topic_count"
-                        )
+                            theme_result["topic_label"] = topic_record.get(
+                                "topic_label"
+                            )
 
-                        llm_results.append(
-                            theme_result
-                        )
+                            theme_result["topic_count"] = topic_record.get(
+                                "topic_count"
+                            )
 
-                        self.logger.info(
-                            "LLM theme generated for topic %s: %s",
-                            topic_record.get("topic_id"),
-                            theme_result
-                        )
+                            # ---------------------------------------------------------
+                            # LLM generation metadata
+                            # ---------------------------------------------------------
+
+                            llm_generated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+
+                            theme_result["llm_provider"] = llm_provider
+
+                            theme_result["llm_model"] = llm_model
+
+                            theme_result["prompt_version"] = llm_prompt_version
+
+                            theme_result["generated_at"] = llm_generated_at
+
+
+                            llm_results.append(
+                                theme_result
+                            )
+
+                            self.logger.info(
+                                "LLM theme generated for topic %s: %s",
+                                topic_record.get("topic_id"),
+                                theme_result
+                            )
+                        except Exception as e:
+                            failed_topic_id = topic_record.get("topic_id")
+
+                            self.logger.error(f"Error generating LLM theme for topic {failed_topic_id}: {e}")
+
+                            llm_failures.append(
+                                {
+                                    "topic_id": failed_topic_id,
+                                    "error": e,
+                                }
+                            )
+
+                            continue
+
+                        if self.llm_request_delay >0:
+                            time.sleep(self.llm_request_delay)
 
                     llm_results_df = pd.DataFrame(
                         llm_results
@@ -1142,6 +1237,10 @@ class TopicModelingExperiment(Experiment):
                             "theme",
                             "description",
                             "confidence",
+                            "llm_provider",
+                            "llm_model",
+                            "prompt_version",
+                            "generated_at",
                         ]
                     ]
 
@@ -1164,6 +1263,12 @@ class TopicModelingExperiment(Experiment):
                         "Generated LLM themes for %d topics",
                         len(llm_results_df)
                     )
+
+                    if llm_failures:
+                        self.logger.warning(
+                            "Failed LLM topic IDs: %s",
+                            [f["topic_id"] for f in llm_failures]
+                        )
 
                     self.logger.info(
                         "LLM theme results preview:\n%s",
@@ -2184,119 +2289,119 @@ class TopicModelingExperiment(Experiment):
 
         return records
 
-    def _build_topic_theme_prompt(self, topic_record):
-        """
-        Build the prompt used to generate a human-readable theme for
-        a single BERTopic topic.
-
-        The topic record contains the leaf topic information together
-        with its hierarchical context.
-        """
-
-        topic_id = topic_record.get("topic_id")
-        topic_label = topic_record.get("topic_label")
-        topic_count = topic_record.get("topic_count")
-        top_words = topic_record.get("top_words", [])
-        representative_docs = topic_record.get(
-            "representative_docs",
-            []
-        )
-
-        parent = topic_record.get("parent")
-        siblings = topic_record.get("siblings", [])
-        ancestors = topic_record.get("ancestors", [])
-
-        parent_label = (
-            parent.get("label")
-            if isinstance(parent, dict)
-            else None
-        )
-
-        sibling_labels = [
-            sibling.get("label")
-            for sibling in siblings
-            if isinstance(sibling, dict)
-        ]
-
-        ancestor_labels = [
-            ancestor.get("label")
-            for ancestor in ancestors
-            if isinstance(ancestor, dict)
-        ]
-
-        prompt = f"""
-    You are analysing topics generated from an Irish parliamentary
-    question-and-answer corpus.
-
-    Your task is to assign a concise, meaningful human-readable theme
-    to the topic below.
-
-    The theme should describe the substantive subject matter of the
-    topic rather than simply repeating its most frequent words.
-
-    Use the representative documents as the primary evidence.
-    Use the top words and hierarchical context as supporting evidence.
-
-    Do not assume that the automatically generated BERTopic labels are
-    semantically correct. They are only clues.
-
-    TOPIC
-    -----
-
-    Topic ID:
-    {topic_id}
-
-    Topic label:
-    {topic_label}
-
-    Number of documents:
-    {topic_count}
-
-    Top words:
-    {top_words}
-
-    Representative documents:
-    {representative_docs}
-
-    HIERARCHICAL CONTEXT
-    --------------------
-
-    Parent topic:
-    {parent_label}
-
-    Sibling topics:
-    {sibling_labels}
-
-    Ancestor topics:
-    {ancestor_labels}
-
-    TASK
-    ----
-
-    Determine the main substantive theme of this topic.
-
-    Return ONLY valid JSON using exactly this structure:
-
-    {{
-      "topic_id": {topic_id},
-      "theme": "A concise human-readable theme",
-      "description": "A one or two sentence description explaining what this topic concerns.",
-      "confidence": 0.0
-    }}
-
-    Requirements:
-
-    - The theme should normally be between 3 and 10 words.
-    - The description should identify the main subject matter represented
-      by the topic.
-    - Base the interpretation primarily on the representative documents.
-    - Use the hierarchical information to help disambiguate the topic.
-    - Do not simply reproduce the topic label.
-    - Do not mention BERTopic, clustering, embeddings or this prompt.
-    - Confidence must be a number between 0.0 and 1.0.
-    """
-
-        return prompt.strip()
+    # def _build_topic_theme_prompt(self, topic_record):
+    #     """
+    #     Build the prompt used to generate a human-readable theme for
+    #     a single BERTopic topic.
+    #
+    #     The topic record contains the leaf topic information together
+    #     with its hierarchical context.
+    #     """
+    #
+    #     topic_id = topic_record.get("topic_id")
+    #     topic_label = topic_record.get("topic_label")
+    #     topic_count = topic_record.get("topic_count")
+    #     top_words = topic_record.get("top_words", [])
+    #     representative_docs = topic_record.get(
+    #         "representative_docs",
+    #         []
+    #     )
+    #
+    #     parent = topic_record.get("parent")
+    #     siblings = topic_record.get("siblings", [])
+    #     ancestors = topic_record.get("ancestors", [])
+    #
+    #     parent_label = (
+    #         parent.get("label")
+    #         if isinstance(parent, dict)
+    #         else None
+    #     )
+    #
+    #     sibling_labels = [
+    #         sibling.get("label")
+    #         for sibling in siblings
+    #         if isinstance(sibling, dict)
+    #     ]
+    #
+    #     ancestor_labels = [
+    #         ancestor.get("label")
+    #         for ancestor in ancestors
+    #         if isinstance(ancestor, dict)
+    #     ]
+    #
+    #     prompt = f"""
+    # You are analysing topics generated from an Irish parliamentary
+    # question-and-answer corpus.
+    #
+    # Your task is to assign a concise, meaningful human-readable theme
+    # to the topic below.
+    #
+    # The theme should describe the substantive subject matter of the
+    # topic rather than simply repeating its most frequent words.
+    #
+    # Use the representative documents as the primary evidence.
+    # Use the top words and hierarchical context as supporting evidence.
+    #
+    # Do not assume that the automatically generated BERTopic labels are
+    # semantically correct. They are only clues.
+    #
+    # TOPIC
+    # -----
+    #
+    # Topic ID:
+    # {topic_id}
+    #
+    # Topic label:
+    # {topic_label}
+    #
+    # Number of documents:
+    # {topic_count}
+    #
+    # Top words:
+    # {top_words}
+    #
+    # Representative documents:
+    # {representative_docs}
+    #
+    # HIERARCHICAL CONTEXT
+    # --------------------
+    #
+    # Parent topic:
+    # {parent_label}
+    #
+    # Sibling topics:
+    # {sibling_labels}
+    #
+    # Ancestor topics:
+    # {ancestor_labels}
+    #
+    # TASK
+    # ----
+    #
+    # Determine the main substantive theme of this topic.
+    #
+    # Return ONLY valid JSON using exactly this structure:
+    #
+    # {{
+    #   "topic_id": {topic_id},
+    #   "theme": "A concise human-readable theme",
+    #   "description": "A one or two sentence description explaining what this topic concerns.",
+    #   "confidence": 0.0
+    # }}
+    #
+    # Requirements:
+    #
+    # - The theme should normally be between 3 and 10 words.
+    # - The description should identify the main subject matter represented
+    #   by the topic.
+    # - Base the interpretation primarily on the representative documents.
+    # - Use the hierarchical information to help disambiguate the topic.
+    # - Do not simply reproduce the topic label.
+    # - Do not mention BERTopic, clustering, embeddings or this prompt.
+    # - Confidence must be a number between 0.0 and 1.0.
+    # """
+    #
+    #     return prompt.strip()
 
     def _generate_topic_theme(self, topic_record):
         """
@@ -2312,7 +2417,7 @@ class TopicModelingExperiment(Experiment):
                 "Cannot generate topic theme from an empty topic record"
             )
 
-        prompt = self._build_topic_theme_prompt(
+        prompt = build_topic_theme_prompt(
             topic_record
         )
 
@@ -2350,7 +2455,9 @@ class TopicModelingExperiment(Experiment):
 
             llm = LLMFactory.create(
                 provider=provider,
-                model=model
+                model=model,
+                max_retries=self.llm_max_retries,
+                retry_delay=self.llm_retry_delay
             )
 
             response = llm.generate(

@@ -34,7 +34,7 @@ class TopicsPerClass(BERTopicVisualisation):
 
         super().__init__(
             name="topics_per_class",
-            #title="Topics Per Class",
+            title="",
             output_dir=output_dir,
             filename=filename,
             method="visualize_topics_per_class",
@@ -111,6 +111,7 @@ class TopicsPerClass(BERTopicVisualisation):
 
             fig = bertopic_model.visualize_topics_per_class(
                 topics_per_class,
+                title=self.title,
                 **plot_kwargs
             )
 

@@ -17,7 +17,7 @@ class TopicBarChart(BERTopicVisualisation):
 
         super().__init__(
             name="topic_barchart",
-            title="Topic Barchart",
+            title="",
             output_dir=output_dir,
             filename=filename,
             method="visualize_barchart",

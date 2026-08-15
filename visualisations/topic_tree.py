@@ -21,7 +21,7 @@ class TopicTree(BERTopicVisualisation):
 
         super().__init__(
             name="topic_tree",
-            title="Topic Tree",
+            title=None,
             output_dir=output_dir,
             filename=filename,
             method="get_topic_tree",

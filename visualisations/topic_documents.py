@@ -15,7 +15,7 @@ class TopicDocuments(BERTopicVisualisation):
 
         super().__init__(
             name="topic_documents",
-            title="Topic Documents",
+            title="",
             output_dir=output_dir,
             filename=filename,
             method="visualize_documents",
@@ -51,6 +51,7 @@ class TopicDocuments(BERTopicVisualisation):
 
         fig = bertopic_model.visualize_documents(
             docs,
+            title=self.title,
             **self.params,
             **plot_kwargs
         )

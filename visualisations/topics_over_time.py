@@ -34,7 +34,7 @@ class TopicsOverTime(BERTopicVisualisation):
 
         super().__init__(
             name="topics_over_time",
-            #title="Topics Over Time",
+            title="",
             output_dir=output_dir,
             filename=filename,
             method="topics_over_time",
@@ -222,6 +222,7 @@ class TopicsOverTime(BERTopicVisualisation):
                 bertopic_model
                 .visualize_topics_over_time(
                     topics_over_time,
+                    title=self.title,
                     **plot_kwargs
                 )
             )

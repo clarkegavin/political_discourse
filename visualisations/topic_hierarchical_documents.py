@@ -16,7 +16,7 @@ class HierarchicalDocuments(BERTopicVisualisation):
 
         super().__init__(
             name="hierarchical_documents",
-            title="Hierarchical Documents",
+            title="",
             output_dir=output_dir,
             filename=filename,
             method="visualize_hierarchical_documents",
@@ -110,6 +110,7 @@ class HierarchicalDocuments(BERTopicVisualisation):
             visualisation_params = {
                 "docs": docs,
                 "hierarchical_topics": hierarchical_topics,
+                "title": self.title,
                 **self.params,
                 **plot_kwargs
             }

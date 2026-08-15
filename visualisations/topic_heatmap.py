@@ -15,7 +15,7 @@ class TopicHeatmap(BERTopicVisualisation):
 
         super().__init__(
             name="topic_heatmap",
-            title="Topic Heatmap",
+            title="",
             output_dir=output_dir,
             filename=filename,
             method="visualize_heatmap",

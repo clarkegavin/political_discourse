@@ -17,7 +17,7 @@ params:
         enabled: true
         id_column: "QuestionId"
         cache_dir: "output/embeddings_cache/selected_model"
-        overwrite: false
+        overwrite: true
     dimensionality_reduction_model:
       name: umap
       params: {}
@@ -136,7 +136,17 @@ llm:
   enabled: true
   provider: openai
   model: gpt-5.4-mini
-  max_topics: 5
+
+  max_representative_docs: 3
+  max_doc_characters: 1500
+  max_ancestors: 3
+
+  max_topics: null
+
+  request_delay_seconds: 0.5
+  max_retries: 5
+  retry_delay: 2.0
+
   llm_output:
     saver_name: sql_server
     table_name: oireachtas_topic_llm

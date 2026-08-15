@@ -101,7 +101,9 @@ class BERTopicVisualisation(Visualisation):
             )
 
             result = visualisation_method(
+
                 **self.params,
+                title = self.title,
                 **plot_kwargs
             )
 

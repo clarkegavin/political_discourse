@@ -28,7 +28,7 @@ class TopicDistribution:
         fig = plt.figure()
         topic_counts.plot(kind="bar")
 
-        plt.title(f"Top {self.top_n} Topics by Document Count")
+        #plt.title(f"Top {self.top_n} Topics by Document Count")
         plt.xlabel("Topic")
         plt.ylabel("Number of Documents")
         plt.xticks(rotation=45, ha="right")
