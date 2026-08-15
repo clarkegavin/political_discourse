@@ -42,6 +42,7 @@ class TopicModelingExperiment(Experiment):
         mlflow_experiment: Optional[str] = None,
         visualisations: Optional[list] = None,
         topic_outputs: Optional[Dict[str, Any]] = None,
+        llm = None,
         save_path: Optional[str] = None,
         preprocessing_metadata: Optional[Dict] = None,
         #combined_text_field_name: str = "__topic_input_text__",
@@ -94,6 +95,17 @@ class TopicModelingExperiment(Experiment):
             self.save_topic_hierarchy
         )
 
+        self.llm_config = llm or {}
+        self.llm_enabled = self.llm_config.get(
+            "enabled",
+            False
+        )
+
+        self.llm_max_topics = self.llm_config.get(
+            "max_topics",
+            None
+        )
+        self.logger.info("LLM configuration: enabled=%s, max_topics=%s", self.llm_enabled, self.llm_max_topics)
 
         self.save_path = save_path
 
@@ -1045,6 +1057,125 @@ class TopicModelingExperiment(Experiment):
                         hierarchy_path
                     )
 
+                llm_topic_records = self._build_llm_topic_records(
+                    topic_info=topic_info,
+                    topic_hierarchy=topic_hierarchy,
+                    topic_hierarchy_nodes=topic_hierarchy_nodes,
+                )
+
+                if llm_topic_records:
+                    self.logger.info(
+                        "Sample LLM topic record:\n%s",
+                        json.dumps(
+                            llm_topic_records[0],
+                            indent=2,
+                            ensure_ascii=False,
+                            default=str
+                        )
+                    )
+                # ---------------------------------------------------------
+                # LLM topic processing limit
+                # ---------------------------------------------------------
+
+                records_to_process = llm_topic_records
+
+                if self.llm_max_topics is not None:
+                    records_to_process = llm_topic_records[
+                        :self.llm_max_topics
+                    ]
+
+                self.logger.info(
+                    "LLM topic processing: %d of %d topics selected",
+                    len(records_to_process),
+                    len(llm_topic_records)
+                )
+
+                # ---------------------------------------------------------
+                # Generate LLM topic themes
+                # ---------------------------------------------------------
+
+                if self.llm_config.get("enabled", False):
+
+                    self.logger.info(
+                        "Generating LLM themes for %d topics",
+                        len(records_to_process)
+                    )
+
+                    llm_results = []
+
+                    for topic_record in records_to_process:
+                        theme_result = self._generate_topic_theme(
+                            topic_record
+                        )
+
+                        # ---------------------------------------------------------
+                        # Enrich LLM result with original BERTopic metadata
+                        # ---------------------------------------------------------
+
+                        theme_result["topic_label"] = topic_record.get(
+                            "topic_label"
+                        )
+
+                        theme_result["topic_count"] = topic_record.get(
+                            "topic_count"
+                        )
+
+                        llm_results.append(
+                            theme_result
+                        )
+
+                        self.logger.info(
+                            "LLM theme generated for topic %s: %s",
+                            topic_record.get("topic_id"),
+                            theme_result
+                        )
+
+                    llm_results_df = pd.DataFrame(
+                        llm_results
+                    )
+
+                    llm_results_df = llm_results_df[
+                        [
+                            "topic_id",
+                            "topic_label",
+                            "topic_count",
+                            "theme",
+                            "description",
+                            "confidence",
+                        ]
+                    ]
+
+                    # ---------------------------------------------------------
+                    # Save LLM result to database
+                    # ---------------------------------------------------------
+                    if not llm_results_df.empty:
+
+                        llm_table = self._save_llm_results(
+                            llm_results_df
+                        )
+
+                        if llm_table:
+                            self.logger.info(
+                                "LLM topic results saved to SQL table: %s",
+                                llm_table
+                            )
+
+                    self.logger.info(
+                        "Generated LLM themes for %d topics",
+                        len(llm_results_df)
+                    )
+
+                    self.logger.info(
+                        "LLM theme results preview:\n%s",
+                        llm_results_df.head().to_string(index=False)
+                    )
+
+                else:
+
+                    self.logger.info(
+                        "LLM topic theme generation disabled"
+                    )
+
             else:
 
                 self.logger.info(
@@ -1056,6 +1187,8 @@ class TopicModelingExperiment(Experiment):
             self.logger.exception(
                 f"Could not generate topic outputs: {e}"
             )
+
+
         # Attach back
         result_df = self._attach_topics(topics=topics, probs=probs, topic_info=topic_info)
         self.logger.info(f"Attached topic assignments to original dataframe; result shape: {result_df.shape}")
@@ -1072,6 +1205,7 @@ class TopicModelingExperiment(Experiment):
             "representation_text_field": self.representation_text_field,
             "visualisations": self.visualisations,
             "topic_outputs": self.topic_outputs,
+            "llm": self.llm_config,
             "topics": topics,
             "model": self.model,
         }
@@ -1270,6 +1404,7 @@ class TopicModelingExperiment(Experiment):
             **(self.evaluator_params or {}),
             "visualisations": self.visualisations,
             "topic_outputs": self.topic_outputs,
+            "llm": self.llm_config,
             "preprocessing": self.preprocessing_metadata,
         }
 
@@ -1700,3 +1835,682 @@ class TopicModelingExperiment(Experiment):
             )
 
         return nodes_sql
+
+    def _build_llm_topic_records(
+            self,
+            topic_info,
+            topic_hierarchy,
+            topic_hierarchy_nodes,
+            max_representative_docs=3,
+            max_doc_characters=500,
+            max_ancestors=3,
+    ):
+        """
+        Build structured, LLM-ready records for each leaf topic.
+
+        Each record combines:
+            - BERTopic topic information
+            - a limited number of representative documents
+            - an immediate parent
+            - sibling topics
+            - a limited number of higher-level ancestors
+
+        No LLM calls are made here. This method only prepares the
+        contextual information that will later be supplied to an LLM.
+
+        Parameters
+        ----------
+        topic_info : pd.DataFrame
+            BERTopic topic information.
+
+        topic_hierarchy : pd.DataFrame
+            BERTopic hierarchical merge information.
+
+        topic_hierarchy_nodes : pd.DataFrame
+            Relational representation of all leaf and parent nodes.
+
+        max_representative_docs : int
+            Maximum number of representative documents retained per topic.
+
+        max_doc_characters : int
+            Maximum number of characters retained from each representative
+            document.
+
+        max_ancestors : int
+            Maximum number of higher-level ancestors retained.
+        """
+
+        self.logger.info(
+            "Building LLM-ready topic records"
+        )
+
+        if topic_info is None or topic_info.empty:
+            self.logger.warning(
+                "Cannot build LLM topic records: topic_info is empty"
+            )
+            return []
+
+        if (
+                topic_hierarchy_nodes is None
+                or topic_hierarchy_nodes.empty
+        ):
+            self.logger.warning(
+                "Cannot build LLM topic records: "
+                "topic_hierarchy_nodes is empty"
+            )
+            return []
+
+        self.logger.info(
+            "LLM record configuration: "
+            "max_representative_docs=%d, "
+            "max_doc_characters=%d, "
+            "max_ancestors=%d",
+            max_representative_docs,
+            max_doc_characters,
+            max_ancestors,
+        )
+
+        # ---------------------------------------------------------
+        # Identify leaf topics
+        # ---------------------------------------------------------
+
+        leaf_nodes = topic_hierarchy_nodes[
+            topic_hierarchy_nodes["node_type"] == "leaf"
+            ].copy()
+
+        # Exclude BERTopic's outlier topic (-1).
+        leaf_nodes = leaf_nodes[
+            leaf_nodes["node_id"] != -1
+            ].copy()
+
+        self.logger.info(
+            "Preparing LLM records for %d leaf topics",
+            len(leaf_nodes)
+        )
+
+        # ---------------------------------------------------------
+        # Build node lookup
+        # ---------------------------------------------------------
+
+        nodes_by_id = (
+            topic_hierarchy_nodes
+            .set_index("node_id")
+            .to_dict("index")
+        )
+
+        # ---------------------------------------------------------
+        # Build topic_info lookup
+        # ---------------------------------------------------------
+
+        topic_info_by_id = (
+            topic_info
+            .set_index("Topic")
+            .to_dict("index")
+        )
+
+        records = []
+
+        # ---------------------------------------------------------
+        # Process each leaf topic
+        # ---------------------------------------------------------
+
+        for _, leaf in leaf_nodes.iterrows():
+
+            topic_id = int(leaf["node_id"])
+
+            topic_info_row = topic_info_by_id.get(
+                topic_id,
+                {}
+            )
+
+            # -----------------------------------------------------
+            # Representative documents
+            # -----------------------------------------------------
+
+            representative_docs = topic_info_row.get(
+                "Representative_Docs",
+                leaf.get("representative_docs")
+            )
+
+            if representative_docs is None:
+                representative_docs = []
+
+            # Ensure we are working with a list
+            if not isinstance(
+                    representative_docs,
+                    (list, tuple)
+            ):
+                representative_docs = [
+                    representative_docs
+                ]
+
+            representative_docs = list(
+                representative_docs
+            )[:max_representative_docs]
+
+            # Truncate individual documents
+            truncated_docs = []
+
+            for document in representative_docs:
+
+                if document is None:
+                    continue
+
+                document = str(document).strip()
+
+                if len(document) > max_doc_characters:
+                    document = (
+                            document[:max_doc_characters].rstrip()
+                            + " ..."
+                    )
+
+                truncated_docs.append(
+                    document
+                )
+
+            # -----------------------------------------------------
+            # Basic topic information
+            # -----------------------------------------------------
+
+            record = {
+                "topic_id": topic_id,
+
+                "topic_label": topic_info_row.get(
+                    "Name",
+                    leaf.get("topic_label")
+                ),
+
+                "topic_count": topic_info_row.get(
+                    "Count",
+                    leaf.get("topic_count")
+                ),
+
+                "top_words": topic_info_row.get(
+                    "Representation",
+                    leaf.get("top_words")
+                ),
+
+                "representative_docs": truncated_docs,
+
+                "parent": None,
+
+                "siblings": [],
+
+                "ancestors": [],
+            }
+
+            # -----------------------------------------------------
+            # Find immediate parent
+            # -----------------------------------------------------
+
+            parent_id = leaf.get("parent_id")
+
+            if pd.notna(parent_id):
+
+                parent_id = int(parent_id)
+
+                parent_node = nodes_by_id.get(
+                    parent_id
+                )
+
+                if parent_node is not None:
+                    record["parent"] = {
+                        "node_id": parent_id,
+                        "label": parent_node.get(
+                            "topic_label"
+                        ),
+                    }
+
+            # -----------------------------------------------------
+            # Find siblings
+            # -----------------------------------------------------
+
+            if (
+                    parent_id is not None
+                    and pd.notna(parent_id)
+            ):
+
+                parent_node = nodes_by_id.get(
+                    parent_id
+                )
+
+                if parent_node is not None:
+
+                    child_ids = [
+                        parent_node.get(
+                            "child_left_id"
+                        ),
+                        parent_node.get(
+                            "child_right_id"
+                        ),
+                    ]
+
+                    for child_id in child_ids:
+
+                        if pd.isna(child_id):
+                            continue
+
+                        child_id = int(child_id)
+
+                        # Don't include current topic
+                        if child_id == topic_id:
+                            continue
+
+                        sibling_node = nodes_by_id.get(
+                            child_id
+                        )
+
+                        if sibling_node is not None:
+                            record["siblings"].append(
+                                {
+                                    "node_id": child_id,
+                                    "label": sibling_node.get(
+                                        "topic_label"
+                                    ),
+                                }
+                            )
+
+            # -----------------------------------------------------
+            # Traverse higher-level ancestors
+            # -----------------------------------------------------
+
+            current_parent_id = parent_id
+
+            visited = set()
+
+            while (
+                    current_parent_id is not None
+                    and pd.notna(current_parent_id)
+                    and len(record["ancestors"]) < max_ancestors
+            ):
+
+                current_parent_id = int(
+                    current_parent_id
+                )
+
+                # Protect against malformed/cyclic hierarchy
+                if current_parent_id in visited:
+                    self.logger.warning(
+                        "Cycle detected while traversing "
+                        "hierarchy for topic %s",
+                        topic_id
+                    )
+
+                    break
+
+                visited.add(
+                    current_parent_id
+                )
+
+                parent_node = nodes_by_id.get(
+                    current_parent_id
+                )
+
+                if parent_node is None:
+                    break
+
+                # Skip immediate parent because it is already
+                # represented separately in record["parent"].
+                if current_parent_id != parent_id:
+                    record["ancestors"].append(
+                        {
+                            "node_id": current_parent_id,
+                            "label": parent_node.get(
+                                "topic_label"
+                            ),
+                        }
+                    )
+
+                next_parent_id = parent_node.get(
+                    "parent_id"
+                )
+
+                if (
+                        next_parent_id is None
+                        or pd.isna(next_parent_id)
+                ):
+                    break
+
+                current_parent_id = next_parent_id
+
+            records.append(
+                record
+            )
+
+        self.logger.info(
+            "Generated %d LLM-ready topic records",
+            len(records)
+        )
+
+        return records
+
+    def _build_topic_theme_prompt(self, topic_record):
+        """
+        Build the prompt used to generate a human-readable theme for
+        a single BERTopic topic.
+
+        The topic record contains the leaf topic information together
+        with its hierarchical context.
+        """
+
+        topic_id = topic_record.get("topic_id")
+        topic_label = topic_record.get("topic_label")
+        topic_count = topic_record.get("topic_count")
+        top_words = topic_record.get("top_words", [])
+        representative_docs = topic_record.get(
+            "representative_docs",
+            []
+        )
+
+        parent = topic_record.get("parent")
+        siblings = topic_record.get("siblings", [])
+        ancestors = topic_record.get("ancestors", [])
+
+        parent_label = (
+            parent.get("label")
+            if isinstance(parent, dict)
+            else None
+        )
+
+        sibling_labels = [
+            sibling.get("label")
+            for sibling in siblings
+            if isinstance(sibling, dict)
+        ]
+
+        ancestor_labels = [
+            ancestor.get("label")
+            for ancestor in ancestors
+            if isinstance(ancestor, dict)
+        ]
+
+        prompt = f"""
+    You are analysing topics generated from an Irish parliamentary
+    question-and-answer corpus.
+
+    Your task is to assign a concise, meaningful human-readable theme
+    to the topic below.
+
+    The theme should describe the substantive subject matter of the
+    topic rather than simply repeating its most frequent words.
+
+    Use the representative documents as the primary evidence.
+    Use the top words and hierarchical context as supporting evidence.
+
+    Do not assume that the automatically generated BERTopic labels are
+    semantically correct. They are only clues.
+
+    TOPIC
+    -----
+
+    Topic ID:
+    {topic_id}
+
+    Topic label:
+    {topic_label}
+
+    Number of documents:
+    {topic_count}
+
+    Top words:
+    {top_words}
+
+    Representative documents:
+    {representative_docs}
+
+    HIERARCHICAL CONTEXT
+    --------------------
+
+    Parent topic:
+    {parent_label}
+
+    Sibling topics:
+    {sibling_labels}
+
+    Ancestor topics:
+    {ancestor_labels}
+
+    TASK
+    ----
+
+    Determine the main substantive theme of this topic.
+
+    Return ONLY valid JSON using exactly this structure:
+
+    {{
+      "topic_id": {topic_id},
+      "theme": "A concise human-readable theme",
+      "description": "A one or two sentence description explaining what this topic concerns.",
+      "confidence": 0.0
+    }}
+
+    Requirements:
+
+    - The theme should normally be between 3 and 10 words.
+    - The description should identify the main subject matter represented
+      by the topic.
+    - Base the interpretation primarily on the representative documents.
+    - Use the hierarchical information to help disambiguate the topic.
+    - Do not simply reproduce the topic label.
+    - Do not mention BERTopic, clustering, embeddings or this prompt.
+    - Confidence must be a number between 0.0 and 1.0.
+    """
+
+        return prompt.strip()
+
+    def _generate_topic_theme(self, topic_record):
+        """
+        Generate an LLM-derived theme for a single topic record.
+
+        This method deliberately processes one topic at a time.
+        Batch processing will be added once the prompt and output
+        have been validated.
+        """
+
+        if not topic_record:
+            raise ValueError(
+                "Cannot generate topic theme from an empty topic record"
+            )
+
+        prompt = self._build_topic_theme_prompt(
+            topic_record
+        )
+
+        llm_config = self.llm_config
+
+        if not llm_config:
+            raise ValueError(
+                "No LLM configuration found in model_params.llm"
+            )
+
+        provider = llm_config.get(
+            "provider",
+            "openai"
+        )
+
+        model = llm_config.get(
+            "model"
+        )
+
+        if not model:
+            raise ValueError(
+                "LLM model must be configured in model_params.llm.model"
+            )
+
+        self.logger.info(
+            "Generating LLM theme for topic %s using %s/%s",
+            topic_record.get("topic_id"),
+            provider,
+            model
+        )
+
+        try:
+
+            from llm.factory import LLMFactory
+
+            llm = LLMFactory.create(
+                provider=provider,
+                model=model
+            )
+
+            response = llm.generate(
+                prompt
+            )
+
+            self.logger.info(
+                "Generated LLM theme for topic %s",
+                topic_record.get("topic_id")
+            )
+
+            try:
+                result = json.loads(response)
+            except json.JSONDecodeError as e:
+                self.logger.error(
+                    "Invalid JSON returned by LLM for topic %s: %s",
+                    topic_record.get("topic_id"),
+                    response
+                )
+                raise ValueError(
+                    f"LLM returned invalid JSON for topic "
+                    f"{topic_record.get('topic_id')}"
+                ) from e
+
+            required_fields = [
+                "topic_id",
+                "theme",
+                "description",
+                "confidence",
+            ]
+
+            missing = [
+                field
+                for field in required_fields
+                if field not in result
+            ]
+
+            if missing:
+                raise ValueError(
+                    f"LLM response for topic {topic_record.get('topic_id')} "
+                    f"is missing fields: {missing}"
+                )
+
+            return result
+
+        except Exception as e:
+
+            self.logger.exception(
+                "Failed to generate LLM theme for topic %s: %s",
+                topic_record.get("topic_id"),
+                e
+            )
+
+            raise
+
+    def _save_llm_results(self, llm_results_df):
+        """
+        Save LLM-generated topic themes using the configured
+        DataSaverFactory implementation.
+        """
+
+        if llm_results_df is None or llm_results_df.empty:
+            self.logger.warning(
+                "No LLM topic results available to save"
+            )
+            return None
+
+        output_cfg = self.llm_config.get(
+            "llm_output",
+            {}
+        )
+
+        if not output_cfg:
+            self.logger.info(
+                "No LLM output configuration supplied; "
+                "LLM results will not be saved"
+            )
+            return None
+
+        saver_name = output_cfg.get(
+            "saver_name",
+            "sql_server"
+        )
+
+        table_name = output_cfg.get(
+            "table_name"
+        )
+
+        if not table_name:
+            raise ValueError(
+                "llm.llm_output.table_name must be configured "
+                "when saving LLM results"
+            )
+
+        if_exists = output_cfg.get(
+            "if_exists",
+            "replace"
+        )
+
+        chunk_size = output_cfg.get(
+            "chunk_size",
+            1000
+        )
+
+        schema = output_cfg.get(
+            "schema"
+        )
+
+        connector_params = output_cfg.get(
+            "connector_params",
+            {}
+        )
+
+        self.logger.info(
+            "Saving LLM topic results to table '%s' "
+            "using saver '%s'",
+            table_name,
+            saver_name
+        )
+
+        try:
+
+            from data.savers import DataSaverFactory
+            from data.sqlalchemy_connector import SQLAlchemyConnector
+
+            saver = DataSaverFactory.get_saver(
+                saver_name
+            )
+
+            if saver is None:
+                raise ValueError(
+                    f"No saver registered with name '{saver_name}'"
+                )
+
+            connector = SQLAlchemyConnector(
+                **connector_params
+            )
+
+            saver.save(
+                df=llm_results_df,
+                table_name=table_name,
+                connector=connector,
+                if_exists=if_exists,
+                chunk_size=chunk_size,
+                schema=schema,
+            )
+
+            self.logger.info(
+                "LLM topic results successfully saved to '%s'",
+                table_name
+            )
+
+            return table_name
+
+        except Exception as e:
+
+            self.logger.exception(
+                "Failed to save LLM topic results to '%s': %s",
+                table_name,
+                e
+            )
+
+            raise

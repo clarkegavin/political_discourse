@@ -132,6 +132,18 @@ topic_outputs:
     chunk_size: 1000
     schema: dbo
     connector_params: { }
+llm:
+  enabled: true
+  provider: openai
+  model: gpt-5.4-mini
+  max_topics: 5
+  llm_output:
+    saver_name: sql_server
+    table_name: oireachtas_topic_llm
+    if_exists: replace
+    chunk_size: 1000
+    schema: dbo
+    connector_params: { }
 sweep:
   params.model_params.dimensionality_reduction_model:
     - name: umap

@@ -135,6 +135,7 @@ class TopicModelingPipeline(Pipeline):
                     "dataset_name": self.dataset_name,
                     "visualisations": exp_cfg.get("visualisations", []),
                     "topic_outputs": exp_cfg.get("topic_outputs", {}),
+                    "llm": exp_cfg.get("llm", {}),
                     "representation_text_field": self.representation_text_field,
                 },
             }
