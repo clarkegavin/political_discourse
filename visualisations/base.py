@@ -9,6 +9,7 @@ class Visualisation(ABC):
     """
     def __init__(self, title: str, figsize: tuple=(10,6)):
         self.title = title
+        self.figsize = figsize
         self.logger = get_logger(f"Visualisation:{title}")
         self.logger.info(f'Initialized visualisation: {title}')
 

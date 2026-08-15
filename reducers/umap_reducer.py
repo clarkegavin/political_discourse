@@ -17,10 +17,6 @@ class UMAPReducer(Reducer):
         self.logger = get_logger("UMAPReducer")
         self.logger.info(f"Initializing UMAPReducer with name={name} and params={params}")
         self.name = name
-        # if umap is None:
-        #     self.logger.warning("umap-learn is not installed; UMAPReducer will raise on fit/transform.")
-        # self.n_components = n_components
-        # self.random_state = random_state
         self.params = params
         self.model = None
 
@@ -29,6 +25,9 @@ class UMAPReducer(Reducer):
             raise RuntimeError("umap-learn is required for UMAPReducer. Install with 'pip install umap-learn'.")
         self.model = umap.UMAP(**self.params)
         self.logger.info(f"Built UMAP model with params={self.params}")
+        self.logger.info(
+            f"Effective UMAP parameters: {self.model.get_params()}"
+        )
         return self
 
     def fit(self, X: Any):
@@ -37,14 +36,12 @@ class UMAPReducer(Reducer):
 
         if self.model is None:
             self.build()
-        #self._model = umap.UMAP(n_components=self.n_components, random_state=self.random_state, **self.kwargs)
         self.model.fit(X)
         return self
 
     def transform(self, X: Any):
         if self.model is None:
             # lazily create the model if fit() wasn't called
-            #self.model = umap.UMAP(n_components=self.n_components, random_state=self.random_state, **self.kwargs)
             self.model = self.build()
         return self.model.transform(X)
 
@@ -68,9 +65,9 @@ class UMAPReducer(Reducer):
             self.logger.warning("NaNs detected in UMAP input; replacing with 0")
             X_np = np.nan_to_num(X_np)
 
-        self.model =  self.build() #umap.UMAP(n_components=self.n_components, random_state=self.random_state, **self.kwargs)
+        self.model =  self.build()
         self.logger.info("UMAP model created, performing fit_transform")
-        embedding  = self.model.fit_transform(X)
+        embedding  = self.model.fit_transform(X_np)
         # convert numpy array back to DataFrame
         columns = [f"umap_{i}" for i in range(embedding.shape[1])]
         embedding_df = pd.DataFrame(

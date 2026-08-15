@@ -16,7 +16,7 @@ class IntertopicDistance(BERTopicVisualisation):
 
         super().__init__(
             name="intertopic_distance",
-            title="Intertopic Distance Map",
+            title="",
             output_dir=output_dir,
             filename=filename,
             method="visualize_topics",

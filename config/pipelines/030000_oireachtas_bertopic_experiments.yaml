@@ -1,28 +1,42 @@
-# file: `config/pipelines/topic_modeling_bertopic.yaml`
-name: topic_modeling_bertopic
-type: pipelines.topic_modeling_pipeline.TopicModelingPipeline
-enabled: true
-params:
-  model_name: bertopic
-  dataset_name: parliamentary_questions
-  evaluator_name: topic_modeling
-  evaluator_params:
-    top_n_topics: 100
-  mlflow_experiment: baseline
-  representation_text_field: RepresentationDocument
-  experiment_refs:
-    - config/experiments/minilm_embeddings_baseline.yaml
-    - config/experiments/roberta_embeddings_baseline.yaml
-    - config/experiments/rooseberta_embeddings_baseline.yaml
-
-    - config/experiments/01000_minilm_reducer.yaml
-    - config/experiments/02000_minilm_clusterer.yaml
-    - config/experiments/03000_minilm_vectorizer.yaml
-    - config/experiments/04000_minilm_ctfidf.yaml
-    - config/experiments/05000_minilm_representation.yaml
-
-#   - config/experiments/minilm_embeddings.yaml
-#    - config/experiments/roberta_embeddings.yaml
-#    - config/experiments/rooseberta_embeddings.yaml
-#    - config/experiments/mpnet_embeddings.yaml
-#    - config/experiments//minilm_embeddings_baseline.yaml
+## file: `config/pipelines/topic_modeling_bertopic.yaml`
+#name: topic_modeling_bertopic
+#type: pipelines.topic_modeling_pipeline.TopicModelingPipeline
+#enabled: true
+#params:
+#  model_name: bertopic
+#  dataset_name: parliamentary_questions
+#  evaluator_name: topic_modeling
+#  evaluator_params:
+#    top_n: 10
+#  mlflow_experiment: pq_experiments
+#  representation_text_field: RepresentationDocument
+#  experiment_refs:
+#
+#
+##     # MiniLM Sweeps
+#
+##    - config/experiments/minilm/00000_minilm_embeddings_baseline.yaml
+##    - config/experiments/minilm/01000_minilm_reducer.yaml
+##    - config/experiments/minilm/02000_minilm_clusterer.yaml
+##    - config/experiments/minilm/03000_minilm_vectorizer.yaml
+##    - config/experiments/minilm/04000_minilm_ctfidf.yaml
+##    - config/experiments/minilm/05000_minilm_representation.yaml
+##
+##     # RoBERTa Sweeps
+#
+##    - config/experiments/roberta/00000_roberta_embeddings_baseline.yaml
+##    - config/experiments/roberta/01000_roberta_reducer.yaml
+##    - config/experiments/roberta/02000_roberta_clusterer.yaml
+##    - config/experiments/roberta/03000_roberta_vectorizer.yaml
+##    - config/experiments/roberta/04000_roberta_ctfidf.yaml
+##    - config/experiments/roberta/05000_roberta_representation.yaml
+##
+##    # RooseBERT Sweeps
+#
+##    - config/experiments/roosebert/00000_roosebert_embeddings_baseline.yaml
+##    - config/experiments/roosebert/01000_roosebert_reducer.yaml
+##    - config/experiments/roosebert/02000_roosebert_clusterer.yaml
+##    - config/experiments/roosebert/03000_roosebert_vectorizer.yaml
+##    - config/experiments/roosebert/04000_roosebert_ctfidf.yaml
+##    - config/experiments/roosebert/05000_roosebert_representation.yaml
+##

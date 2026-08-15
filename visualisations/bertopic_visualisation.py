@@ -7,13 +7,13 @@ from typing import Optional
 
 class BERTopicVisualisation(Visualisation):
     """
-    Base class for BERTopic Plotly visualisations.
+    Base class for BERTopic Plotly and text-based visualisations.
 
     Handles:
       - model unwrapping
       - BERTopic method invocation
       - output handling
-      - HTML saving
+      - HTML/text saving
     """
 
     def __init__(
@@ -24,6 +24,7 @@ class BERTopicVisualisation(Visualisation):
         filename: str = "bertopic_visualisation.html",
         figsize=(10, 6),
         method: str = None,
+        output_type: str = "figure",
         **params
     ):
 
@@ -38,13 +39,14 @@ class BERTopicVisualisation(Visualisation):
         self.output_dir = output_dir
         self.filename = filename
         self.method = method
+        self.output_type = output_type
 
         # All BERTopic-specific arguments
         self.params = params
 
         self.logger.info(
-            f"Initialised {self.name} using BERTopic method '{self.method}' "
-            f"with params: {self.params}"
+            f"Initialised {self.name} using BERTopic method "
+            f"'{self.method}' with params: {self.params}"
         )
 
 
@@ -85,7 +87,8 @@ class BERTopicVisualisation(Visualisation):
             self.method
         ):
             self.logger.warning(
-                f"Model does not expose BERTopic method '{self.method}'"
+                f"Model does not expose BERTopic method "
+                f"'{self.method}'"
             )
             return None
 
@@ -97,8 +100,10 @@ class BERTopicVisualisation(Visualisation):
                 self.method
             )
 
-            fig = visualisation_method(
+            result = visualisation_method(
+
                 **self.params,
+                title = self.title,
                 **plot_kwargs
             )
 
@@ -112,7 +117,7 @@ class BERTopicVisualisation(Visualisation):
 
 
         return self._save(
-            fig,
+            result,
             save_path,
             filename
         )
@@ -120,7 +125,7 @@ class BERTopicVisualisation(Visualisation):
 
     def _save(
         self,
-        fig,
+        obj,
         save_path=None,
         filename=None
     ):
@@ -151,12 +156,31 @@ class BERTopicVisualisation(Visualisation):
 
         try:
 
-            fig.write_html(
+            if self.output_type == "text":
+
+                with open(
+                    output_path,
+                    "w",
+                    encoding="utf-8"
+                ) as f:
+                    f.write(str(obj))
+
+                self.logger.info(
+                    f"Saved {self.name} visualisation: "
+                    f"{output_path}"
+                )
+
+                return output_path
+
+
+            # Default: Plotly figure
+            obj.write_html(
                 output_path
             )
 
             self.logger.info(
-                f"Saved {self.name} visualisation: {output_path}"
+                f"Saved {self.name} visualisation: "
+                f"{output_path}"
             )
 
             return output_path

@@ -1,0 +1,1686 @@
+#pipelines:
+#    # ==========================
+#  # All Components Reporting
+#  # =========================
+#  - name: thesis_component_comparison
+#    type: pipelines.thesis_reporting_pipeline.ThesisReportingPipeline
+#    enabled: true
+#    params:
+#      output_path: output/thesis/online_forum/all_experiments/
+#      data_builder:
+#        experiment_ids:
+#          - 383335347333526317
+#          - 472882940949940021
+#        derive_component: true
+#        component_detection:
+#          UMAP:
+#            - params.dimensionality_reduction_model_name
+#          HDBSCAN:
+#            - params.clusterer_name
+#          CTFIDF:
+#            - params.ctfidf_name
+#          Vectorizer:
+#            - params.vectorizer_name
+#          Representation:
+#            - params.representation_model_name
+#        fields:
+#          - field: run_name
+#            name: Experiment
+#          - field: run_id
+#            name: Run ID
+#          - field: params.embedding_model_model_name
+#            name: Embedding Model
+#          - field: metrics.coherence
+#            name: Coherence
+#          - field: metrics.coherence_npmi
+#            name: NPMI
+#          - field: metrics.topic_diversity
+#            name: Diversity
+#          - field: metrics.topic_exclusivity
+#            name: Exclusivity
+#          - field: metrics.outlier_ratio
+#            name: Outliers
+#          - field: params.dimensionality_reduction_model_params_n_neighbors
+#            name: n_neighbors
+#          - field: params.dimensionality_reduction_model_params_n_components
+#            name: n_components
+#          - field: params.dimensionality_reduction_model_params_min_dist
+#            name: min_dist
+#          - field: params.dimensionality_reduction_model_params_metric
+#            name: distance_metric
+#          - field: params.dimensionality_reduction_model_params_random_state
+#            name: random_state
+#          - field: params.clusterer_params_min_cluster_size
+#            name: min_cluster_size
+#          - field: params.clusterer_params_min_samples
+#            name: min_samples
+#          - field: params.ctfidf_params_bm25_weighting
+#            name: bm25_weighting
+#          - field: params.ctfidf_params_reduce_frequent_words
+#            name: reduce_frequent_words
+#          - field: params.model_params_vectorizer_params_min_df
+#            name: min_df
+#          - field: params.model_params_vectorizer_params_ngram_range
+#            name: ngram_range
+#          - field: params.representation_model_name
+#            name: representation_model
+#          - field: params.representation_model_params_diversity
+#            name: diversity
+#          - field: params.representation_model_params_top_n_words
+#            name: top_n
+#      steps:
+#        - name: latex_summary_table
+#          params:
+#            output_file:
+#              of_all_results.tex
+#            caption:
+#              All experiment results by embedding model for the online forum corpus, ranked by coherence score.
+#            label:
+#              tab:of_all_results
+#            sort:
+#              fields:
+#                - field: Embedding Model
+#                  order:
+#                    - sentence-transformers/all-MiniLM-L6-v2
+#                    - sentence-transformers/all-roberta-large-v1
+#                    - ddore14/RooseBERT-scr-cased
+#
+#                - field: Coherence
+#                  descending: true
+#            group_field:
+#              Embedding Model
+#            group_separator: true
+#            group_labels:
+#              sentence-transformers/all-MiniLM-L6-v2: MiniLM
+#              sentence-transformers/all-roberta-large-v1: RoBERTa
+#              ddore14/RooseBERT-scr-cased: RooseBERT
+#            highlight:
+#            - field: Coherence
+#              direction: max
+#            - field: NPMI
+#              direction: max
+#            - field: Diversity
+#              direction: max
+#            - field: Exclusivity
+#              direction: max
+#            - field: Outliers
+#              direction: min
+#            columns:
+#              - field: Embedding Model
+#                header: Embedding Model
+#                latex_type: p{5cm}
+#              - field: Coherence
+#                header: Coherence
+#                latex_type: l
+#                precision: 3
+#              - field: NPMI
+#                header: NPMI
+#                latex_type: l
+#                precision: 3
+#              - field: Diversity
+#                header: Diversity
+#                latex_type: l
+#                precision: 3
+#              - field: Exclusivity
+#                header: Exclusivity
+#                latex_type: l
+#                precision: 3
+#              - field: Outliers
+#                header: Outliers
+#                latex_type: l
+#                precision: 3
+#              - field: n_neighbors
+#                header: n_neighbors
+#                latex_type: p{1cm}
+#              - field: n_components
+#                header: n_components
+#                latex_type: p{1cm}
+#              - field: min_dist
+#                header: min_dist
+#                latex_type: p{1cm}
+#              - field: distance_metric
+#                header: Distance
+#                latex_type: l
+#              - field: min_cluster_size
+#                header: min_cluster_size
+#                latex_type: l
+#              - field: min_samples
+#                header: min_samples
+#                latex_type: l
+#              - field: min_df
+#                header: min_df
+#                latex_type: l
+#              - field: ngram_range
+#                header: ngram_range
+#                latex_type: l
+#              - field: bm25_weighting
+#                header: bm25_weighting
+#                latex_type: l
+#              - field: reduce_frequent_words
+#                header: reduce_frequent_words
+#                latex_type: l
+#              - field: representation_model
+#                header: representation_model
+#                latex_type: l
+#              - field: diversity
+#                header: diversity
+#                latex_type: l
+#              - field: top_n
+#                header: top_n
+#                latex_type: l
+#        - name: metric_strip_chart
+#          params:
+#            group_field: Embedding Model
+#            group_order:
+#              - sentence-transformers/all-MiniLM-L6-v2
+#              - sentence-transformers/all-roberta-large-v1
+#              - ddore14/RooseBERT-scr-cased
+#            group_labels:
+#              sentence-transformers/all-MiniLM-L6-v2: MiniLM
+#              sentence-transformers/all-roberta-large-v1: RoBERTa
+#              ddore14/RooseBERT-scr-cased: RooseBERT
+#
+#            metrics:
+#              - Coherence
+#              - NPMI
+#              - Diversity
+#              - Exclusivity
+#              - Outliers
+#            #
+#            #            inverse_metrics:
+#            #              - Outliers
+#
+#            layout: combined
+#
+#            central_tendency: median
+#
+#            jitter: 0.08
+#
+#            rows: 2
+#            cols: 3
+#
+#            filename: of_all_exp_metric_strip_comparison.png
+#
+#            visualisation:
+#              name: metric_strip_plot
+#              figsize: [ 12, 8 ]
+#
+#        - name: metric_strip_chart
+#          params:
+#            group_field: Embedding Model
+#            group_order:
+#              - sentence-transformers/all-MiniLM-L6-v2
+#              - sentence-transformers/all-roberta-large-v1
+#              - ddore14/RooseBERT-scr-cased
+#            group_labels:
+#              sentence-transformers/all-MiniLM-L6-v2: MiniLM
+#              sentence-transformers/all-roberta-large-v1: RoBERTa
+#              ddore14/RooseBERT-scr-cased: RooseBERT
+#
+#            metrics:
+#              - Coherence
+#              - NPMI
+#              - Diversity
+#              - Exclusivity
+#              - Outliers
+##
+##            inverse_metrics:
+##              - Outliers
+#
+#            layout: combined
+#
+#            central_tendency: null
+#
+#            jitter: 0.08
+#
+#            rows: 2
+#            cols: 3
+#
+#            filename: of_all_exp_metric_strip_comparison_no_central_tendency.png
+#
+#            visualisation:
+#              name: metric_strip_plot
+#              figsize: [ 12, 8 ]
+#
+#
+#
+#  # ==========================
+#  # Top performers per model
+#  # =========================
+#  - name: thesis_reporting
+#    type: pipelines.thesis_reporting_pipeline.ThesisReportingPipeline
+#    enabled: true
+#    params:
+#      output_path: output/thesis/online_forum/all_experiments/
+#      data_builder:
+#        experiment_ids:
+#          - 383335347333526317
+#          - 472882940949940021
+#        filter_expression: "tags.mlflow.runName LIKE '%_%'"
+#        selection:
+#          group_by: params.embedding_model_model_name
+#          rank_by: metrics.coherence
+#          direction: desc
+#          limit: 1
+#        fields:
+#          - field: run_name
+#            name: Experiment
+#          - field: run_id
+#            name: Run ID
+#          - field: params.embedding_model_model_name
+#            name: Embedding Model
+#          - field: metrics.coherence
+#            name: Coherence
+#          - field: metrics.coherence_npmi
+#            name: NPMI
+#          - field: metrics.topic_diversity
+#            name: Diversity
+#          - field: metrics.topic_exclusivity
+#            name: Exclusivity
+#          - field: metrics.outlier_ratio
+#            name: Outliers
+#          - field: params.dimensionality_reduction_model_params_n_neighbors
+#            name: n_neighbors
+#          - field: params.dimensionality_reduction_model_params_n_components
+#            name: n_components
+#          - field: params.dimensionality_reduction_model_params_min_dist
+#            name: min_dist
+#          - field: params.dimensionality_reduction_model_params_metric
+#            name: distance_metric
+#          - field: params.dimensionality_reduction_model_params_random_state
+#            name: random_state
+#          - field: params.clusterer_params_min_cluster_size
+#            name: min_cluster_size
+#          - field: params.clusterer_params_min_samples
+#            name: min_samples
+#          - field: params.ctfidf_params_bm25_weighting
+#            name: bm25_weighting
+#          - field: params.ctfidf_params_reduce_frequent_words
+#            name: reduce_frequent_words
+#          - field: params.model_params_vectorizer_params_min_df
+#            name: min_df
+#          - field: params.model_params_vectorizer_params_ngram_range
+#            name: ngram_range
+#          - field: params.representation_model_name
+#            name: representation_model
+#          - field: params.representation_model_params_diversity
+#            name: diversity
+#          - field: params.representation_model_params_top_n_words
+#            name: top_n
+#
+#      steps:
+#        - name: latex_summary_table
+#          params:
+#            output_file:
+#              of_top_performers_results.tex
+#            caption:
+#              Top performing experiments by embedding model for the online forum corpus, ranked by coherence score.
+#            label:
+#              tab:of_top_performers_results
+#            sort:
+#              fields:
+#                - field: Embedding Model
+#                  order:
+#                    - sentence-transformers/all-MiniLM-L6-v2
+#                    - sentence-transformers/all-roberta-large-v1
+#                    - ddore14/RooseBERT-scr-cased
+#
+#                - field: Coherence
+#                  descending: true
+#            group_field:
+#              Embedding Model
+#            group_separator: true
+#            group_labels:
+#              sentence-transformers/all-MiniLM-L6-v2: MiniLM
+#              sentence-transformers/all-roberta-large-v1: RoBERTa
+#              ddore14/RooseBERT-scr-cased: RooseBERT
+#            highlight:
+#              - field: Coherence
+#                direction: max
+#              - field: NPMI
+#                direction: max
+#              - field: Diversity
+#                direction: max
+#              - field: Exclusivity
+#                direction: max
+#              - field: Outliers
+#                direction: min
+#            columns:
+#              - field: Embedding Model
+#                header: Embedding Model
+#                latex_type: p{5cm}
+#              - field: Coherence
+#                header: Coherence
+#                latex_type: l
+#                precision: 3
+#              - field: NPMI
+#                header: NPMI
+#                latex_type: l
+#                precision: 3
+#              - field: Diversity
+#                header: Diversity
+#                latex_type: l
+#                precision: 3
+#              - field: Exclusivity
+#                header: Exclusivity
+#                latex_type: l
+#                precision: 3
+#              - field: Outliers
+#                header: Outliers
+#                latex_type: l
+#                precision: 3
+#              - field: n_neighbors
+#                header: n_neighbors
+#                latex_type: p{1cm}
+#              - field: n_components
+#                header: n_components
+#                latex_type: p{1cm}
+#              - field: min_dist
+#                header: min_dist
+#                latex_type: p{1cm}
+#              - field: distance_metric
+#                header: Distance
+#                latex_type: l
+#              - field: min_cluster_size
+#                header: min_cluster_size
+#                latex_type: l
+#              - field: min_samples
+#                header: min_samples
+#                latex_type: l
+#              - field: min_df
+#                header: min_df
+#                latex_type: l
+#              - field: ngram_range
+#                header: ngram_range
+#                latex_type: l
+#              - field: bm25_weighting
+#                header: bm25_weighting
+#                latex_type: l
+#              - field: reduce_frequent_words
+#                header: reduce_frequent_words
+#                latex_type: l
+#              - field: representation_model
+#                header: representation_model
+#                latex_type: l
+#              - field: diversity
+#                header: diversity
+#                latex_type: l
+#              - field: top_n
+#                header: top_n
+#                latex_type: l
+#
+#
+#  # ==========================
+#  # Top performers per model - metrics only
+#  # =========================
+#  - name: thesis_reporting
+#    type: pipelines.thesis_reporting_pipeline.ThesisReportingPipeline
+#    enabled: true
+#    params:
+#      output_path: output/thesis/online_forum/all_experiments/
+#      data_builder:
+#        experiment_ids:
+#          - 383335347333526317
+#          - 472882940949940021
+#        filter_expression: "tags.mlflow.runName LIKE '%_%'"
+#        selection:
+#          group_by: params.embedding_model_model_name
+#          rank_by: metrics.coherence
+#          direction: desc
+#          limit: 1
+#        fields:
+#          - field: run_name
+#            name: Experiment
+#          - field: run_id
+#            name: Run ID
+#          - field: params.embedding_model_model_name
+#            name: Embedding Model
+#          - field: metrics.coherence
+#            name: Coherence
+#          - field: metrics.coherence_npmi
+#            name: NPMI
+#          - field: metrics.topic_diversity
+#            name: Diversity
+#          - field: metrics.topic_exclusivity
+#            name: Exclusivity
+#          - field: metrics.outlier_ratio
+#            name: Outliers
+#          - field: params.dimensionality_reduction_model_params_n_neighbors
+#            name: n_neighbors
+#          - field: params.dimensionality_reduction_model_params_n_components
+#            name: n_components
+#          - field: params.dimensionality_reduction_model_params_min_dist
+#            name: min_dist
+#          - field: params.dimensionality_reduction_model_params_metric
+#            name: distance_metric
+#          - field: params.dimensionality_reduction_model_params_random_state
+#            name: random_state
+#          - field: params.clusterer_params_min_cluster_size
+#            name: min_cluster_size
+#          - field: params.clusterer_params_min_samples
+#            name: min_samples
+#          - field: params.ctfidf_params_bm25_weighting
+#            name: bm25_weighting
+#          - field: params.ctfidf_params_reduce_frequent_words
+#            name: reduce_frequent_words
+#          - field: params.model_params_vectorizer_params_min_df
+#            name: min_df
+#          - field: params.model_params_vectorizer_params_ngram_range
+#            name: ngram_range
+#          - field: params.representation_model_name
+#            name: representation_model
+#          - field: params.representation_model_params_diversity
+#            name: diversity
+#          - field: params.representation_model_params_top_n_words
+#            name: top_n
+#
+#      steps:
+#        - name: latex_summary_table
+#          params:
+#            output_file:
+#              of_top_performers_results_metrics_only.tex
+#            caption:
+#              Top performing experiments by embedding model for the parliamentary question corpus, ranked by coherence score.
+#            label:
+#              tab:of_top_performers_results_metrics_only
+#            sort:
+#              fields:
+#                - field: Embedding Model
+#                  order:
+#                    - sentence-transformers/all-MiniLM-L6-v2
+#                    - sentence-transformers/all-roberta-large-v1
+#                    - ddore14/RooseBERT-scr-cased
+#
+#                - field: Coherence
+#                  descending: true
+#            group_field:
+#              Embedding Model
+#            group_separator: true
+#            group_labels:
+#              sentence-transformers/all-MiniLM-L6-v2: MiniLM
+#              sentence-transformers/all-roberta-large-v1: RoBERTa
+#              ddore14/RooseBERT-scr-cased: RooseBERT
+#            highlight:
+#              - field: Coherence
+#                direction: max
+#              - field: NPMI
+#                direction: max
+#              - field: Diversity
+#                direction: max
+#              - field: Exclusivity
+#                direction: max
+#              - field: Outliers
+#                direction: min
+#            columns:
+#              - field: Embedding Model
+#                header: Embedding Model
+#                latex_type: p{5cm}
+#              - field: Coherence
+#                header: Coherence
+#                latex_type: l
+#                precision: 3
+#              - field: NPMI
+#                header: NPMI
+#                latex_type: l
+#                precision: 3
+#              - field: Diversity
+#                header: Diversity
+#                latex_type: l
+#                precision: 3
+#              - field: Exclusivity
+#                header: Exclusivity
+#                latex_type: l
+#                precision: 3
+#              - field: Outliers
+#                header: Outliers
+#                latex_type: l
+#                precision: 3
+#
+#
+#  #  # ==========================
+##  # Clusterer Parameter Reporting
+##  # =========================
+##  - name: thesis_reporting
+##    type: pipelines.thesis_reporting_pipeline.ThesisReportingPipeline
+##    enabled: true
+##    params:
+##      output_path: output/thesis/parliamentary_questions/all_experiments/clusterer
+##      data_builder:
+##        experiment_ids:
+##          - 502413359867310494
+##          - 821522298480797748
+##        filter_expression: "tags.mlflow.runName LIKE '%clusterer%'"
+##        selection:
+##          group_by: params.embedding_model_model_name
+##          rank_by: metrics.coherence
+##          direction: desc
+##          limit: 5
+##        fields:
+##          - field: run_name
+##            name: Experiment
+##          - field: run_id
+##            name: Run ID
+##          - field: params.embedding_model_model_name
+##            name: Embedding Model
+##          - field: metrics.coherence
+##            name: Coherence
+##          - field: metrics.coherence_npmi
+##            name: NPMI
+##          - field: metrics.topic_diversity
+##            name: Diversity
+##          - field: metrics.topic_exclusivity
+##            name: Exclusivity
+##          - field: metrics.outlier_ratio
+##            name: Outliers
+##          - field: params.dimensionality_reduction_model_params_n_neighbors
+##            name: n_neighbors
+##          - field: params.dimensionality_reduction_model_params_n_components
+##            name: n_components
+##          - field: params.dimensionality_reduction_model_params_min_dist
+##            name: min_dist
+##          - field: params.dimensionality_reduction_model_params_metric
+##            name: distance_metric
+##          - field: params.dimensionality_reduction_model_params_random_state
+##            name: random_state
+##          - field: params.clusterer_params_min_cluster_size
+##            name: min_cluster_size
+##          - field: params.clusterer_params_min_samples
+##            name: min_samples
+##          - field: params.ctfidf_params_bm25_weighting
+##            name: bm25_weighting
+##          - field: params.ctfidf_params_reduce_frequent_words
+##            name: reduce_frequent_words
+##          - field: params.model_params_vectorizer_params_min_df
+##            name: min_df
+##          - field: params.model_params_vectorizer_params_ngram_range
+##            name: ngram_range
+##          - field: params.representation_model_name
+##            name: representation_model
+##          - field: params.representation_model_params_diversity
+##            name: diversity
+##          - field: params.representation_model_params_top_n_words
+##            name: top_n
+##
+##      steps:
+##        - name: latex_summary_table
+##          params:
+##            output_file:
+##              clusterer_top_5_results.tex
+##            caption:
+##              Top 5 clusterer experiments by embedding model, ranked by coherence score.
+##            label:
+##              tab:pq_clusterer_top_5_results
+##            sort:
+##              fields:
+##                - field: Embedding Model
+##                  order:
+##                    - sentence-transformers/all-MiniLM-L6-v2
+##                    - sentence-transformers/all-roberta-large-v1
+##                    - ddore14/RooseBERT-scr-cased
+##
+##                - field: Coherence
+##                  descending: true
+##            group_field:
+##              Embedding Model
+##            group_separator: true
+##            group_labels:
+##              sentence-transformers/all-MiniLM-L6-v2: MiniLM
+##              sentence-transformers/all-roberta-large-v1: RoBERTa
+##              ddore14/RooseBERT-scr-cased: RooseBERT
+##            highlight:
+##              - field: Coherence
+##                direction: max
+##              - field: NPMI
+##                direction: max
+##              - field: Diversity
+##                direction: max
+##              - field: Exclusivity
+##                direction: max
+##              - field: Outliers
+##                direction: min
+##            columns:
+##              - field: Embedding Model
+##                header: Embedding Model
+##                latex_type: p{5cm}
+##              - field: Coherence
+##                header: Coherence
+##                latex_type: l
+##                precision: 3
+##              - field: NPMI
+##                header: NPMI
+##                latex_type: l
+##                precision: 3
+##              - field: Diversity
+##                header: Diversity
+##                latex_type: l
+##                precision: 3
+##              - field: Exclusivity
+##                header: Exclusivity
+##                latex_type: l
+##                precision: 3
+##              - field: Outliers
+##                header: Outliers
+##                latex_type: l
+##                precision: 3
+##              - field: min_cluster_size
+##                header: min_cluster_size
+##                latex_type: l
+##              - field: min_samples
+##                header: min_samples
+##                latex_type: l
+#
+#
+##
+##  # ==========================
+##  # Vectorizer Parameter Reporting
+##  # =========================
+##  - name: thesis_reporting
+##    type: pipelines.thesis_reporting_pipeline.ThesisReportingPipeline
+##    enabled: true
+##    params:
+##      output_path: output/thesis/parliamentary_questions/all_experiments/vectorizer
+##      data_builder:
+##        experiment_ids:
+##          - 502413359867310494
+##          - 821522298480797748
+##        filter_expression: "tags.mlflow.runName LIKE '%vectorizer%'"
+##        selection:
+##          group_by: params.embedding_model_model_name
+##          rank_by: metrics.coherence
+##          direction: desc
+##          limit: 5
+##        fields:
+##          - field: run_name
+##            name: Experiment
+##          - field: run_id
+##            name: Run ID
+##          - field: params.embedding_model_model_name
+##            name: Embedding Model
+##          - field: metrics.coherence
+##            name: Coherence
+##          - field: metrics.coherence_npmi
+##            name: NPMI
+##          - field: metrics.topic_diversity
+##            name: Diversity
+##          - field: metrics.topic_exclusivity
+##            name: Exclusivity
+##          - field: metrics.outlier_ratio
+##            name: Outliers
+##          - field: params.dimensionality_reduction_model_params_n_neighbors
+##            name: n_neighbors
+##          - field: params.dimensionality_reduction_model_params_n_components
+##            name: n_components
+##          - field: params.dimensionality_reduction_model_params_min_dist
+##            name: min_dist
+##          - field: params.dimensionality_reduction_model_params_metric
+##            name: distance_metric
+##          - field: params.dimensionality_reduction_model_params_random_state
+##            name: random_state
+##          - field: params.clusterer_params_min_cluster_size
+##            name: min_cluster_size
+##          - field: params.clusterer_params_min_samples
+##            name: min_samples
+##          - field: params.ctfidf_params_bm25_weighting
+##            name: bm25_weighting
+##          - field: params.ctfidf_params_reduce_frequent_words
+##            name: reduce_frequent_words
+##          - field: params.model_params_vectorizer_params_min_df
+##            name: min_df
+##          - field: params.model_params_vectorizer_params_ngram_range
+##            name: ngram_range
+##          - field: params.representation_model_name
+##            name: representation_model
+##          - field: params.representation_model_params_diversity
+##            name: diversity
+##          - field: params.representation_model_params_top_n_words
+##            name: top_n
+##
+##      steps:
+##        - name: latex_summary_table
+##          params:
+##            output_file:
+##              vectorizer_top_5_results.tex
+##            caption:
+##              Top 5 vectorizer experiments by embedding model, ranked by coherence score.
+##            label:
+##              tab:pq_vectorizer_top_5_results
+##            sort:
+##              fields:
+##                - field: Embedding Model
+##                  order:
+##                    - sentence-transformers/all-MiniLM-L6-v2
+##                    - sentence-transformers/all-roberta-large-v1
+##                    - ddore14/RooseBERT-scr-cased
+##
+##                - field: Coherence
+##                  descending: true
+##            group_field:
+##              Embedding Model
+##            group_separator: true
+##            group_labels:
+##              sentence-transformers/all-MiniLM-L6-v2: MiniLM
+##              sentence-transformers/all-roberta-large-v1: RoBERTa
+##              ddore14/RooseBERT-scr-cased: RooseBERT
+##            highlight:
+##              - field: Coherence
+##                direction: max
+##              - field: NPMI
+##                direction: max
+##              - field: Diversity
+##                direction: max
+##              - field: Exclusivity
+##                direction: max
+##              - field: Outliers
+##                direction: min
+##            columns:
+##              - field: Embedding Model
+##                header: Embedding Model
+##                latex_type: p{5cm}
+##              - field: Coherence
+##                header: Coherence
+##                latex_type: l
+##                precision: 3
+##              - field: NPMI
+##                header: NPMI
+##                latex_type: l
+##                precision: 3
+##              - field: Diversity
+##                header: Diversity
+##                latex_type: l
+##                precision: 3
+##              - field: Exclusivity
+##                header: Exclusivity
+##                latex_type: l
+##                precision: 3
+##              - field: Outliers
+##                header: Outliers
+##                latex_type: l
+##                precision: 3
+##              - field: min_df
+##                header: min_df
+##                latex_type: l
+##              - field: ngram_range
+##                header: ngram_range
+##                latex_type: l
+#
+##
+##
+##  # ==========================
+##  # CTFIDF Parameter Reporting
+##  # =========================
+##  - name: thesis_reporting
+##    type: pipelines.thesis_reporting_pipeline.ThesisReportingPipeline
+##    enabled: true
+##    params:
+##      output_path: output/thesis/parliamentary_questions/all_experiments/ctfidf
+##      data_builder:
+##        experiment_ids:
+##          - 502413359867310494
+##          - 821522298480797748
+##        filter_expression: "tags.mlflow.runName LIKE '%ctfidf%'"
+##        selection:
+##          group_by: params.embedding_model_model_name
+##          rank_by: metrics.coherence
+##          direction: desc
+##          limit: 5
+##        fields:
+##          - field: run_name
+##            name: Experiment
+##          - field: run_id
+##            name: Run ID
+##          - field: params.embedding_model_model_name
+##            name: Embedding Model
+##          - field: metrics.coherence
+##            name: Coherence
+##          - field: metrics.coherence_npmi
+##            name: NPMI
+##          - field: metrics.topic_diversity
+##            name: Diversity
+##          - field: metrics.topic_exclusivity
+##            name: Exclusivity
+##          - field: metrics.outlier_ratio
+##            name: Outliers
+##          - field: params.dimensionality_reduction_model_params_n_neighbors
+##            name: n_neighbors
+##          - field: params.dimensionality_reduction_model_params_n_components
+##            name: n_components
+##          - field: params.dimensionality_reduction_model_params_min_dist
+##            name: min_dist
+##          - field: params.dimensionality_reduction_model_params_metric
+##            name: distance_metric
+##          - field: params.dimensionality_reduction_model_params_random_state
+##            name: random_state
+##          - field: params.clusterer_params_min_cluster_size
+##            name: min_cluster_size
+##          - field: params.clusterer_params_min_samples
+##            name: min_samples
+##          - field: params.ctfidf_params_bm25_weighting
+##            name: bm25_weighting
+##          - field: params.ctfidf_params_reduce_frequent_words
+##            name: reduce_frequent_words
+##          - field: params.model_params_vectorizer_params_min_df
+##            name: min_df
+##          - field: params.model_params_vectorizer_params_ngram_range
+##            name: ngram_range
+##          - field: params.representation_model_name
+##            name: representation_model
+##          - field: params.representation_model_params_diversity
+##            name: diversity
+##          - field: params.representation_model_params_top_n_words
+##            name: top_n
+##
+##      steps:
+##        - name: latex_summary_table
+##          params:
+##            output_file:
+##              ctfidf_top_5_results.tex
+##            caption:
+##              Top 5 CTFIDF experiments by embedding model, ranked by coherence score.
+##            label:
+##              tab:pq_ctfidf_top_5_results
+##            sort:
+##              fields:
+##                - field: Embedding Model
+##                  order:
+##                    - sentence-transformers/all-MiniLM-L6-v2
+##                    - sentence-transformers/all-roberta-large-v1
+##                    - ddore14/RooseBERT-scr-cased
+##
+##                - field: Coherence
+##                  descending: true
+##            group_field:
+##              Embedding Model
+##            group_separator: true
+##            group_labels:
+##              sentence-transformers/all-MiniLM-L6-v2: MiniLM
+##              sentence-transformers/all-roberta-large-v1: RoBERTa
+##              ddore14/RooseBERT-scr-cased: RooseBERT
+##            highlight:
+##              - field: Coherence
+##                direction: max
+##              - field: NPMI
+##                direction: max
+##              - field: Diversity
+##                direction: max
+##              - field: Exclusivity
+##                direction: max
+##              - field: Outliers
+##                direction: min
+##            columns:
+##              - field: Embedding Model
+##                header: Embedding Model
+##                latex_type: p{5cm}
+##              - field: Coherence
+##                header: Coherence
+##                latex_type: l
+##                precision: 3
+##              - field: NPMI
+##                header: NPMI
+##                latex_type: l
+##                precision: 3
+##              - field: Diversity
+##                header: Diversity
+##                latex_type: l
+##                precision: 3
+##              - field: Exclusivity
+##                header: Exclusivity
+##                latex_type: l
+##                precision: 3
+##              - field: Outliers
+##                header: Outliers
+##                latex_type: l
+##                precision: 3
+##              - field: bm25_weighting
+##                header: bm25_weighting
+##                latex_type: l
+##              - field: reduce_frequent_words
+##                header: reduce_frequent_words
+##                latex_type: l
+##
+##
+#
+##  # ==========================
+##  # Representation Parameter Reporting
+##  # =========================
+##  - name: thesis_reporting
+##    type: pipelines.thesis_reporting_pipeline.ThesisReportingPipeline
+##    enabled: true
+##    params:
+##      output_path: output/thesis/parliamentary_questions/all_experiments/representation
+##      data_builder:
+##        experiment_ids:
+##          - 502413359867310494
+##          - 821522298480797748
+##        filter_expression: "tags.mlflow.runName LIKE '%representation%'"
+##        selection:
+##          group_by: params.embedding_model_model_name
+##          rank_by: metrics.coherence
+##          direction: desc
+##          limit: 5
+##        fields:
+##          - field: run_name
+##            name: Experiment
+##          - field: run_id
+##            name: Run ID
+##          - field: params.embedding_model_model_name
+##            name: Embedding Model
+##          - field: metrics.coherence
+##            name: Coherence
+##          - field: metrics.coherence_npmi
+##            name: NPMI
+##          - field: metrics.topic_diversity
+##            name: Diversity
+##          - field: metrics.topic_exclusivity
+##            name: Exclusivity
+##          - field: metrics.outlier_ratio
+##            name: Outliers
+##          - field: params.dimensionality_reduction_model_params_n_neighbors
+##            name: n_neighbors
+##          - field: params.dimensionality_reduction_model_params_n_components
+##            name: n_components
+##          - field: params.dimensionality_reduction_model_params_min_dist
+##            name: min_dist
+##          - field: params.dimensionality_reduction_model_params_metric
+##            name: distance_metric
+##          - field: params.dimensionality_reduction_model_params_random_state
+##            name: random_state
+##          - field: params.clusterer_params_min_cluster_size
+##            name: min_cluster_size
+##          - field: params.clusterer_params_min_samples
+##            name: min_samples
+##          - field: params.ctfidf_params_bm25_weighting
+##            name: bm25_weighting
+##          - field: params.ctfidf_params_reduce_frequent_words
+##            name: reduce_frequent_words
+##          - field: params.model_params_vectorizer_params_min_df
+##            name: min_df
+##          - field: params.model_params_vectorizer_params_ngram_range
+##            name: ngram_range
+##          - field: params.representation_model_name
+##            name: representation_model
+##          - field: params.representation_model_params_diversity
+##            name: diversity
+##          - field: params.representation_model_params_top_n_words
+##            name: top_n
+##
+##      steps:
+##        - name: latex_summary_table
+##          params:
+##            output_file:
+##              representation_top_5_results.tex
+##            caption:
+##              Top 5 Representation experiments by embedding model, ranked by coherence score.
+##            label:
+##              tab:pq_representation_top_5_results
+##            sort:
+##              fields:
+##                - field: Embedding Model
+##                  order:
+##                    - sentence-transformers/all-MiniLM-L6-v2
+##                    - sentence-transformers/all-roberta-large-v1
+##                    - ddore14/RooseBERT-scr-cased
+##                - field: Coherence
+##                  descending: true
+##            group_field:
+##              Embedding Model
+##            group_separator: true
+##            group_labels:
+##              sentence-transformers/all-MiniLM-L6-v2: MiniLM
+##              sentence-transformers/all-roberta-large-v1: RoBERTa
+##              ddore14/RooseBERT-scr-cased: RooseBERT
+##            highlight:
+##              - field: Coherence
+##                direction: max
+##              - field: NPMI
+##                direction: max
+##              - field: Diversity
+##                direction: max
+##              - field: Exclusivity
+##                direction: max
+##              - field: Outliers
+##                direction: min
+##            columns:
+##              - field: Embedding Model
+##                header: Embedding Model
+##                latex_type: p{5cm}
+##              - field: Coherence
+##                header: Coherence
+##                latex_type: l
+##                precision: 3
+##              - field: NPMI
+##                header: NPMI
+##                latex_type: l
+##                precision: 3
+##              - field: Diversity
+##                header: Diversity
+##                latex_type: l
+##                precision: 3
+##              - field: Exclusivity
+##                header: Exclusivity
+##                latex_type: l
+##                precision: 3
+##              - field: Outliers
+##                header: Outliers
+##                latex_type: l
+##                precision: 3
+##              - field: representation_model
+##                header: representation_model
+##                latex_type: l
+##              - field: diversity
+##                header: diversity
+##                latex_type: l
+##              - field: top_n
+##                header: top_n
+##                latex_type: l
+#
+##
+##
+##  # ==========================
+##  # Reducer Parameter Reporting
+##  # =========================
+##  - name: thesis_reporting
+##    type: pipelines.thesis_reporting_pipeline.ThesisReportingPipeline
+##    enabled: true
+##    params:
+##      output_path: output/thesis/parliamentary_questions/all_experiments/reducer
+##      data_builder:
+##        experiment_ids:
+##          - 502413359867310494
+##          - 821522298480797748
+##        filter_expression: "tags.mlflow.runName LIKE '%reducer%'"
+##        selection:
+##          group_by: params.embedding_model_model_name
+##          rank_by: metrics.coherence
+##          direction: desc
+##          limit: 500
+##        fields:
+##          - field: run_name
+##            name: Experiment
+##          - field: run_id
+##            name: Run ID
+##          - field: params.embedding_model_model_name
+##            name: Embedding Model
+##          - field: metrics.coherence
+##            name: Coherence
+##          - field: metrics.coherence_npmi
+##            name: NPMI
+##          - field: metrics.topic_diversity
+##            name: Diversity
+##          - field: metrics.topic_exclusivity
+##            name: Exclusivity
+##          - field: metrics.outlier_ratio
+##            name: Outliers
+##          - field: params.dimensionality_reduction_model_params_n_neighbors
+##            name: n_neighbors
+##          - field: params.dimensionality_reduction_model_params_n_components
+##            name: n_components
+##          - field: params.dimensionality_reduction_model_params_min_dist
+##            name: min_dist
+##          - field: params.dimensionality_reduction_model_params_metric
+##            name: distance_metric
+##          - field: params.dimensionality_reduction_model_params_random_state
+##            name: random_state
+##          - field: params.clusterer_params_min_cluster_size
+##            name: min_cluster_size
+##          - field: params.clusterer_params_min_samples
+##            name: min_samples
+##          - field: params.ctfidf_params_bm25_weighting
+##            name: bm25_weighting
+##          - field: params.ctfidf_params_reduce_frequent_words
+##            name: reduce_frequent_words
+##          - field: params.model_params_vectorizer_params_min_df
+##            name: min_df
+##          - field: params.model_params_vectorizer_params_ngram_range
+##            name: ngram_range
+##          - field: params.representation_model_name
+##            name: representation_model
+##          - field: params.representation_model_params_diversity
+##            name: diversity
+##          - field: params.representation_model_params_top_n_words
+##            name: top_n
+##
+##      steps:
+##        - name: metric_line_chart
+##          params:
+##            group_field: Embedding Model
+##            parameters:
+##              - n_neighbors
+##              - n_components
+##              - min_dist
+##              - distance_metric
+##            metrics:
+##              - Coherence
+##              - NPMI
+##              - Diversity
+##              - Exclusivity
+##              - Outliers
+##            #            inverse_metrics:
+##            #              - Outliers
+##            filename_prefix: umap_parameters
+##            visualisation:
+##              name: metric_line_chart
+##              figsize: [ 12, 8 ]
+##              rows: 2
+##              cols: 3
+##        - name: metric_strip_chart
+##          params:
+##            group_field: Embedding Model
+##            group_order:
+##              - sentence-transformers/all-MiniLM-L6-v2
+##              - sentence-transformers/all-roberta-large-v1
+##              - ddore14/RooseBERT-scr-cased
+##            group_labels:
+##              sentence-transformers/all-MiniLM-L6-v2: MiniLM
+##              sentence-transformers/all-roberta-large-v1: RoBERTa
+##              ddore14/RooseBERT-scr-cased: RooseBERT
+##
+##            metrics:
+##              - Coherence
+##              - NPMI
+##              - Diversity
+##              - Exclusivity
+##              - Outliers
+##
+##            #            inverse_metrics:
+##            #              - Outliers
+##
+##            layout: combined
+##
+##            central_tendency: median
+##
+##            jitter: 0.08
+##
+##            rows: 2
+##            cols: 3
+##
+##            filename: pq_reducer_metric_strip_comparison.png
+##
+##            visualisation:
+##              name: metric_strip_plot
+##              figsize: [ 12, 8 ]
+##
+##  # ==========================
+##  # Clusterer Parameter Reporting
+##  # =========================
+##  - name: thesis_reporting
+##    type: pipelines.thesis_reporting_pipeline.ThesisReportingPipeline
+##    enabled: true
+##    params:
+##      output_path: output/thesis/parliamentary_questions/all_experiments/clusterer
+##      data_builder:
+##        experiment_ids:
+##          - 502413359867310494
+##          - 821522298480797748
+##        filter_expression: "tags.mlflow.runName LIKE '%clusterer%'"
+##        selection:
+##          group_by: params.embedding_model_model_name
+##          rank_by: metrics.coherence
+##          direction: desc
+##          limit: 500
+##        fields:
+##          - field: run_name
+##            name: Experiment
+##          - field: run_id
+##            name: Run ID
+##          - field: params.embedding_model_model_name
+##            name: Embedding Model
+##          - field: metrics.coherence
+##            name: Coherence
+##          - field: metrics.coherence_npmi
+##            name: NPMI
+##          - field: metrics.topic_diversity
+##            name: Diversity
+##          - field: metrics.topic_exclusivity
+##            name: Exclusivity
+##          - field: metrics.outlier_ratio
+##            name: Outliers
+##          - field: params.dimensionality_reduction_model_params_n_neighbors
+##            name: n_neighbors
+##          - field: params.dimensionality_reduction_model_params_n_components
+##            name: n_components
+##          - field: params.dimensionality_reduction_model_params_min_dist
+##            name: min_dist
+##          - field: params.dimensionality_reduction_model_params_metric
+##            name: distance_metric
+##          - field: params.dimensionality_reduction_model_params_random_state
+##            name: random_state
+##          - field: params.clusterer_params_min_cluster_size
+##            name: min_cluster_size
+##          - field: params.clusterer_params_min_samples
+##            name: min_samples
+##          - field: params.ctfidf_params_bm25_weighting
+##            name: bm25_weighting
+##          - field: params.ctfidf_params_reduce_frequent_words
+##            name: reduce_frequent_words
+##          - field: params.model_params_vectorizer_params_min_df
+##            name: min_df
+##          - field: params.model_params_vectorizer_params_ngram_range
+##            name: ngram_range
+##          - field: params.representation_model_name
+##            name: representation_model
+##          - field: params.representation_model_params_diversity
+##            name: diversity
+##          - field: params.representation_model_params_top_n_words
+##            name: top_n
+##
+##      steps:
+##        - name: metric_line_chart
+##          params:
+##            group_field: Embedding Model
+##            parameters:
+##              - min_cluster_size
+##              - min_samples
+##            metrics:
+##              - Coherence
+##              - NPMI
+##              - Diversity
+##              - Exclusivity
+##              - Outliers
+##            #            inverse_metrics:
+##            #              - Outliers
+##            filename_prefix: clusterer_parameters
+##            visualisation:
+##              name: metric_line_chart
+##              figsize: [ 12, 8 ]
+##              rows: 2
+##              cols: 3
+##        - name: metric_strip_chart
+##          params:
+##            group_field: Embedding Model
+##            group_order:
+##              - sentence-transformers/all-MiniLM-L6-v2
+##              - sentence-transformers/all-roberta-large-v1
+##              - ddore14/RooseBERT-scr-cased
+##            group_labels:
+##              sentence-transformers/all-MiniLM-L6-v2: MiniLM
+##              sentence-transformers/all-roberta-large-v1: RoBERTa
+##              ddore14/RooseBERT-scr-cased: RooseBERT
+##
+##            metrics:
+##              - Coherence
+##              - NPMI
+##              - Diversity
+##              - Exclusivity
+##              - Outliers
+##
+##            #            inverse_metrics:
+##            #              - Outliers
+##
+##            layout: combined
+##
+##            central_tendency: median
+##
+##            jitter: 0.08
+##
+##            rows: 2
+##            cols: 3
+##
+##            filename: pq_clusterer_metric_strip_comparison.png
+##
+##            visualisation:
+##              name: metric_strip_plot
+##              figsize: [ 12, 8 ]
+##
+##  # ==========================
+##  # Vectorizer Parameter Reporting
+##  # =========================
+##  - name: thesis_reporting
+##    type: pipelines.thesis_reporting_pipeline.ThesisReportingPipeline
+##    enabled: true
+##    params:
+##      output_path: output/thesis/parliamentary_questions/all_experiments/vectorizer
+##      data_builder:
+##        experiment_ids:
+##          - 502413359867310494
+##          - 821522298480797748
+##        filter_expression: "tags.mlflow.runName LIKE '%vectorizer%'"
+##        selection:
+##          group_by: params.embedding_model_model_name
+##          rank_by: metrics.coherence
+##          direction: desc
+##          limit: 500
+##        fields:
+##          - field: run_name
+##            name: Experiment
+##          - field: run_id
+##            name: Run ID
+##          - field: params.embedding_model_model_name
+##            name: Embedding Model
+##          - field: metrics.coherence
+##            name: Coherence
+##          - field: metrics.coherence_npmi
+##            name: NPMI
+##          - field: metrics.topic_diversity
+##            name: Diversity
+##          - field: metrics.topic_exclusivity
+##            name: Exclusivity
+##          - field: metrics.outlier_ratio
+##            name: Outliers
+##          - field: params.dimensionality_reduction_model_params_n_neighbors
+##            name: n_neighbors
+##          - field: params.dimensionality_reduction_model_params_n_components
+##            name: n_components
+##          - field: params.dimensionality_reduction_model_params_min_dist
+##            name: min_dist
+##          - field: params.dimensionality_reduction_model_params_metric
+##            name: distance_metric
+##          - field: params.dimensionality_reduction_model_params_random_state
+##            name: random_state
+##          - field: params.clusterer_params_min_cluster_size
+##            name: min_cluster_size
+##          - field: params.clusterer_params_min_samples
+##            name: min_samples
+##          - field: params.ctfidf_params_bm25_weighting
+##            name: bm25_weighting
+##          - field: params.ctfidf_params_reduce_frequent_words
+##            name: reduce_frequent_words
+##          - field: params.model_params_vectorizer_params_min_df
+##            name: min_df
+##          - field: params.model_params_vectorizer_params_ngram_range
+##            name: ngram_range
+##          - field: params.representation_model_name
+##            name: representation_model
+##          - field: params.representation_model_params_diversity
+##            name: diversity
+##          - field: params.representation_model_params_top_n_words
+##            name: top_n
+##
+##      steps:
+##        - name: metric_line_chart
+##          params:
+##            group_field: Embedding Model
+##            parameters:
+##              - min_df
+##              - ngram_range
+##            metrics:
+##              - Coherence
+##              - NPMI
+##              - Diversity
+##              - Exclusivity
+##              - Outliers
+##            #            inverse_metrics:
+##            #              - Outliers
+##            filename_prefix: vectorizer_parameters
+##            visualisation:
+##              name: metric_line_chart
+##              figsize: [ 12, 8 ]
+##              rows: 2
+##              cols: 3
+##        - name: metric_strip_chart
+##          params:
+##            group_field: Embedding Model
+##            group_order:
+##              - sentence-transformers/all-MiniLM-L6-v2
+##              - sentence-transformers/all-roberta-large-v1
+##              - ddore14/RooseBERT-scr-cased
+##            group_labels:
+##              sentence-transformers/all-MiniLM-L6-v2: MiniLM
+##              sentence-transformers/all-roberta-large-v1: RoBERTa
+##              ddore14/RooseBERT-scr-cased: RooseBERT
+##
+##            metrics:
+##              - Coherence
+##              - NPMI
+##              - Diversity
+##              - Exclusivity
+##              - Outliers
+##
+##            #            inverse_metrics:
+##            #              - Outliers
+##
+##            layout: combined
+##
+##            central_tendency: median
+##
+##            jitter: 0.08
+##
+##            rows: 2
+##            cols: 3
+##
+##            filename: pq_vectorizer_metric_strip_comparison.png
+##
+##            visualisation:
+##              name: metric_strip_plot
+##              figsize: [ 12, 8 ]
+##
+##  # ==========================
+##  # CTFIDF Parameter Reporting
+##  # =========================
+##  - name: thesis_reporting
+##    type: pipelines.thesis_reporting_pipeline.ThesisReportingPipeline
+##    enabled: true
+##    params:
+##      output_path: output/thesis/parliamentary_questions/all_experiments/ctfidf
+##      data_builder:
+##        experiment_ids:
+##          - 502413359867310494
+##          - 821522298480797748
+##        filter_expression: "tags.mlflow.runName LIKE '%ctfidf%'"
+##        selection:
+##          group_by: params.embedding_model_model_name
+##          rank_by: metrics.coherence
+##          direction: desc
+##          limit: 500
+##        fields:
+##          - field: run_name
+##            name: Experiment
+##          - field: run_id
+##            name: Run ID
+##          - field: params.embedding_model_model_name
+##            name: Embedding Model
+##          - field: metrics.coherence
+##            name: Coherence
+##          - field: metrics.coherence_npmi
+##            name: NPMI
+##          - field: metrics.topic_diversity
+##            name: Diversity
+##          - field: metrics.topic_exclusivity
+##            name: Exclusivity
+##          - field: metrics.outlier_ratio
+##            name: Outliers
+##          - field: params.dimensionality_reduction_model_params_n_neighbors
+##            name: n_neighbors
+##          - field: params.dimensionality_reduction_model_params_n_components
+##            name: n_components
+##          - field: params.dimensionality_reduction_model_params_min_dist
+##            name: min_dist
+##          - field: params.dimensionality_reduction_model_params_metric
+##            name: distance_metric
+##          - field: params.dimensionality_reduction_model_params_random_state
+##            name: random_state
+##          - field: params.clusterer_params_min_cluster_size
+##            name: min_cluster_size
+##          - field: params.clusterer_params_min_samples
+##            name: min_samples
+##          - field: params.ctfidf_params_bm25_weighting
+##            name: bm25_weighting
+##          - field: params.ctfidf_params_reduce_frequent_words
+##            name: reduce_frequent_words
+##          - field: params.model_params_vectorizer_params_min_df
+##            name: min_df
+##          - field: params.model_params_vectorizer_params_ngram_range
+##            name: ngram_range
+##          - field: params.representation_model_name
+##            name: representation_model
+##          - field: params.representation_model_params_diversity
+##            name: diversity
+##          - field: params.representation_model_params_top_n_words
+##            name: top_n
+##
+##      steps:
+##        - name: metric_line_chart
+##          params:
+##            group_field: Embedding Model
+##            parameters:
+##              - bm25_weighting
+##              - reduce_frequent_words
+##            metrics:
+##              - Coherence
+##              - NPMI
+##              - Diversity
+##              - Exclusivity
+##              - Outliers
+##            #            inverse_metrics:
+##            #              - Outliers
+##            filename_prefix: ctfidf_parameters
+##            visualisation:
+##              name: metric_line_chart
+##              figsize: [ 12, 8 ]
+##              rows: 2
+##              cols: 3
+##        - name: metric_strip_chart
+##          params:
+##            group_field: Embedding Model
+##            group_order:
+##              - sentence-transformers/all-MiniLM-L6-v2
+##              - sentence-transformers/all-roberta-large-v1
+##              - ddore14/RooseBERT-scr-cased
+##            group_labels:
+##              sentence-transformers/all-MiniLM-L6-v2: MiniLM
+##              sentence-transformers/all-roberta-large-v1: RoBERTa
+##              ddore14/RooseBERT-scr-cased: RooseBERT
+##
+##            metrics:
+##              - Coherence
+##              - NPMI
+##              - Diversity
+##              - Exclusivity
+##              - Outliers
+##
+##            #            inverse_metrics:
+##            #              - Outliers
+##
+##            layout: combined
+##
+##            central_tendency: median
+##
+##            jitter: 0.08
+##
+##            rows: 2
+##            cols: 3
+##
+##            filename: pq_ctfidf_metric_strip_comparison.png
+##
+##            visualisation:
+##              name: metric_strip_plot
+##              figsize: [ 12, 8 ]
+##
+##  # ==========================
+##  # Representation Parameter Reporting
+##  # =========================
+##  - name: thesis_reporting
+##    type: pipelines.thesis_reporting_pipeline.ThesisReportingPipeline
+##    enabled: true
+##    params:
+##      output_path: output/thesis/parliamentary_questions/all_experiments/representation
+##      data_builder:
+##        experiment_ids:
+##          - 502413359867310494
+##          - 821522298480797748
+##        filter_expression: "tags.mlflow.runName LIKE '%representation%'"
+##        selection:
+##          group_by: params.embedding_model_model_name
+##          rank_by: metrics.coherence
+##          direction: desc
+##          limit: 500
+##        fields:
+##          - field: run_name
+##            name: Experiment
+##          - field: run_id
+##            name: Run ID
+##          - field: params.embedding_model_model_name
+##            name: Embedding Model
+##          - field: metrics.coherence
+##            name: Coherence
+##          - field: metrics.coherence_npmi
+##            name: NPMI
+##          - field: metrics.topic_diversity
+##            name: Diversity
+##          - field: metrics.topic_exclusivity
+##            name: Exclusivity
+##          - field: metrics.outlier_ratio
+##            name: Outliers
+##          - field: params.dimensionality_reduction_model_params_n_neighbors
+##            name: n_neighbors
+##          - field: params.dimensionality_reduction_model_params_n_components
+##            name: n_components
+##          - field: params.dimensionality_reduction_model_params_min_dist
+##            name: min_dist
+##          - field: params.dimensionality_reduction_model_params_metric
+##            name: distance_metric
+##          - field: params.dimensionality_reduction_model_params_random_state
+##            name: random_state
+##          - field: params.clusterer_params_min_cluster_size
+##            name: min_cluster_size
+##          - field: params.clusterer_params_min_samples
+##            name: min_samples
+##          - field: params.ctfidf_params_bm25_weighting
+##            name: bm25_weighting
+##          - field: params.ctfidf_params_reduce_frequent_words
+##            name: reduce_frequent_words
+##          - field: params.model_params_vectorizer_params_min_df
+##            name: min_df
+##          - field: params.model_params_vectorizer_params_ngram_range
+##            name: ngram_range
+##          - field: params.representation_model_name
+##            name: representation_model
+##          - field: params.representation_model_params_diversity
+##            name: diversity
+##          - field: params.representation_model_params_top_n_words
+##            name: top_n
+##
+##      steps:
+##        - name: metric_line_chart
+##          params:
+##            group_field: Embedding Model
+##            parameters:
+##              - representation_model
+##              - diversity
+##              - top_n
+##            metrics:
+##              - Coherence
+##              - NPMI
+##              - Diversity
+##              - Exclusivity
+##              - Outliers
+##            #            inverse_metrics:
+##            #              - Outliers
+##            filename_prefix: representation_parameters
+##            visualisation:
+##              name: metric_line_chart
+##              figsize: [ 12, 8 ]
+##              rows: 2
+##              cols: 3
+##        - name: metric_strip_chart
+##          params:
+##            group_field: Embedding Model
+##
+##            group_labels:
+##              sentence-transformers/all-MiniLM-L6-v2: MiniLM
+##              sentence-transformers/all-roberta-large-v1: RoBERTa
+##              ddore14/RooseBERT-scr-cased: RooseBERT
+##
+##            metrics:
+##              - Coherence
+##              - NPMI
+##              - Diversity
+##              - Exclusivity
+##              - Outliers
+##
+##            #            inverse_metrics:
+##            #              - Outliers
+##
+##            layout: combined
+##
+##            central_tendency: median
+##
+##            jitter: 0.08
+##
+##            rows: 2
+##            cols: 3
+##
+##            filename: pq_representation_metric_strip_comparison.png
+##
+##            visualisation:
+##              name: metric_strip_plot
+##              figsize: [ 12, 8 ]

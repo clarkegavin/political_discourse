@@ -57,6 +57,9 @@ class EvaluationRunner:
                 metadata.get("topics"),
                 metadata.get("model")
             )
+
+            #self.logger.info(f"Evaluation Metrics: {metrics}")
+
             return {"metrics": metrics, "artifacts": []}
         except Exception as e:
             self.logger.error(f"Evaluator '{name}' failed: {e}")

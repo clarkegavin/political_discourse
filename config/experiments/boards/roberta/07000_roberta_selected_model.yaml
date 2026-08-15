@@ -1,0 +1,147 @@
+run_name: "RoBERTa"
+params:
+  model_params:
+    embedding_model: # optional custom embedding model config
+      name: bert
+      column: "DocumentText"
+      batch_size: 32
+      device: cuda
+      model_name: "sentence-transformers/all-roberta-large-v1"
+      chunking:
+        enabled: true
+        chunk_size: 224
+        overlap: 32
+        pooling: mean
+      cache:
+        enabled: true
+        id_column: "DocumentId"
+        cache_dir: "output/embeddings_cache/selected_model"
+        overwrite: true
+    dimensionality_reduction_model:
+      name: umap
+      params: { }
+
+save_path: "output/topic_modelling/boards/boards_selected_model"
+visualisations:
+  - name: topic_distribution
+    init:
+      filename: boards_bertopic_topic_distribution.png
+  - name: topic_wordclouds
+    init:
+      filename_prefix: boards_bertopic_topic
+      top_n_topics: 10
+  - name: intertopic_distance
+    init:
+      filename: boards_intertopic_distance.html
+  - name: topic_barchart
+    init:
+      filename: boards_topic_barchart.html
+      # BERTopic parameters
+      top_n_topics: 10
+      n_words: 10
+      width: 350
+      height: 350
+      topics: null        # optional list of topic ids
+  - name: topic_tree
+    init:
+      filename: boards_topic_tree.txt
+      max_distance: null
+      tight_layout: true
+      text_column: RepresentationDocument
+  - name: topic_heatmap
+    init:
+      filename: boards_topic_heatmap.html
+  - name: topic_term_rank
+    init:
+      filename: boards_topic_term_rank.html
+  - name: topic_term_rank
+    init:
+      filename: boards_topic_term_rank_scaled.html
+      log_scale: true
+  - name: topic_documents
+    init:
+      filename: boards_topic_documents.html
+  - name: topic_hierarchy
+    init:
+      filename: boards_topic_hierarchy.html
+  - name: hierarchical_documents
+    init:
+      filename: boards_hierarchical_documents.html
+      width: 1200
+      height: 800
+      hide_annotations: false
+      text_column: RepresentationDocument
+  - name: topics_over_time
+    init:
+      filename: boards_topics_over_time.html
+      date_column: DocumentEndDate
+      text_column: RepresentationDocument
+      interval: month
+  - name: approximate_distribution
+    init:
+      filename: boards_approximate_distribution.html
+      batch_size: 1000
+      top_n_topics: 20
+      text_column: RepresentationDocument
+topic_outputs:
+  enabled: true
+  save_topic_info: true
+  save_topic_hierarchy: true
+
+  topic_info_output:
+    saver_name: sql_server
+    table_name: boards_topic_info
+    if_exists: replace
+    chunk_size: 1000
+    schema: dbo
+    connector_params: { }
+
+  hierarchy_output:
+    saver_name: sql_server
+    table_name: boards_topic_hierarchy
+    if_exists: replace
+    chunk_size: 1000
+    schema: dbo
+    connector_params: { }
+
+  hierarchy_nodes_output:
+    saver_name: sql_server
+    table_name: boards_topic_hierarchy_nodes
+    if_exists: replace
+    chunk_size: 1000
+    schema: dbo
+    connector_params: { }
+llm:
+  enabled: true
+  provider: openai
+  model: gpt-5.4-mini
+
+  prompt_type: online_forum
+
+  max_representative_docs: 3
+  max_doc_characters: 1500
+  max_ancestors: 3
+
+  max_topics: null
+
+  request_delay_seconds: 0.5
+  max_retries: 5
+  retry_delay: 2.0
+
+  llm_output:
+    saver_name: sql_server
+    table_name: boards_topic_llm
+    if_exists: replace
+    chunk_size: 1000
+    schema: dbo
+
+    connector_params: { }
+sweep:
+  params.model_params.dimensionality_reduction_model:
+    - name: umap
+      params:
+        n_neighbors: [ 5 ]
+        n_components: [ 10 ]
+        metric: [ euclidean ]
+        min_dist: [ 0.0 ]
+        random_state: [ 42 ]

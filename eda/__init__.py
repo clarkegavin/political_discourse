@@ -22,6 +22,7 @@ from .language_detection_eda import LanguageDetectionEDA
 from .reply_chain_eda import ReplyChainAnalysisEDA
 from .group_count_eda import GroupCountDistributionEDA
 from .identify_urls_eda import IdentifyURLsEDA
+from .embedding_batch_benchmark import EmbeddingBatchBenchmarkEDA
 
 EDAFactory.register_eda("class_balance", ClassBalanceEDA)
 EDAFactory.register_eda("wordcloud", WordCloudEDA)
@@ -49,6 +50,7 @@ EDAFactory.register_eda(
 EDAFactory.register_eda("reply_chain", ReplyChainAnalysisEDA)
 EDAFactory.register_eda("group_count_distribution", GroupCountDistributionEDA)
 EDAFactory.register_eda("identify_urls", IdentifyURLsEDA)
+EDAFactory.register_eda("embedding_batch_benchmark", EmbeddingBatchBenchmarkEDA)
 
 __all__ = [
     "EDAFactory",

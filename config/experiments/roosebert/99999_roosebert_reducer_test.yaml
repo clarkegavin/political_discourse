@@ -1,0 +1,37 @@
+# file: `config/experiments/bertopic_default.yaml`
+run_name: "RooseBERT_sweep_reducer"
+params:
+  model_params:
+    embedding_model: # optional custom embedding model config
+      name: bert
+      column: "DocumentText"
+      batch_size: 32
+      device: cuda
+      model_name: "ddore14/RooseBERT-scr-cased"
+      chunking:
+        enabled: true
+        chunk_size: 224
+
+        overlap: 32
+        pooling: mean
+      cache:
+        enabled: true
+        id_column: "QuestionId"
+        cache_dir: "output/embeddings_cache"
+        overwrite: false
+      # max_seq_length: 512
+    dimensionality_reduction_model:
+      name: umap
+      params: {}
+save_path: "output/topic_modelling/RooseBERT_sweep"
+
+sweep:
+  params.model_params.dimensionality_reduction_model:
+    - name: umap
+      params:
+         n_neighbors: [ 15 ]
+         n_components: [ 5 ]
+         metric: [ cosine ]
+         min_dist: [ 0.0 ]
+         random_state: [ 42 ]
+         low_memory: [ false ]

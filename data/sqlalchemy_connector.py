@@ -32,6 +32,7 @@ class SQLAlchemyConnector(DBConnector):
         db_url = db_url or os.getenv("DB_URL")
 
         self.logger.info(f"Initializing SQLAlchemyConnector with DB_URL: {db_url is not None}")
+
         if not db_url:
             self.logger.info("DB_URL not set, constructing from individual environment variables")
             server = os.getenv("DB_SERVER")

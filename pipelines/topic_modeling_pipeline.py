@@ -119,18 +119,7 @@ class TopicModelingPipeline(Pipeline):
                 self.logger.info(f"Applying {len(steps)} preprocessors to DataFrame")
                 X_exp = preprocessor.fit_transform(X_exp)
 
-            # Combine text fields (after preprocessing if applied)
-            # if isinstance(tf, (list, tuple)):
-            #     combined = X_exp[tf[0]].fillna("")
-            #     for col in tf[1:]:
-            #         combined = combined + " " + X_exp[col].fillna("")
-            # else:
-            #     combined = X_exp[tf].fillna("")
-            #
-            # X_exp[self.combined_text_field_name] = combined
 
-            # self.logger.info(f"Combined text fields into '{self.combined_text_field_name}' for experiment {run_name}")
-            # Prepare a run-style experiment config expected by ExperimentRunner
             runner_exp = {
                 "run_name": run_name,
                 "sweep": exp_cfg.get("sweep"),
@@ -145,7 +134,8 @@ class TopicModelingPipeline(Pipeline):
                     "X": X_exp,
                     "dataset_name": self.dataset_name,
                     "visualisations": exp_cfg.get("visualisations", []),
-                    #"combined_text_field_name": self.combined_text_field_name,
+                    "topic_outputs": exp_cfg.get("topic_outputs", {}),
+                    "llm": exp_cfg.get("llm", {}),
                     "representation_text_field": self.representation_text_field,
                 },
             }

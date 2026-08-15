@@ -5,14 +5,16 @@ from gensim.models.coherencemodel import CoherenceModel
 from sklearn.feature_extraction.text import CountVectorizer
 from typing import List
 from .base import Evaluator
+
 from gensim.corpora import Dictionary
 from collections import Counter
-
+import os
+import math
 
 class TopicModelingEvaluator(Evaluator):
     """Evaluator for topic models. Computes coherence, diversity and topic sizes."""
 
-    def __init__(self, name: str = "topic_modeling", coherence_type: str = "c_v", top_n: int = 10, **kwargs):
+    def __init__(self, name: str = "topic_modeling", coherence_type: str = "c_v", top_n: int = 10, max_topics_for_coherence: int = 100, **kwargs):
         # initialize base evaluator (sets base logger and stores kwargs)
         super().__init__(name, **kwargs)
         # class-specific settings
@@ -25,6 +27,13 @@ class TopicModelingEvaluator(Evaluator):
         self.evaluation_field_name = kwargs.get("evaluation_field_name", "")
         self.logger.info(f"Evaluation field name for coherence/diversity: '{self.evaluation_field_name}'")
         self.logger.info(f"Top N terms for evaluation: {self.top_n}")
+        if top_n < 1:
+            raise ValueError("top_n must be greater than zero")
+
+        self._tokenized_docs_cache = None
+        self._dictionary_cache = None
+        self.max_topics_for_coherence = max_topics_for_coherence
+
 
     def _compute_exclusivity(self, top_terms: List[List[str]]) -> float:
         """Compute topic exclusivity as: 1 - (number of shared top words across topics / total number of top words).
@@ -56,23 +65,37 @@ class TopicModelingEvaluator(Evaluator):
         # Clamp to [0,1]
         return float(max(0.0, min(1.0, exclusivity)))
 
-    def _extract_top_terms(self, estimator, top_n):
+    def _extract_top_terms(
+            self,
+            estimator,
+            top_n_words,
+            max_topics=None
+    ):
 
         topics_terms = []
 
-        if hasattr(estimator, "get_topics"):  # BERTopic
+        if hasattr(estimator, "get_topics"):
+
             topics = estimator.get_topics()
 
-            for topic_id, terms in topics.items():
-                if topic_id == -1:  # ignore outliers
-                    continue
+            valid_topics = [
+                (topic_id, terms)
+                for topic_id, terms in topics.items()
+                if topic_id != -1
+            ]
 
-                topics_terms.append([t for t, _ in terms][:top_n])
+            # sort by topic size if available
+            if max_topics:
+                valid_topics = valid_topics[:max_topics]
 
-        elif hasattr(estimator, "components_"):  # sklearn LDA/NMF
-            for comp in estimator.components_:
-                top_idx = np.argsort(comp)[-top_n:][::-1]
-                topics_terms.append([str(idx) for idx in top_idx])
+            for topic_id, terms in valid_topics:
+                topics_terms.append(
+                    [
+                        t
+                        for t, _
+                        in terms[:top_n_words]
+                    ]
+                )
 
         return topics_terms
 
@@ -114,7 +137,12 @@ class TopicModelingEvaluator(Evaluator):
 
         self.logger.info(f"Topic sizes: {sizes}")
         # Topic diversity: proportion of unique top terms across topics
-        top_terms = self._extract_top_terms(estimator, self.top_n)
+        top_terms = self._extract_top_terms(estimator, self.top_n, self.max_topics_for_coherence)
+        self.logger.info(
+            f"Extracted {len(top_terms)} topics for coherence"
+        )
+
+
         flat = [t for terms in top_terms for t in terms]
         if flat:
             metrics["topic_diversity"] = float(len(set(flat)) / max(1, len(flat)))
@@ -126,39 +154,163 @@ class TopicModelingEvaluator(Evaluator):
         if top_terms:
             try:
                 self.logger.info("Computing topic coherence using gensim")
-                # Build gensim objects
-                vec = CountVectorizer()
-                doc_term = vec.fit_transform(docs)
-                feature_names = vec.get_feature_names_out()
 
-                # convert top_terms words to indices in feature_names if possible
+                # Get cached tokenized documents and Gensim dictionary.
+                # These provide the vocabulary against which coherence
+                # terms will be evaluated.
+                tokenized, dictionary = self._get_coherence_resources(
+                    docs
+                )
+
+                self.logger.info(
+                    f"Sample tokenized document: {tokenized[0][:50]}"
+                )
+
+                corpus_tokens = {
+                    token
+                    for doc in tokenized
+                    for token in doc
+                }
+
+                self.logger.info(
+                    f"Gensim corpus vocabulary size: "
+                    f"{len(corpus_tokens)}"
+                )
+
+                # Get BERTopic vectorizer information for diagnostics.
+                vec = estimator.vectorizer_model
+
+                self.logger.info(
+                    f"BERTopic vectorizer: {vec}"
+                )
+                self.logger.info(
+                    f"BERTopic ngram_range: {vec.ngram_range}"
+                )
+
+                # ------------------------------------------------------------------
+                # Convert BERTopic top terms to unigram topics for Gensim.
+                #
+                # This ensures that Gensim receives tokens that actually exist
+                # in its tokenized corpus, regardless of whether BERTopic uses
+                # unigrams, bigrams, or trigrams.
+                # ------------------------------------------------------------------
+
                 topics_for_gensim = []
-                for tlist in top_terms:
-                    mapped = [w for w in tlist if w in feature_names]
-                    if mapped:
+
+                for topic_idx, tlist in enumerate(top_terms):
+
+                    # Split any BERTopic n-grams into individual unigrams.
+                    unigram_terms = []
+
+                    for term in tlist:
+                        unigram_terms.extend(term.split())
+
+                    # Remove duplicates while preserving order.
+                    unigram_terms = list(dict.fromkeys(unigram_terms))
+
+                    # Keep only unigrams that exist in the Gensim corpus.
+                    mapped = [
+                        word
+                        for word in unigram_terms
+                        if word in corpus_tokens
+                    ]
+
+                    # self.logger.info(
+                    #     f"Coherence topic {topic_idx}: "
+                    #     f"{len(tlist)} BERTopic terms -> "
+                    #     f"{len(mapped)} usable unigrams"
+                    # )
+
+                    if len(mapped) >= 2:
                         topics_for_gensim.append(mapped)
 
+                self.logger.info(
+                    f"Number of Gensim topics: "
+                    f"{len(topics_for_gensim)}"
+                )
+
+                # ------------------------------------------------------------------
+                # Compute configured coherence metric
+                # ------------------------------------------------------------------
+
                 if topics_for_gensim:
-                    tokenized = [d.split() for d in docs]
-                    dictionary = Dictionary(tokenized)
-                    self.logger.info(f"Computing coherence with {len(topics_for_gensim)} topics and {len(tokenized)} documents")
-                    cm = CoherenceModel(topics=topics_for_gensim, texts=tokenized, dictionary=dictionary, coherence=self.coherence_type, processes=1)
-                    self.logger.info("Coherence model computed successfully, extracting coherence score")
+
+                    self.logger.info(
+                        f"Computing coherence with "
+                        f"{len(topics_for_gensim)} topics, "
+                        f"{len(tokenized)} documents and "
+                        f"cpu count {max(1, os.cpu_count() // 4)}"
+                    )
+
+                    cm = CoherenceModel(
+                        topics=topics_for_gensim,
+                        texts=tokenized,
+                        dictionary=dictionary,
+                        coherence=self.coherence_type,
+                        processes=max(1, os.cpu_count() // 4)
+                    )
+
+                    self.logger.info(
+                        "Coherence model computed successfully, "
+                        "extracting coherence score"
+                    )
+
                     coherence = cm.get_coherence()
-                    self.logger.info(f"Computed coherence: {coherence}")
+
+                    self.logger.info(
+                        f"Computed coherence: {coherence}"
+                    )
+
                     metrics["coherence"] = float(coherence)
 
-                    # Additionally compute NPMI coherence (c_npmi) and add as separate metric
+                    # ------------------------------------------------------------------
+                    # Compute NPMI coherence (c_npmi)
+                    # ------------------------------------------------------------------
+
                     try:
-                        self.logger.info("Computing NPMI coherence (c_npmi) using gensim")
-                        cm_npmi = CoherenceModel(topics=topics_for_gensim, texts=tokenized, dictionary=dictionary, coherence="c_npmi", processes=1)
+                        self.logger.info(
+                            "Computing NPMI coherence (c_npmi) using gensim"
+                        )
+
+                        cm_npmi = CoherenceModel(
+                            topics=topics_for_gensim,
+                            texts=tokenized,
+                            dictionary=dictionary,
+                            coherence="c_npmi",
+                            processes=max(1, os.cpu_count() // 4)
+                        )
+
                         coherence_npmi = cm_npmi.get_coherence()
-                        self.logger.info(f"Computed coherence (c_npmi): {coherence_npmi}")
-                        metrics["coherence_npmi"] = float(coherence_npmi)
+
+                        self.logger.info(
+                            f"Computed coherence (c_npmi): "
+                            f"{coherence_npmi}"
+                        )
+
+                        self.logger.info(
+                            f"Number of NPMI topics: "
+                            f"{len(topics_for_gensim)}"
+                        )
+
+                        if math.isfinite(coherence_npmi):
+                            metrics["coherence_npmi"] = float(
+                                coherence_npmi
+                            )
+                        else:
+                            self.logger.warning(
+                                f"NPMI returned non-finite value: "
+                                f"{coherence_npmi}"
+                            )
+
                     except Exception as e:
-                        self.logger.warning(f"Could not compute coherence (c_npmi): {e}")
+                        self.logger.warning(
+                            f"Could not compute coherence (c_npmi): {e}"
+                        )
+
             except Exception as e:
-                self.logger.warning(f"Could not compute coherence: {e}")
+                self.logger.warning(
+                    f"Could not compute coherence: {e}"
+                )
 
         # Compute topic exclusivity
         exclusivity = self._compute_exclusivity(top_terms)
@@ -174,3 +326,33 @@ class TopicModelingEvaluator(Evaluator):
         self.logger.info(f"Computed outlier ratio: {outlier_ratio}")
 
         return metrics
+
+    def _get_coherence_resources(self, docs):
+
+        if (
+                self._tokenized_docs_cache is None
+                or self._dictionary_cache is None
+        ):
+
+            self.logger.info(
+                "Building coherence token cache"
+            )
+
+            self._tokenized_docs_cache = [
+                d.split()
+                for d in docs
+            ]
+
+            self._dictionary_cache = Dictionary(
+                self._tokenized_docs_cache
+            )
+
+        else:
+            self.logger.info(
+                "Using cached coherence token data"
+            )
+
+        return (
+            self._tokenized_docs_cache,
+            self._dictionary_cache
+        )

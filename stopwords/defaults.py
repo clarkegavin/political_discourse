@@ -4,7 +4,14 @@ DEFAULT_STOPWORDS = {
     "if", "they", "you", "he", "she", "we", "his", "her", "its", "my", "your", "their",
     "what", "which", "when", "where", "who", "how", "there", "so", "no", "yes", "do",
     "does", "did", "have", "has", "had", "will", "would", "can", "could", "should",
-    "i", "me", "us", "them", "our", "yours", "theirs", "asked"
+    "i", "me", "us", "them", "our", "yours", "theirs", "asked",
+    #boards specific
+    "continuing", "previous", "threabanned", "mods", "page", "posting", "mod", "warning", "continuation", "poster",
+    "ignorereport", "posters", "threadbanned"
+    #users
+    #"brickstser69", "slay55", "hamsterchops", "fixdepitchmark", "potential_monke", "mulbot"
+    # Irish language stopwords
+    "agus", "ar", "le", "ag", "na", "chun", "tá", "atá", "sa", "sin"
 }
 
 PROCEDURAL_STOPWORDS = {

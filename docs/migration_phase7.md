@@ -4,11 +4,11 @@ Phase 7 focuses on backfilling config examples, documentation and a migration ch
 
 Goals
 - Provide example config files under `config/experiments/` and `config/pipelines/`.
-- Document the new experiment runner usage and the keys supported in experiment config: `params`, `sweep`, `overrides`, `run_name`, `retries`, `max_runs`, `visualisations`.
+- Document the new experiment runner usage and the keys supported in experiment config: `params`, `sweep`, `overrides`, `run_name`, `retries`, `max_runs`, `charts`.
 - Provide a migration checklist and sample commands to validate.
 
 Example experiment config (see `config/experiments/topic_example.yaml`)
-- Top-level keys: `name`, `model_name`, `evaluator_name`, `mlflow_experiment`, `visualisations`, `params`, `sweep`.
+- Top-level keys: `name`, `model_name`, `evaluator_name`, `mlflow_experiment`, `charts`, `params`, `sweep`.
 - `params` maps to constructor kwargs for the experiment.
 
 Example pipeline config (see `config/pipelines/topic_pipeline_example.yaml`)
