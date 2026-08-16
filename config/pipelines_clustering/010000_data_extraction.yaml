@@ -1,0 +1,8 @@
+pipelines:
+  - name: llm_topics
+    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+    enabled: true
+    extractor_type: table
+    params:
+      extractor_params:
+        model: LLMTopic

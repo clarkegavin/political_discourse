@@ -1,0 +1,57 @@
+#pipelines:
+#  - name: eda
+#    type: pipelines.eda_pipeline.EDAPipeline
+#    enabled: true
+#    params:
+#      save_path: output/eda/llm_topics
+#      steps:
+#      - name: describe_info
+#        params:
+#          filename_prefix: llm
+#      - name: tokenize_text
+#        params:
+#          columns:
+#            - TopicTheme
+#            - TopicDescription
+#          output_column: tokens
+#          viz_params:
+#            - name: boxplot
+#              ncols: 3
+#              filename: llm_tokens_boxplot.png
+#            - name: bar_chart
+#              ncols: 3
+#              filename: llm_tokens_barchart.png
+#      - name: tokenize_text
+#        params:
+#          columns:
+#            - TopicTheme
+#            - TopicDescription
+#          embedding_models:
+#            - sentence-transformers/all-MiniLM-L6-v2
+#            - sentence-transformers/all-roberta-large-v1
+#            - ddore14/RooseBERT-scr-cased
+#
+#          model_labels:
+#            sentence-transformers/all-MiniLM-L6-v2: MiniLM-L6
+#            sentence-transformers/all-roberta-large-v1: RoBERTa-large
+#            ddore14/RooseBERT-scr-cased: RooseBERT
+#
+#          viz_params:
+#            - name: boxplot
+#              filename: llm_tokens_boxplot_embedding_models.png
+#              xtick_rotation: 45
+#              xtick_ha: right
+#
+#      - name: wordcloud
+#        params:
+#          columns:
+#            - TopicTheme
+#          #combine_columns: true
+#          viz_params:
+#            - name: eda_wordcloud
+#              max_words: 100
+#              stopwords: true
+#              collocations: false
+#              background_color: white
+#              colormap: viridis
+#              filename: llm_wordcloud.png

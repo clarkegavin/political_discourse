@@ -44,40 +44,92 @@ class ClusteringQualityEvaluator:
 
         # ---------------- silhouette ----------------
         if any(m.startswith("silhouette") for m in metrics):
-            unique = set(labels) - {-1}
+
+            labels_arr = np.asarray(labels)
+
+            # Exclude HDBSCAN noise
+            valid_mask = labels_arr != -1
+
+            X_silhouette = X_arr[valid_mask]
+            labels_silhouette = labels_arr[valid_mask]
+
+            unique = np.unique(labels_silhouette)
+
+            self.logger.info(
+                f"Silhouette evaluation: "
+                f"{len(X_silhouette)} clustered observations, "
+                f"{len(X_arr) - len(X_silhouette)} noise observations, "
+                f"{len(unique)} clusters"
+            )
+
             if len(unique) < 2:
-                self.logger.warning("Silhouette requires >=2 clusters.")
+                self.logger.warning(
+                    "Silhouette requires >=2 non-noise clusters."
+                )
             else:
+
                 if "silhouette_average" in metrics:
-                    avg = float(silhouette_score(X_arr, labels))
+                    avg = float(
+                        silhouette_score(
+                            X_silhouette,
+                            labels_silhouette
+                        )
+                    )
+
                     results["silhouette_average"] = avg
-                    self.logger.info(f"silhouette_average={avg:.4f}")
+
+                    self.logger.info(
+                        f"silhouette_average={avg:.4f}"
+                    )
 
                 if "silhouette_per_point" in metrics:
-                    s_vals = silhouette_samples(X_arr, labels)
+
+                    s_vals = silhouette_samples(
+                        X_silhouette,
+                        labels_silhouette
+                    )
 
                     fig, ax = plt.subplots(figsize=(8, 6))
+
                     y_lower = 10
                     clusters = sorted(unique)
 
-                    for i, cl in enumerate(clusters):
-                        vals = np.sort(s_vals[labels == cl])
+                    for cl in clusters:
+                        vals = np.sort(
+                            s_vals[labels_silhouette == cl]
+                        )
+
                         y_upper = y_lower + len(vals)
+
                         ax.fill_betweenx(
                             np.arange(y_lower, y_upper),
                             0,
                             vals,
                             alpha=0.7
                         )
-                        ax.text(-0.05, y_lower + 0.5 * len(vals), str(cl))
+
+                        ax.text(
+                            -0.05,
+                            y_lower + 0.5 * len(vals),
+                            str(cl)
+                        )
+
                         y_lower = y_upper + 10
 
-                    ax.axvline(np.mean(s_vals), linestyle="--", color="red")
+                    ax.axvline(
+                        np.mean(s_vals),
+                        linestyle="--",
+                        color="red"
+                    )
+
                     ax.set_title("Silhouette plot")
                     ax.set_xlabel("Silhouette coefficient")
                     ax.set_yticks([])
 
-                    self._save_fig(fig, f"{self.name}_silhouette.png")
+                    self._save_fig(
+                        fig,
+                        f"{self.name}_silhouette.png"
+                    )
 
         # ---------------- elbow ----------------
         if "elbow" in metrics and clusterer is not None:

@@ -1,0 +1,59 @@
+pipelines:
+  - name: clustering_hdbscan
+    type: pipelines.clustering_pipeline.ClusteringPipeline
+    params:
+      text_fields:
+        - clustering_text
+      combined_text_field: "clustering_text"
+#      columns_to_drop:[]
+      sort_columns:
+        - Dataset
+        - TopicId
+      embedding_model:
+        name: bert
+        column: "clustering_text"
+        batch_size: 32
+        device: cuda
+        model_name: "sentence-transformers/all-MiniLM-L6-v2"
+
+      clusterer:
+        name: hdbscan
+        params:
+          min_cluster_size: 10
+          min_samples: 5
+          metric: euclidean
+          cluster_selection_method: eom
+          prediction_data: true
+      reducer:
+        - name: umap
+          params:
+            n_components: 50
+            metric: cosine
+            random_state: 42
+      visualisations:
+         name: cluster_plot
+         params:
+            output_dir: "output/clustering_hdbscan/umap"
+            figsize: [10, 8]
+            xlabel: "Dim 1"
+            ylabel: "Dim 2"
+            #zlabel: "Dim 3"
+            #title: "HDBSCAN Clustering"
+            dimensions: 2
+            color_by: "Dataset"
+      # Example: evaluator configuration for clustering
+      evaluators:
+        - name: clustering_quality
+          metrics: [ "silhouette_average", "silhouette_per_point" ]
+          params:
+#            k_min: 2
+#            k_max: 10
+#            step: 1
+#            prefix: "llm_clustering"
+            output_dir: "output/clustering_hdbscan/umap"
+#        - name: cluster_profile
+#          metrics: [ "descriptive_stats" ]
+#          params:
+#            top_n: 10
+#            prefix: "llm_clustering_profile"
+#            output_dir: "output/clustering_hdbscan/umap"

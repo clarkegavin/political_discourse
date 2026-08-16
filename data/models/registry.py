@@ -12,6 +12,7 @@ from data.models.oireachtas_member_representation import OireachtasMemberReprese
 from data.models.boards_combined import BoardsConsolidated
 from data.models.oireachtas_question_conceptual_model import OireachtasQuestionConceptualModel
 from data.models.boards_conceptual_model import BoardsConceptualModel
+from data.models.llm_topics import LLMTopic
 
 MODEL_REGISTRY = {
     "BoardsComment": BoardsComment,
@@ -26,5 +27,6 @@ MODEL_REGISTRY = {
     "OireachtasQuestionConceptualModel": OireachtasQuestionConceptualModel,
     "RobloxGame": RobloxGame,
     "SteamGame": SteamGame,
-    "BoardsConceptualModel": BoardsConceptualModel
+    "BoardsConceptualModel": BoardsConceptualModel,
+    "LLMTopic": LLMTopic,
 }
