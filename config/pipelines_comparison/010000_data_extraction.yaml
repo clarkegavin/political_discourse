@@ -1,0 +1,23 @@
+pipelines:
+  - name: llm_topic_themes
+    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+    enabled: true
+    extractor_type: table
+    params:
+      extractor_params:
+        model: LLMTopic
+#        filters:
+#          Dataset: online_forum # optional filter to only extract topics for a specific dataset
+
+  - name: preprocess_data
+    type: pipelines.preprocessing_pipeline.PreprocessingPipeline
+    enabled: true
+    params:
+      preprocessors:
+        - name: combine_text
+          params:
+            fields_to_combine: [ "TopicTheme", "TopicDescription" ]
+            combined_field_name: "TopicEmbeddingText"
+            field_prefixes:
+              TopicTheme: "Theme"
+              TopicDescription: "Description"

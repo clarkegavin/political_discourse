@@ -1,0 +1,94 @@
+pipelines:
+  - name: eda
+    type: pipelines.eda_pipeline.EDAPipeline
+    enabled: true
+    params:
+      save_path: output/eda/llm_topics
+
+      steps:
+#        - name: topic_attribute_analysis
+#          params:
+#            topic_field: Topic
+#            topic_theme_field: TopicTheme
+#            attributes:
+#              - Questioner
+#              - QuestionerParty
+#              - QuestionerConstituency
+#            top_n_topics: 10
+#            top_n_entities: 8
+#            viz_params:
+#
+#              - name: topic_attribute_subplot
+#                rows: 5
+#                cols: 2
+#
+#                figsize:
+#                  - 18
+#                  - 10
+#
+#                top_n_entities: 5
+#
+#                filename: topic_attribute_analysis.png
+
+        - name: entity_topic_profile
+          params:
+            topic_field: Topic
+            topic_theme_field: TopicTheme
+
+            attributes:
+              - Questioner
+              - QuestionerParty
+              - QuestionerConstituency
+
+            # Number of entities to analyse.
+            # Entities are ranked by total question volume.
+            top_n_entities: 3
+
+            # Number of most prevalent LLM themes
+            # displayed for each entity.
+            top_n_topics: 5
+
+            viz_params:
+
+              # ------------------------------------------------
+              # Separate subplot for each entity
+              # ------------------------------------------------
+
+              - name: entity_topic_profile_bar_chart
+
+                mode: subplot
+
+                rows: 5
+                cols: 1
+
+                figsize:
+                  - 18
+                  - 14
+
+                max_label_length: 50
+
+                show_count: true
+                show_share: true
+
+                filename: entity_topic_profile_subplot.png
+
+              # ------------------------------------------------
+              # All entities in a single figure
+              # ------------------------------------------------
+
+              - name: entity_topic_profile_bar_chart
+
+                mode: combined
+
+                figsize:
+                  - 18
+                  - 14
+
+                max_label_length: 75
+
+                show_count: true
+                show_share: true
+
+                filename: entity_topic_profile_combined.png
+
+

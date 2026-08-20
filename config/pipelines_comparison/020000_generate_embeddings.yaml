@@ -1,0 +1,19 @@
+pipelines:
+  - name: topic_embeddings
+    type: pipelines.embedding_pipeline.EmbeddingPipeline
+    params:
+      dataset_name: llm_topic_similarity
+      sort_columns:
+        - Identifier
+      text_field: TopicEmbeddingText
+      embedding_model:
+        name: bert
+        column: embeddings
+        batch_size: 32
+        device: cuda
+        model_name: "sentence-transformers/all-MiniLM-L6-v2"
+        cache:
+          enabled: true
+          id_column: Identifier
+          cache_dir: "output/embeddings_cache/topic_similarity"
+          overwrite: true

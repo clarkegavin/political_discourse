@@ -23,6 +23,9 @@ from .reply_chain_eda import ReplyChainAnalysisEDA
 from .group_count_eda import GroupCountDistributionEDA
 from .identify_urls_eda import IdentifyURLsEDA
 from .embedding_batch_benchmark import EmbeddingBatchBenchmarkEDA
+from .topic_attribute_analysis import TopicAttributeAnalysisEDA
+from .entity_topic_profile_eda import EntityTopicProfileEDA
+from .cross_dataset_topic_similarity import CrossDatasetTopicSimilarityEDA
 
 EDAFactory.register_eda("class_balance", ClassBalanceEDA)
 EDAFactory.register_eda("wordcloud", WordCloudEDA)
@@ -51,6 +54,9 @@ EDAFactory.register_eda("reply_chain", ReplyChainAnalysisEDA)
 EDAFactory.register_eda("group_count_distribution", GroupCountDistributionEDA)
 EDAFactory.register_eda("identify_urls", IdentifyURLsEDA)
 EDAFactory.register_eda("embedding_batch_benchmark", EmbeddingBatchBenchmarkEDA)
+EDAFactory.register_eda("topic_attribute_analysis", TopicAttributeAnalysisEDA)
+EDAFactory.register_eda("entity_topic_profile", EntityTopicProfileEDA)
+EDAFactory.register_eda("cross_dataset_similarity", CrossDatasetTopicSimilarityEDA)
 
 __all__ = [
     "EDAFactory",
@@ -74,5 +80,6 @@ __all__ = [
     "LanguageDetectionEDA",
     "ReplyChainAnalysisEDA",
     "TemporalAnalysisEDA",
-    "GroupCountDistributionEDA"
+    "GroupCountDistributionEDA",
+    "TopicAttributeAnalysisEDA"
 ]

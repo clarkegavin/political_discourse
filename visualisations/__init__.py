@@ -38,6 +38,10 @@ from .metric_bar_chart import MetricBarChart
 from .topic_tree import TopicTree
 from .topic_hierarchical_documents import HierarchicalDocuments
 from .topic_approximate_distribution import ApproximateDistribution
+from .topic_attribute_subplot import TopicAttributeSubplot
+from .entity_topic_profile_bar_chart import EntityTopicProfileBarChart
+from .similarity_histogram import SimilarityHistogram
+
 # Register visualisations
 
 VisualisationFactory.register_visualisation("confusion_matrix", ConfusionMatrixChart)
@@ -80,6 +84,9 @@ VisualisationFactory.register_visualisation("metric_bar_chart", MetricBarChart)
 VisualisationFactory.register_visualisation("topic_tree", TopicTree)
 VisualisationFactory.register_visualisation("hierarchical_documents", HierarchicalDocuments)
 VisualisationFactory.register_visualisation("approximate_distribution", ApproximateDistribution)
+VisualisationFactory.register_visualisation("topic_attribute_subplot", TopicAttributeSubplot)
+VisualisationFactory.register_visualisation("entity_topic_profile_bar_chart", EntityTopicProfileBarChart)
+VisualisationFactory.register_visualisation("similarity_histogram", SimilarityHistogram)
 
 
 __all__ = [
@@ -121,4 +128,7 @@ __all__ = [
     "TopicTree",
     "HierarchicalDocuments",
     "ApproximateDistribution",
+    "TopicAttributeSubplot",
+    "EntityTopicProfileBarChart",
+    "SimilarityHistogram"
 ]

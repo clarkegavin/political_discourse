@@ -13,6 +13,8 @@ from data.models.boards_combined import BoardsConsolidated
 from data.models.oireachtas_question_conceptual_model import OireachtasQuestionConceptualModel
 from data.models.boards_conceptual_model import BoardsConceptualModel
 from data.models.llm_topics import LLMTopic
+from data.models.llm_topic_themes import LLMTopicThemes
+from data.models.oireachtas_topic_summary import OireachtasTopicSummary
 
 MODEL_REGISTRY = {
     "BoardsComment": BoardsComment,
@@ -29,4 +31,6 @@ MODEL_REGISTRY = {
     "SteamGame": SteamGame,
     "BoardsConceptualModel": BoardsConceptualModel,
     "LLMTopic": LLMTopic,
+    "LLMTopicThemes": LLMTopicThemes,
+    "OireachtasTopicSummary": OireachtasTopicSummary,
 }

@@ -1,13 +1,13 @@
-pipelines:
-- name: preprocess_data
-  type: pipelines.preprocessing_pipeline.PreprocessingPipeline
-  enabled: true
-  params:
-    preprocessors:
-      - name: combine_text
-        params:
-          fields_to_combine: [ "TopicTheme", "TopicDescription" ]
-          combined_field_name: "clustering_text"
-          field_prefixes:
-            TopicTheme: "Theme"
-            TopicDescription: "Description"
+#pipelines:
+#- name: preprocess_data
+#  type: pipelines.preprocessing_pipeline.PreprocessingPipeline
+#  enabled: true
+#  params:
+#    preprocessors:
+#      - name: combine_text
+#        params:
+#          fields_to_combine: [ "TopicTheme", "TopicDescription" ]
+#          combined_field_name: "clustering_text"
+#          field_prefixes:
+#            TopicTheme: "Theme"
+#            TopicDescription: "Description"

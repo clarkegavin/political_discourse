@@ -1,0 +1,205 @@
+pipelines:
+  - name: topic_similarity
+    type: pipelines.eda_pipeline.EDAPipeline
+    params:
+      save_path: output/eda/topic_similarity
+      steps:
+        # ------------------------------------------------
+        # Parliamentary Questions --> Online Forum Topic Similarity
+        # ------------------------------------------------
+        - name: cross_dataset_similarity
+          params:
+            # ------------------------------------------------
+            # Dataset configuration
+            # ------------------------------------------------
+            dataset_field: Dataset
+            embedding_field: embeddings
+
+            source_dataset: parliamentary_questions
+            target_dataset: online_forum
+
+            # ------------------------------------------------
+            # Source / target identifiers
+            # ------------------------------------------------
+            source_unique_id: Identifier
+            target_unique_id: Identifier
+
+            source_topic_id: TopicId
+            target_topic_id: TopicId
+
+            source_topic_theme: TopicTheme
+            target_topic_theme: TopicTheme
+
+            source_description: TopicDescription
+            target_description: TopicDescription
+
+            # ------------------------------------------------
+            # Similarity configuration
+            # ------------------------------------------------
+            top_n_matches: 20
+            similarity_threshold: 0.0
+            similarity_bands:
+              - label: "< 0.30"
+                min: -1.0
+                max: 0.30
+
+              - label: "0.30–0.39"
+                min: 0.30
+                max: 0.40
+
+              - label: "0.40–0.49"
+                min: 0.40
+                max: 0.50
+
+              - label: "0.50–0.59"
+                min: 0.50
+                max: 0.60
+
+              - label: "≥ 0.60"
+                min: 0.60
+                max: 1.01
+
+            # ------------------------------------------------
+            # CSV outputs
+            # ------------------------------------------------
+
+            save_results: true
+            output_filename: pq_forum_topic_similarity.csv
+
+            save_diagnostics: true
+            diagnostic_filename: pq_forum_similarity_diagnostics.csv
+
+            save_distribution: true
+            distribution_filename: pq_forum_similarity_distribution.csv
+
+            save_bands: true
+            bands_filename: pq_forum_similarity_bands.csv
+
+            # ------------------------------------------------
+            # Database
+            # ------------------------------------------------
+            saver_name: sql_server
+            table_name: llm_topic_similarity_source_pq
+            if_exists: replace
+            chunk_size: 1000
+            schema: dbo
+            connector_params: {}
+
+
+
+            # ------------------------------------------------
+            # Visualisations
+            # ------------------------------------------------
+
+            viz_params:
+              - name: similarity_histogram
+                filename: pq_forum_best_similarity_histogram.png
+                bins: 20
+                figsize:
+                  - 10
+                  - 6
+                #title: "Best Cross-Dataset Topic Similarity"
+                xlabel: "Cosine similarity"
+                ylabel: "Number of parliamentary topics"
+
+        # ------------------------------------------------
+        # Online Forum --> Parliamentary Questions Topic Similarity
+        # ------------------------------------------------
+        - name: cross_dataset_similarity
+          params:
+            # ------------------------------------------------
+            # Dataset configuration
+            # ------------------------------------------------
+            dataset_field: Dataset
+            embedding_field: embeddings
+
+            source_dataset: online_forum
+            target_dataset: parliamentary_questions
+
+            # ------------------------------------------------
+            # Source / target identifiers
+            # ------------------------------------------------
+            source_unique_id: Identifier
+            target_unique_id: Identifier
+
+            source_topic_id: TopicId
+            target_topic_id: TopicId
+
+            source_topic_theme: TopicTheme
+            target_topic_theme: TopicTheme
+
+            source_description: TopicDescription
+            target_description: TopicDescription
+
+            # ------------------------------------------------
+            # Similarity configuration
+            # ------------------------------------------------
+            top_n_matches: 20
+            similarity_threshold: 0.0
+            similarity_bands:
+              - label: "< 0.30"
+                min: -1.0
+                max: 0.30
+
+              - label: "0.30–0.39"
+                min: 0.30
+                max: 0.40
+
+              - label: "0.40–0.49"
+                min: 0.40
+                max: 0.50
+
+              - label: "0.50–0.59"
+                min: 0.50
+                max: 0.60
+
+              - label: "≥ 0.60"
+                min: 0.60
+                max: 0.75
+
+              - label: "≥ 0.75"
+                min: 0.75
+                max: 1.01
+
+            # ------------------------------------------------
+            # CSV outputs
+            # ------------------------------------------------
+
+            save_results: true
+            output_filename: boards_forum_topic_similarity.csv
+
+            save_diagnostics: true
+            diagnostic_filename: boards_forum_similarity_diagnostics.csv
+
+            save_distribution: true
+            distribution_filename: boards_forum_similarity_distribution.csv
+
+            save_bands: true
+            bands_filename: boards_forum_similarity_bands.csv
+
+            # ------------------------------------------------
+            # Database
+            # ------------------------------------------------
+            saver_name: sql_server
+            table_name: llm_topic_similarity_source_boards
+            if_exists: replace
+            chunk_size: 1000
+            schema: dbo
+            connector_params: { }
+
+
+
+            # ------------------------------------------------
+            # Visualisations
+            # ------------------------------------------------
+
+            viz_params:
+              - name: similarity_histogram
+                filename: boards_forum_best_similarity_histogram.png
+                bins: 20
+                figsize:
+                  - 10
+                  - 6
+                #title: "Best Cross-Dataset Topic Similarity"
+                xlabel: "Cosine similarity"
+                ylabel: "Number of parliamentary topics"

@@ -138,11 +138,6 @@ class ShannonEntropyEDA(EDAComponent):
                 self.logger.info(f"Using specified column for visualisation: {viz['column']}")
                 plot_data = entropy[viz["column"]]
 
-            # if "column" in viz_config:
-            #     self.logger.info("Using specified column for visualisation: {}".format(viz_config["column"]))
-            #     col = viz_config["column"]
-            #     plot_data = entropy[col]
-            #     viz_config.pop("column", None)
 
             self.logger.info(f"Creating visualisation '{viz_name}' with config: {viz_config}")
             fig, ax = visualisation.plot(plot_data, **viz_config)
@@ -155,14 +150,3 @@ class ShannonEntropyEDA(EDAComponent):
 
         return entropy
 
-    # def save(self):
-    #     if self.saver_name:
-    #         saver = DataSaverFactory.get_saver(self.saver_name, **self.connector_params)
-    #         saver.save(self.data, table_name=self.table_name, schema=self.schema, if_exists=self.if_exists, chunk_size=self.chunk_size)
-    #         self.logger.info(f"Saved ShannonEntropyEDA results to {self.table_name}")
-    #
-    # def visualise(self):
-    #     for viz in self.viz_params:
-    #         viz_name = viz.pop('name')
-    #         visualisation = self.visualisation_factory.get_visualisation(viz_name, **viz)
-    #         visualisation.plot(self.data)
