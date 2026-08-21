@@ -46,6 +46,7 @@ class CrossDatasetTopicSimilarityEDA(EDAComponent):
 
         source_topic_id="TopicId",
         target_topic_id="TopicId",
+        source_topic_id_filter = None,
 
         source_topic_theme="TopicTheme",
         target_topic_theme="TopicTheme",
@@ -53,7 +54,7 @@ class CrossDatasetTopicSimilarityEDA(EDAComponent):
         source_description="TopicDescription",
         target_description="TopicDescription",
 
-        top_n_matches=10,
+        top_n_matches=1000,
         similarity_threshold=0.0,
 
         similarity_bands=None,
@@ -95,6 +96,10 @@ class CrossDatasetTopicSimilarityEDA(EDAComponent):
 
         self.source_topic_id = source_topic_id
         self.target_topic_id = target_topic_id
+
+        # Optional filter
+        self.source_topic_id_filter = source_topic_id_filter
+        self.logger.info(f"Source topic id filters: {self.source_topic_id_filter}")
 
         self.source_topic_theme = source_topic_theme
         self.target_topic_theme = target_topic_theme
@@ -243,6 +248,9 @@ class CrossDatasetTopicSimilarityEDA(EDAComponent):
             self.similarity_bands
         )
 
+        self.source_topic_id_filter = kwargs.get('source_topic_id_filter')
+        self.logger.info(f"Source topic filter id: {self.source_topic_id_filter}")
+
         self.saver_name = kwargs.get('saver_name')
         self.table_name = kwargs.get('table_name')
         self.if_exists = kwargs.get('if_exists', 'replace')
@@ -307,6 +315,13 @@ class CrossDatasetTopicSimilarityEDA(EDAComponent):
             ]
             .copy()
         )
+
+        # Optional topic ID filter
+        self.logger.info(f"Source topic filter: {self.source_topic_id_filter}")
+        if self.source_topic_id_filter is not None:
+            source_data = source_data[
+                source_data["TopicId"].isin(self.source_topic_id_filter)
+            ].copy()
 
         target_data = (
             working_data[
@@ -390,6 +405,13 @@ class CrossDatasetTopicSimilarityEDA(EDAComponent):
             similarity_matrix=similarity_matrix,
             top_n_matches=top_n_matches,
             similarity_threshold=similarity_threshold
+        )
+
+        self.logger.info(f"Raw results length: {len(results)}")
+
+        self.logger.info(
+            f"Results per source topic:\n"
+            f"{results.groupby('SourceTopicId').size()}"
         )
 
         # --------------------------------------------------------------
@@ -546,7 +568,12 @@ class CrossDatasetTopicSimilarityEDA(EDAComponent):
                     diagnostics,
                     **viz_config
                 )
+            elif viz_name == "similarity_line_plot":
 
+                fig, ax = visualisation.plot(
+                    data=results,
+                    **viz_config
+                )
             else:
 
                 fig, ax = visualisation.plot(
@@ -652,6 +679,7 @@ class CrossDatasetTopicSimilarityEDA(EDAComponent):
         top_n_matches,
         similarity_threshold
     ):
+        self.logger.info(f"Similarity matrix shape in _build_match_results: {similarity_matrix.shape}")
 
         rows = []
 
@@ -668,6 +696,14 @@ class CrossDatasetTopicSimilarityEDA(EDAComponent):
                 source_index
             ]
 
+            self.logger.info(
+                f"Source index {source_index}: "
+                f"min={similarities.min():.6f}, "
+                f"max={similarities.max():.6f}, "
+                f"negative={(similarities < 0).sum()}, "
+                f"zero={(similarities == 0).sum()}"
+            )
+
             # Sort descending
             ranked_indices = np.argsort(
                 similarities
@@ -681,7 +717,10 @@ class CrossDatasetTopicSimilarityEDA(EDAComponent):
                     similarities[target_index]
                 )
 
-                if similarity < similarity_threshold:
+                if (
+                        similarity_threshold is not None
+                        and similarity < similarity_threshold
+                ):
                     continue
 
                 rank += 1
