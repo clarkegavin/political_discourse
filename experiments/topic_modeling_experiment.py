@@ -910,20 +910,6 @@ class TopicModelingExperiment(Experiment):
             self.logger.info(f"Fitting BERTopicModel without embeddings - embeddings are generated using {self.representation_text_field} ")
             topics, probs = self.model.fit_transform(representation_docs)
         self._log_gpu_memory("After fit_transform")
-        # get topic info
-        # try:
-        #     topic_info = self.model.get_topic_info()
-        #     if topic_info is not None and self.save_path:
-        #         self.logger.info(f"Saving topic info to CSV at {self.save_path}")
-        #         csv_path = os.path.join(self.save_path or ".", f"{self.name}_topic_info.csv")
-        #         os.makedirs(self.save_path, exist_ok=True)
-        #         topic_info.to_csv(csv_path, index=False, encoding='utf-8-sig')
-        #         artifacts = [csv_path]
-        #     else:
-        #         artifacts = []
-        # except Exception as e:
-        #     self.logger.warning(f"Could not get topic info: {e}")
-        #     artifacts = []
 
         # ---------------------------------------------------------
         # Get topic information

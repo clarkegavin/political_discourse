@@ -39,7 +39,7 @@ pipelines:
             # Similarity configuration
             # ------------------------------------------------
             top_n_matches: 2000
-            similarity_threshold: null
+            similarity_threshold: 0.65
             similarity_bands:
               - label: "< 0.30"
                 min: -1.0
@@ -69,16 +69,16 @@ pipelines:
             # CSV outputs
             # ------------------------------------------------
 
-            save_results: false
+            save_results: true
             output_filename: pq_forum_topic_similarity.csv
 
-            save_diagnostics: false
+            save_diagnostics: true
             diagnostic_filename: pq_forum_similarity_diagnostics.csv
 
-            save_distribution: false
+            save_distribution: true
             distribution_filename: pq_forum_similarity_distribution.csv
 
-            save_bands: false
+            save_bands: true
             bands_filename: pq_forum_similarity_bands.csv
 
             # ------------------------------------------------
@@ -153,7 +153,7 @@ pipelines:
             # Similarity configuration
             # ------------------------------------------------
             top_n_matches: 2000
-            similarity_threshold: null
+            similarity_threshold: 0.65
             similarity_bands:
               - label: "< 0.30"
                 min: -1.0
@@ -183,16 +183,16 @@ pipelines:
             # CSV outputs
             # ------------------------------------------------
 
-            save_results: false
+            save_results: true
             output_filename: boards_forum_topic_similarity.csv
 
-            save_diagnostics: false
+            save_diagnostics: true
             diagnostic_filename: boards_forum_similarity_diagnostics.csv
 
-            save_distribution: false
+            save_distribution: true
             distribution_filename: boards_forum_similarity_distribution.csv
 
-            save_bands: false
+            save_bands: true
             bands_filename: boards_forum_similarity_bands.csv
 
             # ------------------------------------------------

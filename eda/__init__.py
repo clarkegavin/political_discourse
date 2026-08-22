@@ -26,6 +26,7 @@ from .embedding_batch_benchmark import EmbeddingBatchBenchmarkEDA
 from .topic_attribute_analysis import TopicAttributeAnalysisEDA
 from .entity_topic_profile_eda import EntityTopicProfileEDA
 from .cross_dataset_topic_similarity import CrossDatasetTopicSimilarityEDA
+from .topic_similarity_alignment import TopicSimilarityAlignmentEDA
 
 EDAFactory.register_eda("class_balance", ClassBalanceEDA)
 EDAFactory.register_eda("wordcloud", WordCloudEDA)
@@ -57,6 +58,7 @@ EDAFactory.register_eda("embedding_batch_benchmark", EmbeddingBatchBenchmarkEDA)
 EDAFactory.register_eda("topic_attribute_analysis", TopicAttributeAnalysisEDA)
 EDAFactory.register_eda("entity_topic_profile", EntityTopicProfileEDA)
 EDAFactory.register_eda("cross_dataset_similarity", CrossDatasetTopicSimilarityEDA)
+EDAFactory.register_eda("topic_similarity_alignment", TopicSimilarityAlignmentEDA)
 
 __all__ = [
     "EDAFactory",
@@ -81,5 +83,7 @@ __all__ = [
     "ReplyChainAnalysisEDA",
     "TemporalAnalysisEDA",
     "GroupCountDistributionEDA",
-    "TopicAttributeAnalysisEDA"
+    "TopicAttributeAnalysisEDA",
+    "TopicSimilarityAlignmentEDA",
+    "EmbeddingBatchBenchmarkEDA",
 ]

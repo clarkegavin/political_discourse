@@ -1,0 +1,9 @@
+pipelines:
+  - name: llm_topic_alignment
+    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+    enabled: true
+    extractor_type: table
+    params:
+      extractor_params:
+        model: LLMTopicAlignment
+

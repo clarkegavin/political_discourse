@@ -15,6 +15,7 @@ from data.models.boards_conceptual_model import BoardsConceptualModel
 from data.models.llm_topics import LLMTopic
 from data.models.llm_topic_themes import LLMTopicThemes
 from data.models.oireachtas_topic_summary import OireachtasTopicSummary
+from data.models.llm_topic_alignment import LLMTopicAlignment
 
 MODEL_REGISTRY = {
     "BoardsComment": BoardsComment,
@@ -33,4 +34,5 @@ MODEL_REGISTRY = {
     "LLMTopic": LLMTopic,
     "LLMTopicThemes": LLMTopicThemes,
     "OireachtasTopicSummary": OireachtasTopicSummary,
+    "LLMTopicAlignment": LLMTopicAlignment,
 }

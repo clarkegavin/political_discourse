@@ -42,6 +42,7 @@ from .topic_attribute_subplot import TopicAttributeSubplot
 from .entity_topic_profile_bar_chart import EntityTopicProfileBarChart
 from .similarity_histogram import SimilarityHistogram
 from .similarity_line_plot import SimilarityLinePlot
+from .ranked_horizontal_bar_chart import RankedHorizontalBarChart
 
 # Register visualisations
 
@@ -89,6 +90,9 @@ VisualisationFactory.register_visualisation("topic_attribute_subplot", TopicAttr
 VisualisationFactory.register_visualisation("entity_topic_profile_bar_chart", EntityTopicProfileBarChart)
 VisualisationFactory.register_visualisation("similarity_histogram", SimilarityHistogram)
 VisualisationFactory.register_visualisation("similarity_line_plot", SimilarityLinePlot)
+VisualisationFactory.register_visualisation("ranked_horizontal_bar_chart", RankedHorizontalBarChart)
+VisualisationFactory.register_visualisation("topic_match_percentage_bar", RankedHorizontalBarChart)
+VisualisationFactory.register_visualisation("matched_topic_count_bar", RankedHorizontalBarChart)
 
 
 __all__ = [
