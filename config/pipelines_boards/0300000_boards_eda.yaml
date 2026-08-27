@@ -5,247 +5,247 @@ pipelines:
     params:
       save_path: output/eda/boards
       steps:
-#      - name: describe_info
-#        params:
-#          filename_prefix: boards
-#        #==============================
-#        # Boards Document Length EDA - Q&A
-#        #==============================
-#      - name: document_length
-#        params:
-#          columns:
-#          - DocumentText
-#          unit: characters
-#          output_column: character_length
-#          viz_params:
-#          - name: histogram
-#            bins: 30
-#            xlabel: Character length
-#            ylabel: Number of documents
-#            #xscale: log
-#            density: false
-#            filename: boards_character_length_histogram_log.png
-#          - name: boxplot
-#            filename: boards_character_length_boxplot_log.png
-#      - name: document_length
-#        params:
-#          columns:
-#          - DocumentText
-#          unit: characters
-#          output_column: character_length
-#          viz_params:
-#          - name: histogram
-#            bins: 30
-#            xlabel: Character length
-#            ylabel: Number of documents
-#            xscale: log
-#            density: false
-#            filename: boards_character_length_histogram_log.png
-#          - name: boxplot
-#            filename: boards_character_length_boxplot_log.png
-#            yscale: log
-#
-#
-#      - name: class_balance
-#        params:
-#          #target: null  # When target is null, ClassBalanceEDA will create subplots for all columns
-#          exclude_columns:
-#            - DocumentID
-#            - DocumentDiscussionChainPart
-#            - DiscussionID
-#            - DiscussionTitle
-#            - DiscussionBody
-#            - DiscussionDateInserted
-#            - DocumentStartDate
-#            - DocumentEndDate
-#            - ChainID
-#            - CommentRecords
-#            - CommentCount
-#            - CommentWordCount
-#            - CommentCharacterCount
-#            - DurationHours
-#            - DocumentText
-#            - DocumentWordCount
-#            - DocumentCharacterCount
-#            - DocumentType
-#            - DiscussionCategoryID
-##          log_transform_columns:
-##            - numeric_score
-#          # Can be an int (global bins) or a dict mapping column->bins
-#          #hist_bins: 30
-#          filename: boards_class_balance_overview.png
-#          #save_path: output/eda
-##      - name: missing_values
-##        params:
-##          columns:
-##            - SplitReason
-##          missing_values_column: Document
-##          consolidate: true
-##          ncols: 3
-##          viz_params:
-##            name: box_plot
-##            filename: boards_missing_values_overview.png
-#      - name: tokenize_text
-#        params:
-#          columns:
-#            - DocumentText
-#          output_column: tokens
-#          viz_params:
-#            - name: boxplot
-#              #ncols: 3
-#              filename: boards_tokens_boxplot.png
-#            - name: boxplot
-#              #ncols: 3
-#              yscale: log
-#              filename: boards_tokens_boxplot_log.png
-#            - name: bar_chart
-#              ncols: 3
-#              filename: boards_tokens_barchart.png
+      - name: describe_info
+        params:
+          filename_prefix: boards
+        #==============================
+        # Boards Document Length EDA - Q&A
+        #==============================
+      - name: document_length
+        params:
+          columns:
+          - DocumentText
+          unit: characters
+          output_column: character_length
+          viz_params:
+          - name: histogram
+            bins: 30
+            xlabel: Character length
+            ylabel: Number of documents
+            #xscale: log
+            density: false
+            filename: boards_character_length_histogram_log.png
+          - name: boxplot
+            filename: boards_character_length_boxplot_log.png
+      - name: document_length
+        params:
+          columns:
+          - DocumentText
+          unit: characters
+          output_column: character_length
+          viz_params:
+          - name: histogram
+            bins: 30
+            xlabel: Character length
+            ylabel: Number of documents
+            xscale: log
+            density: false
+            filename: boards_character_length_histogram_log.png
+          - name: boxplot
+            filename: boards_character_length_boxplot_log.png
+            yscale: log
 
-##       ==========================================
-##       Term Frequency EDA - Q&A
-##       ==========================================
-#      - name: term_frequency
-#        params:
-##          fields_to_combine: ["DocumentText"]
-##          combined_field_name: "CombinedQA"
-#          target_field: "DocumentText"
-#          saver_name: sql_server
-#          table_name: boards_term_frequency
-#          if_exists: replace
-#          chunk_size: 1000
-#          schema: dbo
-#          connector_params: {}
-#          viz_params:
-#            - name: zipf_plot
-#              log_scale: true
-#              filename: boards_term_frequency_zipf_plot_log.png
-#            - name: zipf_plot
-#              log_scale: false
-#              filename: boards_term_frequency_zipf_plot.png
 
-#
-#      - name: wordcloud
+      - name: class_balance
+        params:
+          #target: null  # When target is null, ClassBalanceEDA will create subplots for all columns
+          exclude_columns:
+            - DocumentID
+            - DocumentDiscussionChainPart
+            - DiscussionID
+            - DiscussionTitle
+            - DiscussionBody
+            - DiscussionDateInserted
+            - DocumentStartDate
+            - DocumentEndDate
+            - ChainID
+            - CommentRecords
+            - CommentCount
+            - CommentWordCount
+            - CommentCharacterCount
+            - DurationHours
+            - DocumentText
+            - DocumentWordCount
+            - DocumentCharacterCount
+            - DocumentType
+            - DiscussionCategoryID
+#          log_transform_columns:
+#            - numeric_score
+          # Can be an int (global bins) or a dict mapping column->bins
+          #hist_bins: 30
+          filename: boards_class_balance_overview.png
+          #save_path: output/eda
+#      - name: missing_values
 #        params:
 #          columns:
-#            - DocumentText
-#          combine_columns: true
+#            - SplitReason
+#          missing_values_column: Document
+#          consolidate: true
+#          ncols: 3
 #          viz_params:
-#            - name: eda_wordcloud
-#              max_words: 100
-#              stopwords: true
-#              collocations: false
-#              background_color: white
-#              colormap: viridis
-#              filename: boards_wordcloud.png
-#      - name: wordcloud
+#            name: box_plot
+#            filename: boards_missing_values_overview.png
+      - name: tokenize_text
+        params:
+          columns:
+            - DocumentText
+          output_column: tokens
+          viz_params:
+            - name: boxplot
+              #ncols: 3
+              filename: boards_tokens_boxplot.png
+            - name: boxplot
+              #ncols: 3
+              yscale: log
+              filename: boards_tokens_boxplot_log.png
+            - name: bar_chart
+              ncols: 3
+              filename: boards_tokens_barchart.png
+
+#       ==========================================
+#       Term Frequency EDA - Q&A
+#       ==========================================
+      - name: term_frequency
+        params:
+#          fields_to_combine: ["DocumentText"]
+#          combined_field_name: "CombinedQA"
+          target_field: "DocumentText"
+          saver_name: sql_server
+          table_name: boards_term_frequency
+          if_exists: replace
+          chunk_size: 1000
+          schema: dbo
+          connector_params: {}
+          viz_params:
+            - name: zipf_plot
+              log_scale: true
+              filename: boards_term_frequency_zipf_plot_log.png
+            - name: zipf_plot
+              log_scale: false
+              filename: boards_term_frequency_zipf_plot.png
+
+
+      - name: wordcloud
+        params:
+          columns:
+            - DocumentText
+          combine_columns: true
+          viz_params:
+            - name: eda_wordcloud
+              max_words: 100
+              stopwords: true
+              collocations: false
+              background_color: white
+              colormap: viridis
+              filename: boards_wordcloud.png
+      - name: wordcloud
+        params:
+          columns:
+            - DocumentText
+          combine_columns: true
+          viz_params:
+            - name: eda_wordcloud
+              max_words: 100
+              stopwords: false
+              collocations: false
+              background_color: white
+              colormap: viridis
+              filename: boards_wordcloud_stopwords.png
+#      - name: temporal_analysis
 #        params:
-#          columns:
-#            - DocumentText
-#          combine_columns: true
-#          viz_params:
-#            - name: eda_wordcloud
-#              max_words: 100
-#              stopwords: false
-#              collocations: false
-#              background_color: white
-#              colormap: viridis
-#              filename: boards_wordcloud_stopwords.png
-##      - name: temporal_analysis
-##        params:
-##          date_field: DocumentStartDate
-##          aggregate_by: month
-##          saver_name: sql_server
-##          table_name: boards_temporal_analysis
-##          if_exists: replace
-##          schema: dbo
-##          viz_params:
-##            - name: line_plot
-##              #title: Temporal Analysis of Questions Over Time
-##              xlabel: Date
-##              ylabel: Number of Discussion Documents
-##              filename: boards_temporal_analysis_line_plot.png
-##              include_mean: true
-##              mean_line_colour: red
-##              x_axis_frequency: monthly
-##            - name: area_plot
-##              #title: Temporal Analysis of Questions Over Time
-##              xlabel: Date
-##              ylabel: Number of Discussion Documents
-##              filename: boards_temporal_analysis_area_plot.png
-##              include_mean: true
-##              mean_line_colour: red
-##              area_alpha: 0.5
-##              x_axis_frequency: monthly
-#      - name: language_detection
-#        params:
-#          columns:
-#            - DocumentText
-#          detector: fasttext-langdetect
+#          date_field: DocumentStartDate
+#          aggregate_by: month
 #          saver_name: sql_server
-#          table_name: boards_language_detection
+#          table_name: boards_temporal_analysis
 #          if_exists: replace
-#          chunk_size: 1000
 #          schema: dbo
-#          include_text_sample: true
-#          sample_length: 150
-#          confidence_threshold: 0.70
 #          viz_params:
-#            - name: language_distribution
-#              filename: boards_language_distribution.png
-#            - name: language_by_column
-#              filename: boards_language_by_column.png
-#
-#      - name: tokenize_text
-#        params:
-#          columns:
-#            - DocumentText
-#
-#          embedding_models:
-#            - sentence-transformers/all-MiniLM-L6-v2
-#            - sentence-transformers/all-roberta-large-v1
-#            - ddore14/RooseBERT-scr-cased
-#
-#          model_labels:
-#            sentence-transformers/all-MiniLM-L6-v2: MiniLM-L6
-#            sentence-transformers/all-roberta-large-v1: RoBERTa-large
-#            ddore14/RooseBERT-scr-cased: RooseBERT
-#
-#          viz_params:
-#            - name: boxplot
-#              filename: boards_tokens_boxplot_embedding_models.png
-#              xtick_rotation: 45
-#              xtick_ha: right
-#              yscale: log
-#      - name: tokenize_text
-#        params:
-#          columns:
-#            - DocumentText
-#
-#          tokenizer_type: lightweight
-#
-#          viz_params:
-#            - name: boxplot
-#              filename: boards_tokens_boxplot_lightweight.png
-#              yscale: log
-##            - name: sankey_flow
-##              params:
-##                columns:
-##                  - discussionID
-##                  - categoryID
-##                  - commentID
-##                viz_params:
-##                  - name: sankey
-##                    filename: boards_sankey.html
-#      - name: identify_urls
-#        params:
-#          columns:
-#            - DocumentText
-#          viz_params:
-#            - name: barchart
-#              filename: boards_urls.png
-#              show_values: true
-#              label_max_chars: 20
-#              xlabel: "URL Presence"
-#              ylabel: "Documents"
+#            - name: line_plot
+#              #title: Temporal Analysis of Questions Over Time
+#              xlabel: Date
+#              ylabel: Number of Discussion Documents
+#              filename: boards_temporal_analysis_line_plot.png
+#              include_mean: true
+#              mean_line_colour: red
+#              x_axis_frequency: monthly
+#            - name: area_plot
+#              #title: Temporal Analysis of Questions Over Time
+#              xlabel: Date
+#              ylabel: Number of Discussion Documents
+#              filename: boards_temporal_analysis_area_plot.png
+#              include_mean: true
+#              mean_line_colour: red
+#              area_alpha: 0.5
+#              x_axis_frequency: monthly
+      - name: language_detection
+        params:
+          columns:
+            - DocumentText
+          detector: fasttext-langdetect
+          saver_name: sql_server
+          table_name: boards_language_detection
+          if_exists: replace
+          chunk_size: 1000
+          schema: dbo
+          include_text_sample: true
+          sample_length: 150
+          confidence_threshold: 0.70
+          viz_params:
+            - name: language_distribution
+              filename: boards_language_distribution.png
+            - name: language_by_column
+              filename: boards_language_by_column.png
+
+      - name: tokenize_text
+        params:
+          columns:
+            - DocumentText
+
+          embedding_models:
+            - sentence-transformers/all-MiniLM-L6-v2
+            - sentence-transformers/all-roberta-large-v1
+            - ddore14/RooseBERT-scr-cased
+
+          model_labels:
+            sentence-transformers/all-MiniLM-L6-v2: MiniLM-L6
+            sentence-transformers/all-roberta-large-v1: RoBERTa-large
+            ddore14/RooseBERT-scr-cased: RooseBERT
+
+          viz_params:
+            - name: boxplot
+              filename: boards_tokens_boxplot_embedding_models.png
+              xtick_rotation: 45
+              xtick_ha: right
+              yscale: log
+      - name: tokenize_text
+        params:
+          columns:
+            - DocumentText
+
+          tokenizer_type: lightweight
+
+          viz_params:
+            - name: boxplot
+              filename: boards_tokens_boxplot_lightweight.png
+              yscale: log
+#            - name: sankey_flow
+#              params:
+#                columns:
+#                  - discussionID
+#                  - categoryID
+#                  - commentID
+#                viz_params:
+#                  - name: sankey
+#                    filename: boards_sankey.html
+      - name: identify_urls
+        params:
+          columns:
+            - DocumentText
+          viz_params:
+            - name: barchart
+              filename: boards_urls.png
+              show_values: true
+              label_max_chars: 20
+              xlabel: "URL Presence"
+              ylabel: "Documents"
 

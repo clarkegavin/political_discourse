@@ -1,29 +1,28 @@
-# file: `config/experiments/bertopic_default.yaml`
+# file: `config/experiments/minlm/07000_minilm_selectded_model.yaml`
 run_name: "MiniLM"
 params:
   model_params:
-    embedding_model: # optional custom embedding model config
-      name: bert
+    embedding_model:
+      name: bert # transformer model for generating embeddings
       column: "DocumentText"
       batch_size: 32
-      device: cuda
-      model_name: "sentence-transformers/all-MiniLM-L6-v2"
-      chunking:
+      device: cuda # utilize GPU if available
+      model_name: "sentence-transformers/all-MiniLM-L6-v2" # specific model to use for generating embeddings
+      chunking: # chunking parameters for handling long documents
         enabled: true
         chunk_size: 224
         overlap: 32
         pooling: mean
-      cache:
+      cache: # caching parameters for storing embeddings to avoid recomputation
         enabled: true
         id_column: "QuestionId"
         cache_dir: "output/embeddings_cache/selected_model"
-        overwrite: true
+        overwrite: true # true to overwrite existing cache, false to append new embeddings
     dimensionality_reduction_model:
       name: umap
       params: {}
-
 save_path: "output/topic_modelling/pq_selected_model"
-visualisations:
+visualisations: # visualisation parameters for topic modelling outputs
   - name: topic_distribution
     init:
       filename: bertopic_default_topic_distribution.png
@@ -37,12 +36,11 @@ visualisations:
   - name: topic_barchart
     init:
       filename: topic_barchart.html
-      # BERTopic parameters
       top_n_topics: 10
       n_words: 10
       width: 350
       height: 350
-      topics: null        # optional list of topic ids
+      topics: null  # optional list of topic ids
   - name: topic_tree
     init:
       filename: topic_tree.txt
@@ -104,12 +102,12 @@ visualisations:
       batch_size: 1000
       top_n_topics: 20
       text_column: RepresentationDocument
-topic_outputs:
+topic_outputs: # output parameters for saving topic modelling results
   enabled: true
   save_topic_info: true
   save_topic_hierarchy: true
 
-  topic_info_output:
+  topic_info_output: # output topic info data to database
     saver_name: sql_server
     table_name: oireachtas_topic_info
     if_exists: replace
@@ -117,7 +115,7 @@ topic_outputs:
     schema: dbo
     connector_params: { }
 
-  hierarchy_output:
+  hierarchy_output: # output topic hierarchy data to database
     saver_name: sql_server
     table_name: oireachtas_topic_hierarchy
     if_exists: replace
@@ -125,14 +123,14 @@ topic_outputs:
     schema: dbo
     connector_params: { }
 
-  hierarchy_nodes_output:
+  hierarchy_nodes_output: # output topic hierarchy nodes data to database
     saver_name: sql_server
     table_name: oireachtas_topic_hierarchy_nodes
     if_exists: replace
     chunk_size: 1000
     schema: dbo
     connector_params: { }
-llm:
+llm: # parameters for LLM-based topic interpretation
   enabled: true
   provider: openai
   model: gpt-5.4-mini
@@ -143,12 +141,14 @@ llm:
   max_doc_characters: 1500
   max_ancestors: 3
 
-  max_topics: null
+  max_topics: null # maximum number of topics to interpret, null for all topics
 
+  # Optional parameters for controlling the LLM request behavior
   request_delay_seconds: 0.5
   max_retries: 5
   retry_delay: 2.0
 
+  # Optional parameters for controlling the LLM output behavior
   llm_output:
     saver_name: sql_server
     table_name: oireachtas_topic_llm
@@ -156,7 +156,7 @@ llm:
     chunk_size: 1000
     schema: dbo
     connector_params: { }
-sweep:
+sweep: # parameters for hyperparameter sweep experiments
   params.model_params.dimensionality_reduction_model:
     - name: umap
       params:
