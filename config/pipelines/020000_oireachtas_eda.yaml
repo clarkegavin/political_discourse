@@ -5,502 +5,502 @@ pipelines:
     params:
       save_path: output/eda
       steps:
-#      - name: describe_info
-#        params:
-#          filename_prefix: oireachtas
-#        #==============================
-#        # Oireachtas Document Length EDA - Q&A
-#        #==============================
-#      - name: document_length
-#        params:
-#          columns:
-#          - QuestionText
-#          - AnswerText
-#          unit: characters
-#          output_column: character_length
-#          viz_params:
-#          - name: histogram
-#            bins: 30
-#            xlabel: Character length
-#            ylabel: Number of documents
-#            #xscale: log
-#            density: false
-#            filename: oireachtas_character_length_histogram.png
-#          - name: boxplot
-#            filename: oireachtas_character_length_boxplot.png
-##          - name: bar_chart
-##            filename: oireachtas_question_character_length_barchart.png
-#      - name: document_length
-#        params:
-#          columns:
-#          - QuestionText
-#          - AnswerText
-#          unit: words
-#          output_column: word_length
-#          viz_params:
-#          - name: histogram
-#            bins: 30
-#            xlabel: Word length
-#            ylabel: Number of documents
-#            #xscale: log
-#            density: false
-#            filename: oireachtas_words_length_histogram.png
-#          - name: boxplot
-#            filename: oireachtas_words_length_boxplot.png
-#      - name: document_length
-#        params:
-#          columns:
-#          - QuestionText
-#          - AnswerText
-#          unit: sentences
-#          output_column: sentence_length
-#          viz_params:
-#          - name: histogram
-#            #bins: 30
-#            xlabel: Sentence length
-#            ylabel: Number of documents
-#            xscale: log
-#            density: false
-#            filename: oireachtas_sentence_length_log_histogram.png
-#          - name: boxplot
-#            filename: oireachtas_sentence_length_log_boxplot.png
-#      - name: document_length
-#        params:
-#          columns:
-#            - QuestionText
-#            - AnswerText
-#          unit: sentences
-#          output_column: sentence_length
-#          viz_params:
-#            - name: histogram
-#              bins: 30
-#              xlabel: Sentence length
-#              ylabel: Number of documents
-#              density: false
-#              filename: oireachtas_sentence_length_histogram.png
-#            - name: boxplot
-#              filename: oireachtas_sentence_length_boxplot.png
-#      # ===============================
-#      # Oireachtas Question Text EDA - Q only
-#      # ===============================
-#      - name: document_length
-#        params:
-#          columns:
-#          - QuestionText
-#          unit: characters
-#          output_column: character_length
-#          viz_params:
-#          - name: histogram
-#            bins: 30
-#            xlabel: Character length
-#            ylabel: Number of documents
-#            #xscale: log
-#            density: false
-#            filename: oireachtas_question_character_length_histogram.png
-#          - name: boxplot
-#            filename: oireachtas_question_character_length_boxplot.png
-#
-#      # ===============================
-#      # Oireachtas Question Text EDA - A only
-#      # ===============================
-#      - name: document_length
-#        params:
-#          columns:
-#          - AnswerText
-#          unit: characters
-#          output_column: character_length
-#          viz_params:
-#          - name: histogram
-#            bins: 30
-#            xlabel: Character length
-#            ylabel: Number of documents
-#            #xscale: log
-#            density: false
-#            filename: oireachtas_answer_character_length_histogram.png
-#          - name: boxplot
-#            filename: oireachtas_answer_character_length_boxplot.png
-##      - name: sankey_flow
-##        params:
-##          columns:
-##            - QuestionerConstituency
-##            - QuestionerParty
-##            - QuestionType
-##           # - QuestionCategory
-##          viz_params:
-##            - name: sankey
-##              filename: oireachtas_sankey.html
-#      - name: class_balance
-#        params:
-#          #target: null  # When target is null, ClassBalanceEDA will create subplots for all columns
-#          exclude_columns:
-#            - QuestionID
-#            - QuestionNumber
-#            - QuestionText
-#            - AnswerText
-##          log_transform_columns:
-##            - numeric_score
-#          # Can be an int (global bins) or a dict mapping column->bins
-#          #hist_bins: 30
-#          filename: oireachtas_class_balance_overview.png
-#          #save_path: output/eda
-#      - name: missing_values
-#        params:
-#          columns:
-#            - Questioner
-#            - QuestionerParty
-#            - QuestionerConstituency
-#            - QuestionType
-#            - AskedOfMinister
-#          missing_values_column: AnswerText
-#          consolidate: true
-#          ncols: 3
-#          viz_params:
-#            name: box_plot
-#            filename: oireachtas_missing_values_overview.png
-#      - name: tokenize_text
-#        params:
-#          columns:
-#            - QuestionText
-#            - AnswerText
-#          output_column: tokens
-#          viz_params:
-#            - name: boxplot
-#              ncols: 3
-#              filename: oireachtas_tokens_boxplot.png
-#            - name: bar_chart
-#              ncols: 3
-#              filename: oireachtas_tokens_barchart.png
-#
-#      - name: tokenize_text
-#        params:
-#          columns:
-#            - DocumentText
-#
-#          embedding_models:
-#            - sentence-transformers/all-MiniLM-L6-v2
-#            - sentence-transformers/all-roberta-large-v1
-#            - ddore14/RooseBERT-scr-cased
-#
-#          model_labels:
-#            sentence-transformers/all-MiniLM-L6-v2: MiniLM-L6
-#            sentence-transformers/all-roberta-large-v1: RoBERTa-large
-#            ddore14/RooseBERT-scr-cased: RooseBERT
-#
-#          viz_params:
-#            - name: boxplot
-#              filename: oireachtas_tokens_boxplot_embedding_models.png
-#              xtick_rotation: 45
-#              xtick_ha: right
-#
-#      - name: tokenize_text
-#        params:
-#          columns:
-#            - DocumentText
-#
-#          tokenizer_type: lightweight
-#
-#          viz_params:
-#            - name: boxplot
-#              filename: oireacthas_tokens_boxplot_lightweight.png
-#
-#      - name: identify_urls
-#        params:
-#          columns:
-#            - DocumentText
-#          viz_params:
-#            - name: barchart
-#              filename: oireachtas_urls.png
-#              show_values: true
-#              label_max_chars: 20
-#              xlabel: "URL Presence"
-#              ylabel: "Documents"
-#      - name: identify_urls
-#        params:
-#          columns:
-#            - QuestionText
-#          viz_params:
-#            - name: barchart
-#              filename: oireachtas_question_urls.png
-#              show_values: true
-#              label_max_chars: 20
-#              xlabel: "URL Presence"
-#              ylabel: "Documents"
-#      - name: identify_urls
-#        params:
-#          columns:
-#            - AnswerText
-#          viz_params:
-#            - name: barchart
-#              filename: oireachtas_answer_urls.png
-#              show_values: true
-#              label_max_chars: 20
-#              xlabel: "URL Presence"
-#              ylabel: "Documents"
-#      # ==========================================
-#       #T erm Frequency EDA - Q&A
-#       # ==========================================
-#      - name: term_frequency
-#        params:
-#          fields_to_combine: ["QuestionText", "AnswerText"]
-#          combined_field_name: "CombinedQA"
-#          target_field: "CombinedQA"
-#          saver_name: sql_server
-#          table_name: oireachtas_term_frequency
-#          if_exists: replace
-#          chunk_size: 1000
-#          schema: dbo
-#          connector_params: {}
-#          viz_params:
-#            - name: zipf_plot
-#              log_scale: true
-#              filename: oireachtas_term_frequency_zipf_plot_log.png
-#
-#      - name: shannon_entropy
-#        params:
-#          group_by_field: Questioner
-#          category_field: QuestionCategory
-#          normalise: true
-#          saver_name: sql_server
-#          table_name: oireachtas_td_entropy
-#          if_exists: replace
-#          schema: dbo
-#          viz_params:
-#            - name: histogram
-#              column: NormalisedEntropy
-#              bins: 20
-#              #title: Distribution of TD Category Diversity
-#              filename: td_entropy_histogram.png
-#            - name: pair_scatter
-#              pairs:
-#                - [TotalCount, NormalisedEntropy]
-#              #title: Question Volume vs Normalised Shannon Entropy
-#              filename: td_entropy_scatter.png
-#      - name: shannon_entropy
-#        params:
-#          group_by_field: Questioner
-#          category_field: AskedOfMinister
-#          normalise: true
-#          saver_name: sql_server
-#          table_name: oireachtas_askedOfMinister_entropy
-#          if_exists: replace
-#          schema: dbo
-#          viz_params:
-#            - name: histogram
-#              column: NormalisedEntropy
-#              bins: 20
-#              #title: Distribution of AskedOfMinister Diversity
-#              filename: asked_of_minister_entropy_histogram.png
-#            - name: pair_scatter
-#              pairs:
-#                - [TotalCount, NormalisedEntropy]
-#              #title: Question Volume vs Normalised Shannon Entropy
-#              filename: asked_of_minister_entropy_scatter.png
-#      - name: shannon_entropy
-#        params:
-#          group_by_field: QuestionerParty
-#          category_field: QuestionCategory
-#          normalise: true
-#          saver_name: sql_server
-#          table_name: oireachtas_party_entropy
-#          if_exists: replace
-#          schema: dbo
-#          viz_params:
-#            - name: histogram
-#              column: NormalisedEntropy
-#              bins: 20
-#              xlim: [0, 1]
-#              #title: Distribution of Political Party Diversity
-#              filename: party_entropy_histogram.png
-#            - name: pair_scatter
-#              pairs:
-#                - [TotalCount, NormalisedEntropy]
-#              #title: Question Volume vs Normalised Shannon Entropy
-#              ylim: [0, 1]
-#              filename: party_minister_entropy_scatter.png
-#      - name: geomap
-#        params:
-#          shape_file: "data/geo_data/ConstituencyBoundariesUngeneralised_National_Electoral_Boundaries_2023_1943258459586490165.geojson"
-#          constituency: ENG_NAME_VALUE
-#          remove_trailing_numbers: true
-#          group_by_field: QuestionerConstituency
-#          value_field: QuestionId
-#          aggregation_method: count
-#          viz_params:
-#            - name: choropleth
-#              #title: "Number of Questions by Constituency"
-#              colour_map: Blues
-#              missing_colour: lightgrey
-#              filename: oireachtas_questions_by_constituency_map.png
-#            - name: bubble_geo_map
-#              #title: "Number of Questions by Constituency"
-#              filename: oireachtas_questions_by_constituency_bubble_map.png
-#            - name: bubble_geo_map
-#              #title: "Number of Questions by Constituency - Dublin"
-#              filename: oireachtas_questions_by_dublin_constituency_bubble_map.png
-#              xlim: [-6.5, -6.05]
-#              ylim: [53.15, 54.45]
-#              region: Dublin
-#            - name: interactive_bubble_geo_map
-#              #title: "Number of Questions by Constituency"
-#              filename: oireachtas_questions_by_constituency_bubble_map_interactive.html
-#              name_field: QuestionerConstituency
-#      - name: shannon_entropy
-#        params:
-#          group_by_field: QuestionerConstituency
-#          category_field: QuestionCategory
-#          normalise: true
-#          saver_name: sql_server
-#          table_name: oireachtas_constituency_entropy
-#          if_exists: replace
-#          schema: dbo
-#          viz_params:
-#            - name: histogram
-#              column: NormalisedEntropy
-#              bins: 20
-#              #title: Distribution of Constituency Category Diversity
-#              filename: constituency_entropy_histogram.png
-#              xlim: [0, 1]
-#            - name: pair_scatter
-#              pairs:
-#                - [TotalCount, NormalisedEntropy]
-#              #title: Question Volume vs Normalised Shannon Entropy
-#              ylim: [0, 1]
-#              filename: constituency_entropy_scatter.png
-#      - name: wordcloud
-#        params:
-#          columns:
-#            - QuestionText
-#            - AnswerText
-#          combine_columns: true
-#          viz_params:
-#            - name: eda_wordcloud
-#              max_words: 100
-#              stopwords: true
-#              collocations: false
-#              background_color: white
-#              colormap: viridis
-#              filename: oireachtas_wordcloud.png
-#      - name: temporal_analysis
-#        params:
-#          date_field: QuestionDate
-#          aggregate_by: month
-#          saver_name: sql_server
-#          table_name: oireachtas_temporal_analysis
-#          if_exists: replace
-#          schema: dbo
-#          viz_params:
-#            - name: line_plot
-#              #title: Temporal Analysis of Questions Over Time
-#              xlabel: Date
-#              ylabel: Number of Questions
-#              filename: oireachtas_temporal_analysis_line_plot.png
-#              include_mean: true
-#              mean_line_colour: red
-#              x_axis_frequency: monthly
-#            - name: area_plot
-#              #title: Temporal Analysis of Questions Over Time
-#              xlabel: Date
-#              ylabel: Number of Questions
-#              filename: oireachtas_temporal_analysis_area_plot.png
-#              include_mean: true
-#              mean_line_colour: red
-#              area_alpha: 0.5
-#              x_axis_frequency: monthly
-#      - name: language_detection
-#        params:
-#          columns:
-#            - QuestionText
-#            - AnswerText
-#          detector: fasttext-langdetect
-#          saver_name: sql_server
-#          table_name: oireachtas_language_detection
-#          if_exists: replace
-#          chunk_size: 1000
-#          schema: dbo
-#          include_text_sample: true
-#          sample_length: 150
-#          confidence_threshold: 0.70
-#          viz_params:
-#            - name: language_distribution
-#              filename: language_distribution.png
-#            - name: language_by_column
-#              filename: language_by_column.png
-#      - name: language_detection
-#        params:
-#          columns:
-#            - AnswerText
-#          detector: fasttext-langdetect
-#          saver_name: sql_server
-#          table_name: oireachtas_language_detection_answer
-#          if_exists: replace
-#          chunk_size: 1000
-#          schema: dbo
-#          include_text_sample: true
-#          sample_length: 150
-#          confidence_threshold: 0.70
-#          viz_params:
-#            - name: language_distribution
-#              filename: language_distribution_answer.png
-#            - name: language_by_column
-#              filename: language_by_column_answer.png
-#      - name: language_detection
-#        params:
-#          columns:
-#            - QuestionText
-#          detector: fasttext-langdetect
-#          saver_name: sql_server
-#          table_name: oireachtas_language_detection_question
-#          if_exists: replace
-#          chunk_size: 1000
-#          schema: dbo
-#          include_text_sample: true
-#          sample_length: 150
-#          confidence_threshold: 0.70
-#          viz_params:
-#            - name: language_distribution
-#              filename: language_distribution_question.png
-#            - name: language_by_column
-#              filename: language_by_column_question.png
-#      - name: consolidation
-#        params:
-#          group_by: AnswerURI
-#          metric: records
-#          viz_params:
-#          - name: bar
-#            figsize:
-#            - 10
-#            - 6
-#            xticks_rotation: 45
-#            show_percent: true
-#            label_max_chars: 0
-#            color: tab:blue
-#            ylabel: Responses
-#            filename: oireachtas_questions_consolidated_records.png
-#            #title: Consolidated vs Non-consolidated Responses
+      - name: describe_info
+        params:
+          filename_prefix: oireachtas
+        #==============================
+        # Oireachtas Document Length EDA - Q&A
+        #==============================
+      - name: document_length
+        params:
+          columns:
+          - QuestionText
+          - AnswerText
+          unit: characters
+          output_column: character_length
+          viz_params:
+          - name: histogram
+            bins: 30
+            xlabel: Character length
+            ylabel: Number of documents
+            #xscale: log
+            density: false
+            filename: oireachtas_character_length_histogram.png
+          - name: boxplot
+            filename: oireachtas_character_length_boxplot.png
+#          - name: bar_chart
+#            filename: oireachtas_question_character_length_barchart.png
+      - name: document_length
+        params:
+          columns:
+          - QuestionText
+          - AnswerText
+          unit: words
+          output_column: word_length
+          viz_params:
+          - name: histogram
+            bins: 30
+            xlabel: Word length
+            ylabel: Number of documents
+            #xscale: log
+            density: false
+            filename: oireachtas_words_length_histogram.png
+          - name: boxplot
+            filename: oireachtas_words_length_boxplot.png
+      - name: document_length
+        params:
+          columns:
+          - QuestionText
+          - AnswerText
+          unit: sentences
+          output_column: sentence_length
+          viz_params:
+          - name: histogram
+            #bins: 30
+            xlabel: Sentence length
+            ylabel: Number of documents
+            xscale: log
+            density: false
+            filename: oireachtas_sentence_length_log_histogram.png
+          - name: boxplot
+            filename: oireachtas_sentence_length_log_boxplot.png
+      - name: document_length
+        params:
+          columns:
+            - QuestionText
+            - AnswerText
+          unit: sentences
+          output_column: sentence_length
+          viz_params:
+            - name: histogram
+              bins: 30
+              xlabel: Sentence length
+              ylabel: Number of documents
+              density: false
+              filename: oireachtas_sentence_length_histogram.png
+            - name: boxplot
+              filename: oireachtas_sentence_length_boxplot.png
+      # ===============================
+      # Oireachtas Question Text EDA - Q only
+      # ===============================
+      - name: document_length
+        params:
+          columns:
+          - QuestionText
+          unit: characters
+          output_column: character_length
+          viz_params:
+          - name: histogram
+            bins: 30
+            xlabel: Character length
+            ylabel: Number of documents
+            #xscale: log
+            density: false
+            filename: oireachtas_question_character_length_histogram.png
+          - name: boxplot
+            filename: oireachtas_question_character_length_boxplot.png
 
-#      - name: embedding_batch_benchmark
-#        class: embedding_batch_benchmark
+      # ===============================
+      # Oireachtas Question Text EDA - A only
+      # ===============================
+      - name: document_length
+        params:
+          columns:
+          - AnswerText
+          unit: characters
+          output_column: character_length
+          viz_params:
+          - name: histogram
+            bins: 30
+            xlabel: Character length
+            ylabel: Number of documents
+            #xscale: log
+            density: false
+            filename: oireachtas_answer_character_length_histogram.png
+          - name: boxplot
+            filename: oireachtas_answer_character_length_boxplot.png
+#      - name: sankey_flow
 #        params:
-#          embedding_text_field: DocumentText
-#          models:
-#            - sentence-transformers/all-MiniLM-L6-v2
-#            - sentence-transformers/all-roberta-large-v1
-#            - ddore14/RooseBERT-scr-cased
-#
-#          sample_size: null
-#
-#          batch_sizes:
-#            - 32
-##            - 64
-##            - 128
-#            - 256
-##            - 512
-#            - 1024
-#
-#          device: cuda
-#
-#          chunking_enabled: true
-#          chunk_size: 480
-#          chunk_overlap: 32
-#
-#          output_filename: embedding_batch_benchmark.csv
+#          columns:
+#            - QuestionerConstituency
+#            - QuestionerParty
+#            - QuestionType
+#           # - QuestionCategory
+#          viz_params:
+#            - name: sankey
+#              filename: oireachtas_sankey.html
+      - name: class_balance
+        params:
+          #target: null  # When target is null, ClassBalanceEDA will create subplots for all columns
+          exclude_columns:
+            - QuestionID
+            - QuestionNumber
+            - QuestionText
+            - AnswerText
+#          log_transform_columns:
+#            - numeric_score
+          # Can be an int (global bins) or a dict mapping column->bins
+          #hist_bins: 30
+          filename: oireachtas_class_balance_overview.png
+          #save_path: output/eda
+      - name: missing_values
+        params:
+          columns:
+            - Questioner
+            - QuestionerParty
+            - QuestionerConstituency
+            - QuestionType
+            - AskedOfMinister
+          missing_values_column: AnswerText
+          consolidate: true
+          ncols: 3
+          viz_params:
+            name: box_plot
+            filename: oireachtas_missing_values_overview.png
+      - name: tokenize_text
+        params:
+          columns:
+            - QuestionText
+            - AnswerText
+          output_column: tokens
+          viz_params:
+            - name: boxplot
+              ncols: 3
+              filename: oireachtas_tokens_boxplot.png
+            - name: bar_chart
+              ncols: 3
+              filename: oireachtas_tokens_barchart.png
+
+      - name: tokenize_text
+        params:
+          columns:
+            - DocumentText
+
+          embedding_models:
+            - sentence-transformers/all-MiniLM-L6-v2
+            - sentence-transformers/all-roberta-large-v1
+            - ddore14/RooseBERT-scr-cased
+
+          model_labels:
+            sentence-transformers/all-MiniLM-L6-v2: MiniLM-L6
+            sentence-transformers/all-roberta-large-v1: RoBERTa-large
+            ddore14/RooseBERT-scr-cased: RooseBERT
+
+          viz_params:
+            - name: boxplot
+              filename: oireachtas_tokens_boxplot_embedding_models.png
+              xtick_rotation: 45
+              xtick_ha: right
+
+      - name: tokenize_text
+        params:
+          columns:
+            - DocumentText
+
+          tokenizer_type: lightweight
+
+          viz_params:
+            - name: boxplot
+              filename: oireacthas_tokens_boxplot_lightweight.png
+
+      - name: identify_urls
+        params:
+          columns:
+            - DocumentText
+          viz_params:
+            - name: barchart
+              filename: oireachtas_urls.png
+              show_values: true
+              label_max_chars: 20
+              xlabel: "URL Presence"
+              ylabel: "Documents"
+      - name: identify_urls
+        params:
+          columns:
+            - QuestionText
+          viz_params:
+            - name: barchart
+              filename: oireachtas_question_urls.png
+              show_values: true
+              label_max_chars: 20
+              xlabel: "URL Presence"
+              ylabel: "Documents"
+      - name: identify_urls
+        params:
+          columns:
+            - AnswerText
+          viz_params:
+            - name: barchart
+              filename: oireachtas_answer_urls.png
+              show_values: true
+              label_max_chars: 20
+              xlabel: "URL Presence"
+              ylabel: "Documents"
+      # ==========================================
+       #T erm Frequency EDA - Q&A
+       # ==========================================
+      - name: term_frequency
+        params:
+          fields_to_combine: ["QuestionText", "AnswerText"]
+          combined_field_name: "CombinedQA"
+          target_field: "CombinedQA"
+          saver_name: sql_server
+          table_name: oireachtas_term_frequency
+          if_exists: replace
+          chunk_size: 1000
+          schema: dbo
+          connector_params: {}
+          viz_params:
+            - name: zipf_plot
+              log_scale: true
+              filename: oireachtas_term_frequency_zipf_plot_log.png
+
+      - name: shannon_entropy
+        params:
+          group_by_field: Questioner
+          category_field: QuestionCategory
+          normalise: true
+          saver_name: sql_server
+          table_name: oireachtas_td_entropy
+          if_exists: replace
+          schema: dbo
+          viz_params:
+            - name: histogram
+              column: NormalisedEntropy
+              bins: 20
+              #title: Distribution of TD Category Diversity
+              filename: td_entropy_histogram.png
+            - name: pair_scatter
+              pairs:
+                - [TotalCount, NormalisedEntropy]
+              #title: Question Volume vs Normalised Shannon Entropy
+              filename: td_entropy_scatter.png
+      - name: shannon_entropy
+        params:
+          group_by_field: Questioner
+          category_field: AskedOfMinister
+          normalise: true
+          saver_name: sql_server
+          table_name: oireachtas_askedOfMinister_entropy
+          if_exists: replace
+          schema: dbo
+          viz_params:
+            - name: histogram
+              column: NormalisedEntropy
+              bins: 20
+              #title: Distribution of AskedOfMinister Diversity
+              filename: asked_of_minister_entropy_histogram.png
+            - name: pair_scatter
+              pairs:
+                - [TotalCount, NormalisedEntropy]
+              #title: Question Volume vs Normalised Shannon Entropy
+              filename: asked_of_minister_entropy_scatter.png
+      - name: shannon_entropy
+        params:
+          group_by_field: QuestionerParty
+          category_field: QuestionCategory
+          normalise: true
+          saver_name: sql_server
+          table_name: oireachtas_party_entropy
+          if_exists: replace
+          schema: dbo
+          viz_params:
+            - name: histogram
+              column: NormalisedEntropy
+              bins: 20
+              xlim: [0, 1]
+              #title: Distribution of Political Party Diversity
+              filename: party_entropy_histogram.png
+            - name: pair_scatter
+              pairs:
+                - [TotalCount, NormalisedEntropy]
+              #title: Question Volume vs Normalised Shannon Entropy
+              ylim: [0, 1]
+              filename: party_minister_entropy_scatter.png
+      - name: geomap
+        params:
+          shape_file: "data/geo_data/ConstituencyBoundariesUngeneralised_National_Electoral_Boundaries_2023_1943258459586490165.geojson"
+          constituency: ENG_NAME_VALUE
+          remove_trailing_numbers: true
+          group_by_field: QuestionerConstituency
+          value_field: QuestionId
+          aggregation_method: count
+          viz_params:
+            - name: choropleth
+              #title: "Number of Questions by Constituency"
+              colour_map: Blues
+              missing_colour: lightgrey
+              filename: oireachtas_questions_by_constituency_map.png
+            - name: bubble_geo_map
+              #title: "Number of Questions by Constituency"
+              filename: oireachtas_questions_by_constituency_bubble_map.png
+            - name: bubble_geo_map
+              #title: "Number of Questions by Constituency - Dublin"
+              filename: oireachtas_questions_by_dublin_constituency_bubble_map.png
+              xlim: [-6.5, -6.05]
+              ylim: [53.15, 54.45]
+              region: Dublin
+            - name: interactive_bubble_geo_map
+              #title: "Number of Questions by Constituency"
+              filename: oireachtas_questions_by_constituency_bubble_map_interactive.html
+              name_field: QuestionerConstituency
+      - name: shannon_entropy
+        params:
+          group_by_field: QuestionerConstituency
+          category_field: QuestionCategory
+          normalise: true
+          saver_name: sql_server
+          table_name: oireachtas_constituency_entropy
+          if_exists: replace
+          schema: dbo
+          viz_params:
+            - name: histogram
+              column: NormalisedEntropy
+              bins: 20
+              #title: Distribution of Constituency Category Diversity
+              filename: constituency_entropy_histogram.png
+              xlim: [0, 1]
+            - name: pair_scatter
+              pairs:
+                - [TotalCount, NormalisedEntropy]
+              #title: Question Volume vs Normalised Shannon Entropy
+              ylim: [0, 1]
+              filename: constituency_entropy_scatter.png
+      - name: wordcloud
+        params:
+          columns:
+            - QuestionText
+            - AnswerText
+          combine_columns: true
+          viz_params:
+            - name: eda_wordcloud
+              max_words: 100
+              stopwords: true
+              collocations: false
+              background_color: white
+              colormap: viridis
+              filename: oireachtas_wordcloud.png
+      - name: temporal_analysis
+        params:
+          date_field: QuestionDate
+          aggregate_by: month
+          saver_name: sql_server
+          table_name: oireachtas_temporal_analysis
+          if_exists: replace
+          schema: dbo
+          viz_params:
+            - name: line_plot
+              #title: Temporal Analysis of Questions Over Time
+              xlabel: Date
+              ylabel: Number of Questions
+              filename: oireachtas_temporal_analysis_line_plot.png
+              include_mean: true
+              mean_line_colour: red
+              x_axis_frequency: monthly
+            - name: area_plot
+              #title: Temporal Analysis of Questions Over Time
+              xlabel: Date
+              ylabel: Number of Questions
+              filename: oireachtas_temporal_analysis_area_plot.png
+              include_mean: true
+              mean_line_colour: red
+              area_alpha: 0.5
+              x_axis_frequency: monthly
+      - name: language_detection
+        params:
+          columns:
+            - QuestionText
+            - AnswerText
+          detector: fasttext-langdetect
+          saver_name: sql_server
+          table_name: oireachtas_language_detection
+          if_exists: replace
+          chunk_size: 1000
+          schema: dbo
+          include_text_sample: true
+          sample_length: 150
+          confidence_threshold: 0.70
+          viz_params:
+            - name: language_distribution
+              filename: language_distribution.png
+            - name: language_by_column
+              filename: language_by_column.png
+      - name: language_detection
+        params:
+          columns:
+            - AnswerText
+          detector: fasttext-langdetect
+          saver_name: sql_server
+          table_name: oireachtas_language_detection_answer
+          if_exists: replace
+          chunk_size: 1000
+          schema: dbo
+          include_text_sample: true
+          sample_length: 150
+          confidence_threshold: 0.70
+          viz_params:
+            - name: language_distribution
+              filename: language_distribution_answer.png
+            - name: language_by_column
+              filename: language_by_column_answer.png
+      - name: language_detection
+        params:
+          columns:
+            - QuestionText
+          detector: fasttext-langdetect
+          saver_name: sql_server
+          table_name: oireachtas_language_detection_question
+          if_exists: replace
+          chunk_size: 1000
+          schema: dbo
+          include_text_sample: true
+          sample_length: 150
+          confidence_threshold: 0.70
+          viz_params:
+            - name: language_distribution
+              filename: language_distribution_question.png
+            - name: language_by_column
+              filename: language_by_column_question.png
+      - name: consolidation
+        params:
+          group_by: AnswerURI
+          metric: records
+          viz_params:
+          - name: bar
+            figsize:
+            - 10
+            - 6
+            xticks_rotation: 45
+            show_percent: true
+            label_max_chars: 0
+            color: tab:blue
+            ylabel: Responses
+            filename: oireachtas_questions_consolidated_records.png
+            #title: Consolidated vs Non-consolidated Responses
+
+      - name: embedding_batch_benchmark
+        class: embedding_batch_benchmark
+        params:
+          embedding_text_field: DocumentText
+          models:
+            - sentence-transformers/all-MiniLM-L6-v2
+            - sentence-transformers/all-roberta-large-v1
+            - ddore14/RooseBERT-scr-cased
+
+          sample_size: null
+
+          batch_sizes:
+            - 32
+#            - 64
+#            - 128
+            - 256
+#            - 512
+            - 1024
+
+          device: cuda
+
+          chunking_enabled: true
+          chunk_size: 480
+          chunk_overlap: 32
+
+          output_filename: embedding_batch_benchmark.csv

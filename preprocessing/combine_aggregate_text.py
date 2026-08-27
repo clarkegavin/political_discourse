@@ -35,6 +35,7 @@ class CombineOrAggregateText(Preprocessor):
         fields_to_aggregate: Optional[List[str]] = None,
         aggregated_field_name: Optional[str] = None,
         group_by_field: Optional[str] = None,
+        field_prefixes: Optional[dict] = None,
     ):
         self.logger = get_logger(self.__class__.__name__)
 
@@ -44,6 +45,7 @@ class CombineOrAggregateText(Preprocessor):
         self.fields_to_aggregate = fields_to_aggregate
         self.aggregated_field_name = aggregated_field_name
         self.group_by_field = group_by_field
+        self.field_prefixes = field_prefixes or {}
 
         self.logger.info(
             f"Initialized CombineOrAggregateText with "
@@ -70,20 +72,50 @@ class CombineOrAggregateText(Preprocessor):
         # -----------------------------------------------------------------
         if self.combined_field_name:
             if not self.fields_to_combine:
-                raise ValueError("fields_to_combine must be provided for combine mode")
+                raise ValueError(
+                    "fields_to_combine must be provided for combine mode"
+                )
 
-            self.logger.info(f"Running COMBINE mode → {self.combined_field_name}")
+            self.logger.info(
+                f"Running COMBINE mode → {self.combined_field_name}"
+            )
 
             cols = list(self.fields_to_combine)
 
-            for col in cols:
-                if col not in df.columns:
-                    self.logger.warning(f"Column '{col}' missing → filling empty")
-                    df[col] = ""
-                else:
-                    df[col] = df[col].fillna("")
+            missing = [
+                col for col in cols
+                if col not in df.columns
+            ]
 
-            df[self.combined_field_name] = df[cols].astype(str).agg(" ".join, axis=1)
+            if missing:
+                raise ValueError(
+                    f"Fields to combine not found in DataFrame: {missing}"
+                )
+
+            parts = []
+
+            for col in cols:
+                prefix = self.field_prefixes.get(col)
+
+                values = (
+                    df[col]
+                    .fillna("")
+                    .astype(str)
+                    .str.replace(r"\s+", " ", regex=True)
+                    .str.strip()
+                )
+
+                if prefix:
+                    values = prefix + ": " + values
+
+                parts.append(values)
+
+            df[self.combined_field_name] = (
+                pd.concat(parts, axis=1)
+                .agg(" ".join, axis=1)
+                .str.replace(r"\s+", " ", regex=True)
+                .str.strip()
+            )
 
             return df
 

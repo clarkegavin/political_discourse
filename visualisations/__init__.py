@@ -38,6 +38,12 @@ from .metric_bar_chart import MetricBarChart
 from .topic_tree import TopicTree
 from .topic_hierarchical_documents import HierarchicalDocuments
 from .topic_approximate_distribution import ApproximateDistribution
+from .topic_attribute_subplot import TopicAttributeSubplot
+from .entity_topic_profile_bar_chart import EntityTopicProfileBarChart
+from .similarity_histogram import SimilarityHistogram
+from .similarity_line_plot import SimilarityLinePlot
+from .ranked_horizontal_bar_chart import RankedHorizontalBarChart
+
 # Register visualisations
 
 VisualisationFactory.register_visualisation("confusion_matrix", ConfusionMatrixChart)
@@ -73,13 +79,20 @@ VisualisationFactory.register_visualisation("topic_term_rank", TopicTermRank)
 VisualisationFactory.register_visualisation("topics_over_time", TopicsOverTime)
 VisualisationFactory.register_visualisation("topics_per_class", TopicsPerClass)
 VisualisationFactory.register_visualisation("grouped_bar_chart", GroupedBarChart)
-VisualisationFactory.register_visualisation(    "metric_heatmap", MetricHeatmap)
+VisualisationFactory.register_visualisation("metric_heatmap", MetricHeatmap)
 VisualisationFactory.register_visualisation("metric_line_chart", MetricLineChart)
 VisualisationFactory.register_visualisation("metric_strip_plot", MetricStripPlot)
 VisualisationFactory.register_visualisation("metric_bar_chart", MetricBarChart)
 VisualisationFactory.register_visualisation("topic_tree", TopicTree)
 VisualisationFactory.register_visualisation("hierarchical_documents", HierarchicalDocuments)
 VisualisationFactory.register_visualisation("approximate_distribution", ApproximateDistribution)
+VisualisationFactory.register_visualisation("topic_attribute_subplot", TopicAttributeSubplot)
+VisualisationFactory.register_visualisation("entity_topic_profile_bar_chart", EntityTopicProfileBarChart)
+VisualisationFactory.register_visualisation("similarity_histogram", SimilarityHistogram)
+VisualisationFactory.register_visualisation("similarity_line_plot", SimilarityLinePlot)
+VisualisationFactory.register_visualisation("ranked_horizontal_bar_chart", RankedHorizontalBarChart)
+VisualisationFactory.register_visualisation("topic_match_percentage_bar", RankedHorizontalBarChart)
+VisualisationFactory.register_visualisation("matched_topic_count_bar", RankedHorizontalBarChart)
 
 
 __all__ = [
@@ -121,4 +134,8 @@ __all__ = [
     "TopicTree",
     "HierarchicalDocuments",
     "ApproximateDistribution",
+    "TopicAttributeSubplot",
+    "EntityTopicProfileBarChart",
+    "SimilarityHistogram",
+    "SimilarityLinePlot",
 ]

@@ -1,0 +1,12 @@
+pipelines:
+  - name: llm_topic_themes
+    type: pipelines.data_extractor_pipeline.DataExtractorPipeline
+    enabled: true
+    extractor_type: table
+    params:
+      extractor_params:
+        model: LLMTopicThemes
+        filters:
+          Dataset: online_forum # optional filter to only extract topics for a specific dataset
+
+

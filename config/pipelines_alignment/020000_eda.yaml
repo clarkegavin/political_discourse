@@ -1,0 +1,310 @@
+pipelines:
+
+  - name: topic_similarity_alignment
+    type: pipelines.eda_pipeline.EDAPipeline
+
+    params:
+
+      save_path: output/eda/topic_similarity_alignment
+
+      steps:
+
+        # ============================================================
+        # Topic similarity engagement
+        # ============================================================
+
+        - name: topic_similarity_alignment
+
+          params:
+
+            # --------------------------------------------------------
+            # Grouping
+            #
+            # Change this to:
+            #
+            # QuestionerParty
+            # QuestionerConstituency
+            #
+            # when reusing the EDA.
+            # --------------------------------------------------------
+
+            group_field: Questioner
+
+            # --------------------------------------------------------
+            # Topic / matching fields
+            # --------------------------------------------------------
+
+            topic_field: Topic
+            match_field: IsMatched
+
+            # --------------------------------------------------------
+            # Only include TDs with at least one matched question
+            # --------------------------------------------------------
+
+            min_matched_questions: 1
+
+            # --------------------------------------------------------
+            # Visualisations
+            # --------------------------------------------------------
+
+            viz_params:
+
+              # ======================================================
+              # 1. Top 20 TDs by percentage of questions on
+              #    topics discussed in the online forum
+              # ======================================================
+
+              - name: topic_match_percentage_bar
+
+                filename: td_topic_match_percentage.png
+
+                value_column: QuestionMatchPercentage
+                label_column: Questioner
+
+                top_n: 20
+
+                xlabel: "Questions on online-forum topics (%)"
+                ylabel: "TD"
+
+                figsize:
+                  - 12
+                  - 9
+
+                annotation_columns:
+                  - QuestionMatchPercentage
+                  - MatchedQuestions
+                  - TotalQuestions
+
+                annotation_formats:
+                  QuestionMatchPercentage: "{:.1f}%"
+                  MatchedQuestions: "{} matched"
+                  TotalQuestions: "{} questions"
+
+
+              # ======================================================
+              # 2. Top 20 TDs by number of questions on topics
+              #    discussed in the online forum
+              # ======================================================
+
+              - name: matched_topic_count_bar
+
+                filename: td_matched_question_count.png
+
+                value_column: MatchedQuestions
+                label_column: Questioner
+
+                top_n: 20
+
+                xlabel: "Questions on online-forum topics"
+                ylabel: "TD"
+
+                figsize:
+                  - 12
+                  - 9
+
+                annotation_columns:
+                  - MatchedQuestions
+                  - QuestionMatchPercentage
+                  - TotalQuestions
+
+                annotation_formats:
+                  MatchedQuestions: "{} matched"
+                  QuestionMatchPercentage: "{:.1f}%"
+                  TotalQuestions: "{} questions"
+        - name: topic_similarity_alignment
+
+          params:
+
+            # --------------------------------------------------------
+            # Grouping
+            #
+            # Change this to:
+            #
+            # QuestionerParty
+            # QuestionerConstituency
+            #
+            # when reusing the EDA.
+            # --------------------------------------------------------
+
+            group_field: QuestionerParty
+
+            # --------------------------------------------------------
+            # Topic / matching fields
+            # --------------------------------------------------------
+
+            topic_field: Topic
+            match_field: IsMatched
+
+            # --------------------------------------------------------
+            # Only include TDs with at least one matched question
+            # --------------------------------------------------------
+
+            min_matched_questions: 1
+
+            # --------------------------------------------------------
+            # Visualisations
+            # --------------------------------------------------------
+
+            viz_params:
+
+              # ======================================================
+              # 1. Top 20 TDs by percentage of questions on
+              #    topics discussed in the online forum
+              # ======================================================
+
+              - name: topic_match_percentage_bar
+
+                filename: party_topic_match_percentage.png
+
+                value_column: QuestionMatchPercentage
+                label_column: QuestionerParty
+
+                top_n: 20
+
+                xlabel: "Questions on online-forum topics (%)"
+                ylabel: "Political Party"
+
+                figsize:
+                  - 12
+                  - 9
+
+                annotation_columns:
+                  - QuestionMatchPercentage
+                  - MatchedQuestions
+                  - TotalQuestions
+
+                annotation_formats:
+                  QuestionMatchPercentage: "{:.1f}%"
+                  MatchedQuestions: "{} matched"
+                  TotalQuestions: "{} questions"
+
+
+              # ======================================================
+              # 2. Top 20 TDs by number of questions on topics
+              #    discussed in the online forum
+              # ======================================================
+
+              - name: matched_topic_count_bar
+
+                filename: party_matched_question_count.png
+
+                value_column: MatchedQuestions
+                label_column: QuestionerParty
+
+                top_n: 20
+
+                xlabel: "Questions on online-forum topics"
+                ylabel: "Political Party"
+
+                figsize:
+                  - 12
+                  - 9
+
+                annotation_columns:
+                  - MatchedQuestions
+                  - QuestionMatchPercentage
+                  - TotalQuestions
+
+                annotation_formats:
+                  MatchedQuestions: "{} matched"
+                  QuestionMatchPercentage: "{:.1f}%"
+                  TotalQuestions: "{} questions"
+
+        - name: topic_similarity_alignment
+
+          params:
+
+            # --------------------------------------------------------
+            # Grouping
+            #
+            # Change this to:
+            #
+            # QuestionerParty
+            # QuestionerConstituency
+            #
+            # when reusing the EDA.
+            # --------------------------------------------------------
+
+            group_field: QuestionerConstituency
+
+            # --------------------------------------------------------
+            # Topic / matching fields
+            # --------------------------------------------------------
+
+            topic_field: Topic
+            match_field: IsMatched
+
+            # --------------------------------------------------------
+            # Only include TDs with at least one matched question
+            # --------------------------------------------------------
+
+            min_matched_questions: 1
+
+            # --------------------------------------------------------
+            # Visualisations
+            # --------------------------------------------------------
+
+            viz_params:
+
+              # ======================================================
+              # 1. Top 20 TDs by percentage of questions on
+              #    topics discussed in the online forum
+              # ======================================================
+
+              - name: topic_match_percentage_bar
+
+                filename: constituency_topic_match_percentage.png
+
+                value_column: QuestionMatchPercentage
+                label_column: QuestionerConstituency
+
+                top_n: 20
+
+                xlabel: "Questions on online-forum topics (%)"
+                ylabel: "Constituency"
+
+                figsize:
+                  - 12
+                  - 9
+
+                annotation_columns:
+                  - QuestionMatchPercentage
+                  - MatchedQuestions
+                  - TotalQuestions
+
+                annotation_formats:
+                  QuestionMatchPercentage: "{:.1f}%"
+                  MatchedQuestions: "{} matched"
+                  TotalQuestions: "{} questions"
+
+
+              # ======================================================
+              # 2. Top 20 TDs by number of questions on topics
+              #    discussed in the online forum
+              # ======================================================
+
+              - name: matched_topic_count_bar
+
+                filename: constituency_matched_question_count.png
+
+                value_column: MatchedQuestions
+                label_column: QuestionerConstituency
+
+                top_n: 20
+
+                xlabel: "Questions on online-forum topics"
+                ylabel: "Political Party"
+
+                figsize:
+                  - 12
+                  - 9
+
+                annotation_columns:
+                  - MatchedQuestions
+                  - QuestionMatchPercentage
+                  - TotalQuestions
+
+                annotation_formats:
+                  MatchedQuestions: "{} matched"
+                  QuestionMatchPercentage: "{:.1f}%"
+                  TotalQuestions: "{} questions"

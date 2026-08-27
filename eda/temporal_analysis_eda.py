@@ -108,10 +108,7 @@ class TemporalAnalysisEDA(EDAComponent):
                 raise
 
         viz_params = kwargs.get('viz_params', [])
-        # for viz_param in viz_params:
-        #     visualisation = self.visualisation_factory.get_visualisation(viz_param['name'], **viz_param)
-        #     visualisation.plot(aggregated_data)
-        #     visualisation.save_and_close()
+
         for viz in viz_params:
             viz_name = viz["name"]
             viz_config = {

@@ -1,0 +1,19 @@
+pipelines:
+  - name: eda
+    type: pipelines.eda_pipeline.EDAPipeline
+    enabled: true
+    params:
+      save_path: output/eda/llm_topics
+      steps:
+      - name: describe_info
+        params:
+          filename_prefix: boards_topics_eda
+      - name: scatter_plot
+        params:
+          x: TopicId
+          y: TopicCount
+          filename: boards_raw_topics_scatter_plot.png
+          viz_params:
+            xlabel: "Topic Rank"
+            ylabel: "Number of Documents"
+

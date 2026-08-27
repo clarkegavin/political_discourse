@@ -1,0 +1,55 @@
+pipelines:
+  - name: thesis_latex_generation
+    type: pipelines.latex_reporting_pipeline.LatexReportingPipeline
+    enabled: true
+    params:
+      output_path: output/thesis/latex_tables/
+
+      steps:
+
+        - name: latex_table
+          params:
+
+            output_file: boards_llm.tex
+
+            caption: LLM-based interpretation of generated topics for the online forum corpus.
+
+            label: tab:boards_llm_interpretation
+
+            span_multiple_pages: true
+
+            sort:
+              fields:
+                - field: Topic
+
+            columns:
+
+              - field: Topic
+                header: Topic
+                latex_type: l
+
+              - field: DocumentCount
+                header: Document Count
+                latex_type: p{1cm}
+
+              - field: Prevalence
+                header: Prevalence
+                latex_type: l
+                precision: 3
+
+              - field: TopicLabel
+                header: Topic Label
+                latex_type: p{3cm}
+                break_at_underscore: true
+
+              - field: RepresentativeTerms
+                header: Representative Terms
+                latex_type: p{3cm}
+
+              - field: TopicTheme
+                header: Topic Theme
+                latex_type: p{3cm}
+
+              - field: TopicDescription
+                header: Topic Description
+                latex_type: p{5cm}

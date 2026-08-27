@@ -16,8 +16,9 @@ class ClusterPlotter(Visualisation):
     Cluster scatter plot visualisation.
     """
 
-    def __init__(self, name: str = "cluster_plot",  title="Cluster Visualisation",
-                 output_dir = ".", xlabel=None, ylabel=None, zlabel=None, figsize=(10, 6), **params):
+    def __init__(self, name: str = "cluster_plot",  title=None,
+                 output_dir = ".", xlabel=None, ylabel=None, zlabel=None,
+                 color_by=None, figsize=(10, 6), **params):
         super().__init__(title=title, figsize=figsize)
         self.logger = get_logger(self.__class__.__name__)
         self.name = name
@@ -28,6 +29,7 @@ class ClusterPlotter(Visualisation):
         self.figsize = figsize
         self.params = params  # optional style parameters
         self.output_dir = output_dir
+        self.color_by = color_by
         self.logger.info(
             f"Initialized ClusterPlotter with title={title}, xlabel={xlabel}, ylabel={ylabel}, figsize={figsize}, params={params}"
         )
@@ -37,7 +39,7 @@ class ClusterPlotter(Visualisation):
         return self
 
 
-    def plot(self, data, labels=None, **kwargs):
+    def plot(self, data, labels=None, metadata=None, **kwargs):
         """
         Plot 2D or 3D cluster scatter plot.
         Automatically detects dimensionality.
@@ -45,6 +47,7 @@ class ClusterPlotter(Visualisation):
         Parameters:
             X_reduced: np.ndarray of shape (n_samples, 2 or 3)
             labels: cluster labels for each sample
+            metadata: DataFrame containing additional metadata
             kwargs: optional style overrides (e.g. cmap, alpha)
         """
         # Convert DataFrame to NumPy array if necessary
@@ -54,6 +57,24 @@ class ClusterPlotter(Visualisation):
         else:
             X_plot = data
 
+        # Determine what should control the colours
+        if self.color_by:
+            if metadata is None:
+                raise ValueError(
+                    "metadata is required when color_by='dataset'"
+                )
+
+            if self.color_by not in metadata.columns:
+                raise ValueError(
+                    f"Column '{self.color_by}' not found in metadata"
+                )
+
+            colour_labels = metadata[self.color_by].values
+            legend_title = self.color_by
+        else:
+            colour_labels = labels
+            legend_title = "Cluster"
+
         n_dims = X_plot.shape[1]
         self.logger.info(f"Creating cluster plot with {X_plot.shape[0]} points and {n_dims}D embedding")
 
@@ -61,14 +82,16 @@ class ClusterPlotter(Visualisation):
         cmap_name = kwargs.pop('cmap', self.params.get('cmap', 'tab10'))
         color_vals = None
         legend_labels = None
-        if labels is not None:
-            labels_arr = np.asarray(labels)
-            if not np.issubdtype(labels_arr.dtype, np.number):
-                uniques, inverse = np.unique(labels_arr, return_inverse=True)
-                color_vals = inverse
-                legend_labels = list(uniques)
-            else:
-                color_vals = labels_arr
+        if colour_labels is not None:
+            labels_arr = np.asarray(colour_labels)
+
+            uniques, inverse = np.unique(
+                labels_arr,
+                return_inverse=True
+            )
+
+            color_vals = inverse
+            legend_labels = list(uniques)
 
         # --- 3D PLOT ---------------------------------------------------------
         if n_dims == 3:
@@ -120,8 +143,9 @@ class ClusterPlotter(Visualisation):
                 ax.tick_params(axis='x', labelrotation=rotation)
 
             # Optional: label large clusters
-            min_size = self.params.get("label_min_cluster_size", 100)
-            self._label_large_clusters(ax, X_plot, labels, min_cluster_size=min_size)
+            if self.params.get("label_large_clusters", False):
+                min_size = self.params.get("label_min_cluster_size", 100)
+                self._label_large_clusters(ax, X_plot, labels, min_cluster_size=min_size)
 
             # Add legend for categorical labels if present
             if legend_labels is not None:
@@ -134,7 +158,14 @@ class ClusterPlotter(Visualisation):
                     # Normalize index into colormap
                     color = mcolors.to_hex(cmap_obj(i / max(1, len(legend_labels)-1)))
                     patches.append(mpatches.Patch(color=color, label=str(lab)))
-                ax.legend(handles=patches, title='label')
+                ax.legend(
+                    handles=patches,
+                    title=legend_title,
+                    loc="upper center",
+                    bbox_to_anchor=(0.5, -0.12),
+                    ncol=8,
+                    frameon=True
+                )
 
             self.logger.info("2D cluster plot created with cluster labels (if enabled)")
             return fig, ax, scatter

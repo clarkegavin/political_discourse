@@ -24,10 +24,10 @@ class UMAPReducer(Reducer):
         if umap is None:
             raise RuntimeError("umap-learn is required for UMAPReducer. Install with 'pip install umap-learn'.")
         self.model = umap.UMAP(**self.params)
-        self.logger.info(f"Built UMAP model with params={self.params}")
-        self.logger.info(
-            f"Effective UMAP parameters: {self.model.get_params()}"
-        )
+        # self.logger.info(f"Built UMAP model with params={self.params}")
+        # self.logger.info(
+        #     f"Effective UMAP parameters: {self.model.get_params()}"
+        # )
         return self
 
     def fit(self, X: Any):
@@ -46,7 +46,7 @@ class UMAPReducer(Reducer):
         return self.model.transform(X)
 
     def fit_transform(self, X: Any):
-        self.logger.info("Fitting and transforming data using UMAPReducer")
+        #self.logger.info("Fitting and transforming data using UMAPReducer")
         if umap is None:
             raise RuntimeError("umap-learn is required for UMAPReducer. Install with 'pip install umap-learn'.")
 
@@ -65,7 +65,7 @@ class UMAPReducer(Reducer):
             self.logger.warning("NaNs detected in UMAP input; replacing with 0")
             X_np = np.nan_to_num(X_np)
 
-        self.model =  self.build()
+        self.build()
         self.logger.info("UMAP model created, performing fit_transform")
         embedding  = self.model.fit_transform(X_np)
         # convert numpy array back to DataFrame
